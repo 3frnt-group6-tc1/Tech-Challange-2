@@ -1,0 +1,28 @@
+<aside class="bg-white shadow-md md:block w-64 h-full mb-6">
+  <div class="flex flex-col p-6 gap-3">
+    <app-menu-item
+      [label]="'Início'"
+      [route]="'/panel'"
+      [iconComponent]="iconHome"
+      [active]="currentRoute === '/panel'"
+    ></app-menu-item>
+    <app-menu-item
+      [label]="'Transações'"
+      [route]="'/transactions'"
+      [iconComponent]="iconDollar"
+      [active]="currentRoute === '/transactions'"
+    ></app-menu-item>
+    <app-menu-item
+      [label]="'Meus Cartões'"
+      [route]="'/cards'"
+      [iconComponent]="iconCard"
+      [active]="currentRoute === '/cards'"
+    ></app-menu-item>
+    <app-menu-item
+      [label]="'Configurações'"
+      [route]="'/configurations'"
+      [iconComponent]="iconSettings"
+      [active]="currentRoute === '/configurations'"
+    ></app-menu-item>
+  </div>
+</aside>
