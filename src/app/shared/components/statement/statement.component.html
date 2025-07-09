@@ -36,12 +36,14 @@
       placeholder="Buscar por descrição"
       [(ngModel)]="filters.description"
       name="description"
+      (ngModelChange)="onFiltersChange()"
     />
 
     <select
       class="border rounded p-2 text-sm w-full"
       [(ngModel)]="filters.type"
       name="type"
+      (ngModelChange)="onFiltersChange()"
     >
       <option value="">Tipo</option>
       <option value="credit">Crédito</option>
@@ -52,6 +54,7 @@
       class="border rounded p-2 text-sm w-full"
       [(ngModel)]="filters.category"
       name="category"
+      (ngModelChange)="onFiltersChange()"
     >
       <option value="">Categoria</option>
       <option
@@ -68,6 +71,7 @@
       placeholder="Valor mínimo"
       [(ngModel)]="filters.minValue"
       name="minValue"
+      (ngModelChange)="onFiltersChange()"
     />
 
     <input
@@ -76,6 +80,7 @@
       placeholder="Valor máximo"
       [(ngModel)]="filters.maxValue"
       name="maxValue"
+      (ngModelChange)="onFiltersChange()"
     />
 
     <div class="flex gap-2">
@@ -84,6 +89,7 @@
         class="border rounded p-2 text-sm w-full"
         [(ngModel)]="filters.date"
         name="date"
+        (ngModelChange)="onFiltersChange()"
       />
     </div>
   </form>
@@ -102,9 +108,59 @@
         *ngIf="!isLoading && recentTransactions.length > 0"
         class="w-full text-xs sm:text-sm border-t-2 mt-2 sm:mt-3 pt-2 sm:pt-3"
       >
+        <thead *ngIf="showAllTransactions" class="bg-gray-50">
+          <tr class="border-b-2">
+            <ng-container *ngIf="!swapColumns">
+              <th class="py-3 px-2 text-left text-gray-700 font-medium">
+                Tipo
+              </th>
+              <th class="py-3 px-2 text-left text-gray-700 font-medium">
+                Categoria
+              </th>
+              <th
+                class="py-3 px-2 text-left text-gray-700 font-medium hidden sm:table-cell"
+                *ngIf="showDetails"
+              >
+                Descrição
+              </th>
+            </ng-container>
+
+            <ng-container *ngIf="swapColumns">
+              <th class="py-3 px-2 text-center text-gray-700 font-medium">#</th>
+              <th class="py-3 px-2 text-left text-gray-700 font-medium">
+                Tipo
+              </th>
+              <th class="py-3 px-2 text-left text-gray-700 font-medium">
+                Categoria
+              </th>
+              <th
+                class="py-3 px-2 text-left text-gray-700 font-medium hidden sm:table-cell"
+                *ngIf="showDetails"
+              >
+                Descrição
+              </th>
+            </ng-container>
+
+            <th class="py-3 px-2 text-left text-gray-700 font-medium">Valor</th>
+            <th
+              class="py-3 px-2 text-left text-gray-700 font-medium hidden xs:table-cell"
+            >
+              Data
+            </th>
+            <th class="py-3 px-2 text-center text-gray-700 font-medium">
+              Editar
+            </th>
+            <th class="py-3 px-2 text-center text-gray-700 font-medium">
+              Excluir
+            </th>
+            <th class="py-3 px-2 text-center text-gray-700 font-medium">
+              Anexo
+            </th>
+          </tr>
+        </thead>
         <tbody>
           <tr
-            *ngFor="let transaction of recentTransactions"
+            *ngFor="let transaction of recentTransactions; let i = index"
             class="border-b-2 last:border-none"
           >
             <ng-container *ngIf="!swapColumns">
@@ -158,6 +214,18 @@
             </ng-container>
 
             <ng-container *ngIf="swapColumns">
+              <!-- Coluna do índice -->
+              <td class="py-2 sm:py-4 pr-1 sm:pr-2 text-center">
+                <app-text
+                  [color]="
+                    isDeposit(transaction) ? 'text-green-600' : 'text-red-600'
+                  "
+                  class="text-xs sm:text-sm whitespace-nowrap"
+                >
+                  {{ i + 1 }}
+                </app-text>
+              </td>
+
               <td class="py-2 sm:py-4 pr-1 sm:pr-2">
                 <ng-container
                   [ngSwitch]="isDeposit(transaction) ? 'deposit' : 'withdraw'"
@@ -256,7 +324,9 @@
                   class="text-cyan-blue-500 hover:text-cyan-700"
                   title="Visualizar anexo"
                 >
-                  <app-icon-clip class="w-5 h-5 inline-block text-cyan-blue-500 hover:text-cyan-700"></app-icon-clip>
+                  <app-icon-clip
+                    class="w-5 h-5 inline-block text-cyan-blue-500 hover:text-cyan-700"
+                  ></app-icon-clip>
                 </button>
               </ng-container>
             </td>
@@ -271,6 +341,46 @@
     class="text-center py-4"
   >
     <app-text color="text-gray-600">Nenhuma transação encontrada</app-text>
+  </div>
+
+  <!-- Botão "Carregar mais" para paginação -->
+  <div
+    *ngIf="
+      showAllTransactions &&
+      !isLoading &&
+      recentTransactions.length > 0 &&
+      !allTransactionsLoaded
+    "
+    class="flex justify-center mt-8"
+  >
+    <button
+      (click)="loadMore()"
+      [disabled]="isLoadingMore"
+      class="bg-cyan-blue-500 dark:bg-blue-violet-500 hover:bg-cyan-blue-600 disabled:bg-gray-400 text-white px-8 py-4 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center gap-2"
+    >
+      <span *ngIf="!isLoadingMore">Carregar mais</span>
+      <span *ngIf="isLoadingMore">Carregando...</span>
+      <div
+        *ngIf="isLoadingMore"
+        class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+      ></div>
+    </button>
+  </div>
+
+  <!-- Indicador de fim das transações -->
+  <div
+    *ngIf="
+      showAllTransactions &&
+      !isLoading &&
+      recentTransactions.length > 0 &&
+      allTransactionsLoaded &&
+      totalTransactions > itemsPerPage
+    "
+    class="text-center mt-4 py-2"
+  >
+    <app-text color="text-gray-500" class="text-sm">
+      Todas as {{ totalTransactions }} transações foram carregadas
+    </app-text>
   </div>
 
   <div

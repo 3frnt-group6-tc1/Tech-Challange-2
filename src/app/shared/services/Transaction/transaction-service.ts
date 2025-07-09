@@ -79,6 +79,70 @@ export class TransactionService {
     return this.http.get<Transaction[]>(url);
   }
 
+  getByUserIdWithFilters(
+    userId: string,
+    filters: {
+      description?: string;
+      type?: string;
+      category?: string;
+      minValue?: number;
+      maxValue?: number;
+      date?: string;
+      page?: number;
+      limit?: number;
+    }
+  ): Observable<Transaction[]> {
+    let url = `${this.apiUrl}?id_user=${userId}`;
+
+    if (filters.description && filters.description.trim() !== '') {
+      url += `&description_like=${encodeURIComponent(filters.description)}`;
+    }
+
+    if (filters.type && filters.type !== '') {
+      if (filters.type === 'credit') {
+        CREDIT_TYPES.forEach((type) => {
+          url += `&type=${type}`;
+        });
+      } else if (filters.type === 'debit') {
+        DEBIT_TYPES.forEach((type) => {
+          url += `&type=${type}`;
+        });
+      }
+    }
+
+    if (filters.category && filters.category !== '') {
+      url += `&type=${filters.category}`;
+    }
+
+    if (filters.minValue !== undefined && filters.minValue !== null) {
+      url += `&amount_gte=${filters.minValue}`;
+    }
+
+    if (filters.maxValue !== undefined && filters.maxValue !== null) {
+      url += `&amount_lte=${filters.maxValue}`;
+    }
+
+    if (filters.date) {
+      const selectedDate = new Date(filters.date);
+      const startOfDay = new Date(selectedDate);
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(selectedDate);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      url += `&date_gte=${startOfDay.toISOString()}&date_lte=${endOfDay.toISOString()}`;
+    }
+
+    // Paginação
+    if (filters.page && filters.limit) {
+      const start = (filters.page - 1) * filters.limit;
+      url += `&_start=${start}&_limit=${filters.limit}`;
+    }
+
+    url += `&_sort=date&_order=desc`;
+
+    return this.http.get<Transaction[]>(url);
+  }
+
   getCreditsByUserId(userId: string): Observable<Transaction[]> {
     return this.getByUserId(userId, CREDIT_TYPES);
   }

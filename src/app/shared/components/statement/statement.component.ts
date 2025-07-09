@@ -24,7 +24,7 @@ import { TransactionEventService } from '../../services/TransactionEvent/transac
 import { IconArrowRightComponent } from '../../assets/icons/icon-arrow-right.component';
 import { BrlPipe } from '../../pipes/brl.pipe';
 import { FormsModule } from '@angular/forms';
-import { IconClipComponent } from "../../assets/icons/icon-clip.component";
+import { IconClipComponent } from '../../assets/icons/icon-clip.component';
 
 @Component({
   selector: 'app-statement',
@@ -41,8 +41,8 @@ import { IconClipComponent } from "../../assets/icons/icon-clip.component";
     EditModalComponent,
     BrlPipe,
     FormsModule,
-    IconClipComponent
-],
+    IconClipComponent,
+  ],
   templateUrl: './statement.component.html',
   styleUrls: ['./statement.component.scss'],
 })
@@ -55,6 +55,15 @@ export class StatementComponent implements OnInit, OnDestroy {
   transactions: Transaction[] = [];
   transactionLabels = TRANSACTION_TYPE_LABELS;
   isLoading = false;
+
+  // Propriedades para paginação e scroll infinito
+  currentPage = 1;
+  itemsPerPage = 10;
+  isLoadingMore = false;
+  allTransactionsLoaded = false;
+  totalTransactions = 0;
+  filteredTransactions: Transaction[] = [];
+
   private destroy$ = new Subject<void>();
   isModalOpen = false;
   transactionToDelete: string | null = null;
@@ -69,7 +78,7 @@ export class StatementComponent implements OnInit, OnDestroy {
     category: '',
     minValue: null as number | null,
     maxValue: null as number | null,
-    date: ''
+    date: '',
   };
 
   get transactionTypeKeys(): string[] {
@@ -77,49 +86,16 @@ export class StatementComponent implements OnInit, OnDestroy {
   }
 
   get recentTransactions(): Transaction[] {
-    let filtered = [...this.transactions];
-
-    if (this.filters.description) {
-      filtered = filtered.filter(t =>
-        t.description?.toLowerCase().includes(this.filters.description.toLowerCase())
-      );
+    // Se showAllTransactions for true, usa paginação; senão mostra apenas 6 transações
+    if (this.showAllTransactions) {
+      const itemsToShow = this.currentPage * this.itemsPerPage;
+      this.allTransactionsLoaded =
+        itemsToShow >= this.filteredTransactions.length;
+      return this.filteredTransactions.slice(0, itemsToShow);
+    } else {
+      return this.filteredTransactions.slice(0, 6);
     }
-
-    if (this.filters.type) {
-      filtered = filtered.filter(t =>
-        this.filters.type === 'credit' ? isCredit(t.type) : isDebit(t.type)
-      );
-    }
-
-    if (this.filters.category) {
-      filtered = filtered.filter(t => t.type === this.filters.category);
-    }
-
-    if (this.filters.minValue !== null) {
-      filtered = filtered.filter(t => t.amount >= this.filters.minValue!);
-    }
-
-    if (this.filters.maxValue !== null) {
-      filtered = filtered.filter(t => t.amount <= this.filters.maxValue!);
-    }
-
-    if (this.filters.date) {
-      filtered = filtered.filter(t => {
-        const transactionDate = new Date(t.date);
-        const selectedDate = new Date(this.filters.date);
-        return (
-          transactionDate.getFullYear() === selectedDate.getFullYear() &&
-          transactionDate.getMonth() === selectedDate.getMonth() &&
-          transactionDate.getDate() === selectedDate.getDate()
-        );
-      });
-    }
-
-    filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
-    return this.showAllTransactions ? filtered : filtered.slice(0, 6);
   }
-
 
   constructor(
     private transactionService: TransactionService,
@@ -127,13 +103,16 @@ export class StatementComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.resetPagination();
     this.loadUserTransactions();
 
     this.transactionEventService.transactionCreated$
       .pipe(takeUntil(this.destroy$))
       .subscribe((transaction) => {
         if (transaction.id_user === systemConfig.userId) {
-          this.transactions = [transaction, ...this.transactions];
+          // Reaplica os filtros para incluir a nova transação
+          this.resetPagination();
+          this.loadUserTransactions();
         }
       });
 
@@ -141,18 +120,20 @@ export class StatementComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((transaction) => {
         if (transaction.id_user === systemConfig.userId) {
-          this.transactions = this.transactions.map((t) =>
-            t.id === transaction.id ? transaction : t
-          );
+          // Reaplica os filtros para refletir a atualização
+          this.loadUserTransactions();
         }
       });
 
     this.transactionEventService.transactionDeleted$
       .pipe(takeUntil(this.destroy$))
       .subscribe((transactionId) => {
-        this.transactions = this.transactions.filter(
+        // Remove localmente e reaplica filtros
+        this.filteredTransactions = this.filteredTransactions.filter(
           (t) => t.id !== transactionId
         );
+        this.resetPagination();
+        this.loadUserTransactions();
       });
   }
 
@@ -161,20 +142,93 @@ export class StatementComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  // Métodos para controle de paginação e scroll infinito
+  resetPagination(): void {
+    this.currentPage = 1;
+    this.allTransactionsLoaded = false;
+    this.isLoadingMore = false;
+  }
+
+  loadMore(): void {
+    if (this.isLoadingMore || this.allTransactionsLoaded) return;
+
+    this.isLoadingMore = true;
+    const userId = systemConfig.userId;
+
+    const filterParams = {
+      description: this.filters.description || undefined,
+      type: this.filters.type || undefined,
+      category: this.filters.category || undefined,
+      minValue: this.filters.minValue || undefined,
+      maxValue: this.filters.maxValue || undefined,
+      date: this.filters.date || undefined,
+      page: this.currentPage + 1,
+      limit: this.itemsPerPage,
+    };
+
+    setTimeout(() => {
+      this.transactionService
+        .getByUserIdWithFilters(userId, filterParams)
+        .subscribe({
+          next: (newTransactions) => {
+            if (newTransactions.length < this.itemsPerPage) {
+              this.allTransactionsLoaded = true;
+            }
+
+            // Adiciona as novas transações sem duplicatas
+            const existingIds = new Set(
+              this.filteredTransactions.map((t) => t.id)
+            );
+            const uniqueNewTransactions = newTransactions.filter(
+              (t) => !existingIds.has(t.id)
+            );
+
+            this.filteredTransactions = [
+              ...this.filteredTransactions,
+              ...uniqueNewTransactions,
+            ];
+            this.currentPage++;
+            this.isLoadingMore = false;
+          },
+          error: (error) => {
+            this.isLoadingMore = false;
+            console.error('Error loading more transactions:', error);
+          },
+        });
+    }, 3000);
+  }
+
+  onFiltersChange(): void {
+    this.resetPagination();
+    this.loadUserTransactions();
+  }
+
   loadUserTransactions(): void {
     const userId = systemConfig.userId;
     this.isLoading = true;
 
-    this.transactionService.getByUserId(userId).subscribe({
-      next: (transactions) => {
-        this.transactions = transactions.filter((t) => t.id);
-        this.isLoading = false;
-      },
-      error: (error) => {
-        this.isLoading = false;
-        console.error('Error fetching user transactions:', error);
-      },
-    });
+    const filterParams = {
+      description: this.filters.description || undefined,
+      type: this.filters.type || undefined,
+      category: this.filters.category || undefined,
+      minValue: this.filters.minValue || undefined,
+      maxValue: this.filters.maxValue || undefined,
+      date: this.filters.date || undefined,
+    };
+
+    this.transactionService
+      .getByUserIdWithFilters(userId, filterParams)
+      .subscribe({
+        next: (transactions) => {
+          this.filteredTransactions = transactions.filter((t) => t.id);
+          this.totalTransactions = this.filteredTransactions.length;
+          this.isLoading = false;
+        },
+        error: (error) => {
+          this.isLoading = false;
+          console.error('Error fetching filtered transactions:', error);
+        },
+      });
   }
 
   isDeposit(transaction: Transaction): boolean {
@@ -240,7 +294,11 @@ export class StatementComponent implements OnInit, OnDestroy {
     this.isEditModalOpen = true;
   }
 
-  onSaveEdit(updatedTransaction: { id: string; amount: number; description: string }): void {
+  onSaveEdit(updatedTransaction: {
+    id: string;
+    amount: number;
+    description: string;
+  }): void {
     if (this.transactionToEdit) {
       const updated = { ...this.transactionToEdit, ...updatedTransaction };
       this.transactionService.update(updated.id, updated).subscribe({
@@ -266,7 +324,7 @@ export class StatementComponent implements OnInit, OnDestroy {
   }
 
   editTransaction(id: string): void {
-    const transaction = this.transactions.find(t => t.id === id);
+    const transaction = this.filteredTransactions.find((t) => t.id === id);
     if (transaction) {
       this.openEditModal(transaction);
     }
@@ -295,9 +353,7 @@ export class StatementComponent implements OnInit, OnDestroy {
       }
       newTab.document.close();
     } else {
-      console.error("Não foi possível abrir a nova aba.");
+      console.error('Não foi possível abrir a nova aba.');
     }
   }
-
-
 }
