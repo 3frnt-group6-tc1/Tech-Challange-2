@@ -20,7 +20,7 @@ describe('DashboardComponent', () => {
   };
 
   const mockUser: User = {
-    id: systemConfig.userId,
+    id: 'u1,
     name: 'Test User',
     email: 'test@example.com',
     password: 'password123'
@@ -29,7 +29,7 @@ describe('DashboardComponent', () => {
   const mockTransactions: Transaction[] = [
     {
       id: '1',
-      id_user: systemConfig.userId,
+      id_user: 'u1,
       type: TransactionType.Exchange,
       amount: 200,
       description: 'Salary',
@@ -37,7 +37,7 @@ describe('DashboardComponent', () => {
     },
     {
       id: '2',
-      id_user: systemConfig.userId,
+      id_user: 'u1,
       type: TransactionType.Loan,
       amount: 500,
       description: 'Loan',
@@ -45,7 +45,7 @@ describe('DashboardComponent', () => {
     },
     {
       id: '3',
-      id_user: systemConfig.userId,
+      id_user: 'u1,
       type: TransactionType.Transfer,
       amount: 300,
       description: 'Bills',
@@ -99,7 +99,7 @@ describe('DashboardComponent', () => {
     });
 
     it('should fetch user on init', () => {
-      expect(userServiceMock.getById).toHaveBeenCalledWith(systemConfig.userId);
+      expect(userServiceMock.getById).toHaveBeenCalledWith('u1);
       expect(component.userName).toBe('Test User');
     });
 
@@ -170,7 +170,7 @@ describe('DashboardComponent', () => {
     it('should handle new transaction events', () => {
       const newTransaction: Transaction = {
         id: '4',
-        id_user: systemConfig.userId,
+        id_user: 'u1,
         type: TransactionType.Exchange,
         amount: 150,
         description: 'New Income',

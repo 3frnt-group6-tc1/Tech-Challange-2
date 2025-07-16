@@ -1,22 +1,30 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd } from '@angular/router';
-import { filter } from 'rxjs/operators';
+import { filter, takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 
-import { ThemeService } from '../../services/Theme/theme.service'
+import { ThemeService } from '../../services/Theme/theme.service';
 import { UserService } from '../../services/User/user-service';
+import { AuthService, AuthUser } from '../../services/Auth/auth.service';
+import { systemConfig } from '../../../app.config';
 
 import { IconExitComponent } from '../../assets/icons/icon-exit.component';
 import { ButtonComponent } from '../button/button.component';
 import { TextComponent } from '../text/text.component';
-import { systemConfig } from '../../../app.config';
-import { IconHamburgerComponent } from "../../assets/icons/icon-hamburger.component";
-import { IconDarkmodeComponent } from "../../assets/icons/icon-darkmode.component";
-import { IconBellComponent } from "../../assets/icons/icon-bell.component";
-import { IconAccountCircleComponent } from "../../assets/icons/icon-account-circle.component";
+import { IconHamburgerComponent } from '../../assets/icons/icon-hamburger.component';
+import { IconDarkmodeComponent } from '../../assets/icons/icon-darkmode.component';
+import { IconBellComponent } from '../../assets/icons/icon-bell.component';
+import { IconAccountCircleComponent } from '../../assets/icons/icon-account-circle.component';
 import { IconLogoComponent } from '../../assets/icons/icon-logo.component';
 import { IconArrowdownComponent } from '../../assets/icons/icon-arrowdown.component';
-import { MenuComponent } from "../menu/menu.component";
+import { MenuComponent } from '../menu/menu.component';
 
 @Component({
   selector: 'app-header',
@@ -32,26 +40,28 @@ import { MenuComponent } from "../menu/menu.component";
     IconAccountCircleComponent,
     IconLogoComponent,
     IconArrowdownComponent,
-    MenuComponent
+    MenuComponent,
   ],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',
 })
 export class HeaderComponent implements OnInit, OnDestroy {
-  userId: string = systemConfig.userId;
   isLoggedIn: boolean = true;
   mobile: boolean = false;
   tablet: boolean = false;
   menuOpen: boolean = false;
 
   userName: string = '';
+  currentUser: AuthUser | null = null;
 
   isLoading: boolean = true;
+  private destroy$ = new Subject<void>();
 
   constructor(
     public themeService: ThemeService,
     private readonly router: Router,
     private readonly userService: UserService,
+    private readonly authService: AuthService
   ) {
     const path = window.location.pathname;
     this.isLoggedIn = systemConfig.loggedPages.includes(path);
@@ -74,11 +84,12 @@ export class HeaderComponent implements OnInit, OnDestroy {
     }
 
     this.routerEventsSubscription = this.router.events
-      .pipe(filter(event => event instanceof NavigationEnd))
+      .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
         this.updateLoginState(event.urlAfterRedirects);
-    });
-    this.fetchUser();
+      });
+
+    this.subscribeToAuthUser();
     this.updateLoginState(this.router.url);
   }
 
@@ -90,26 +101,48 @@ export class HeaderComponent implements OnInit, OnDestroy {
     if (this.routerEventsSubscription) {
       this.routerEventsSubscription.unsubscribe();
     }
+
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private updateLoginState(url: string) {
-    this.isLoggedIn = systemConfig.loggedPages.includes(url);
+    // Use AuthService to check authentication status
+    this.isLoggedIn =
+      this.authService.isAuthenticated() &&
+      systemConfig.loggedPages.includes(url);
+  }
+
+  private subscribeToAuthUser(): void {
+    // Subscribe to current user from AuthService
+    this.authService.currentUser$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((user: AuthUser | null) => {
+        this.currentUser = user;
+        this.userName = user?.username || '';
+      });
   }
 
   fetchUser(): void {
     this.isLoading = true;
-    this.userService.getById(systemConfig.userId).subscribe({
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) {
+      this.isLoading = false;
+      console.error('User not authenticated');
+      return;
+    }
+
+    this.userService.getById(currentUser.id).subscribe({
       next: (response: any) => {
-        console.log('Usuário logado:', response);
         this.userName = response.name;
+        this.isLoading = false;
       },
       error: (error: any) => {
         this.isLoading = false;
         console.error('Error fetching user name:', error);
-      }
+      },
     });
   }
-
 
   toggleDarkMode() {
     this.themeService.toggleDarkMode();
@@ -122,7 +155,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   toggleMenu(event?: MouseEvent): void {
-
     if (event) event.stopPropagation();
 
     this.menuOpen = !this.menuOpen;
@@ -142,7 +174,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
     const target = event.target as Node;
     const menuElement = this.menuRef?.nativeElement;
-    const hamburgerButton = document.querySelector('.app-icon-hamburger')?.parentElement;
+    const hamburgerButton = document.querySelector(
+      '.app-icon-hamburger'
+    )?.parentElement;
 
     if (menuElement && menuElement.contains(target)) return;
 
@@ -152,7 +186,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   get showLandingMobileMenu(): boolean {
-    const condition = !this.isLoggedIn && (this.mobile || this.tablet) && this.menuOpen;
+    const condition =
+      !this.isLoggedIn && (this.mobile || this.tablet) && this.menuOpen;
 
     if (condition) {
       document.body.classList.add('overflow-hidden');
@@ -185,8 +220,16 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   goToPanel(): void {
-    this.router.navigate(['/panel']);
+    // Check if user is authenticated, otherwise go to login
+    if (this.authService.isAuthenticated()) {
+      this.router.navigate(['/panel']);
+    } else {
+      this.router.navigate(['/login']);
+    }
   }
 
-
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/login']);
+  }
 }

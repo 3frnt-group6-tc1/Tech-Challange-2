@@ -5,7 +5,9 @@
 
   <div *ngIf="!isLoading">
     <!-- Layout para telas maiores (Desktop) -->
-    <div class="hidden sm:flex flex-col sm:flex-row justify-between items-start gap-6 w-full">
+    <div
+      class="hidden sm:flex flex-col sm:flex-row justify-between items-start gap-6 w-full"
+    >
       <div>
         <h1 class="text-xl sm:text-2xl text-gray-900 font-bold">
           Olá, {{ userName }}!
@@ -122,7 +124,8 @@
   [transactionData]="transactionData"
   [totalEntries]="totalEntries"
   [totalExits]="totalExits"
-  class="block px-6 pt-2 pb-12">
+  class="block px-6 pt-2 pb-12"
+>
 </app-transaction-chart>
 
 <div

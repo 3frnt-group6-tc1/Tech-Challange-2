@@ -317,6 +317,22 @@
       "amount": 1231.23,
       "date": "2025-06-02T02:01:38.372Z",
       "id_user": "u2"
+    },
+    {
+      "type": "transfer",
+      "amount": 20,
+      "description": "teste",
+      "date": "2025-07-15T23:16:53.677Z",
+      "id_user": "6876dbb1c621bdc8d1c294af",
+      "attachments": [
+        {
+          "name": "dfe7e26f-aade-493a-b7c8-d0e58b91a73c.pdf",
+          "key": "uploads/dfe7e26f-aade-493a-b7c8-d0e58b91a73c.pdf",
+          "url": "https://fiap-3frnt-group6-bytebank.s3.amazonaws.com/uploads/dfe7e26f-aade-493a-b7c8-d0e58b91a73c.pdf",
+          "type": "s3"
+        }
+      ],
+      "id": "EW6RPHz"
     }
   ]
 }

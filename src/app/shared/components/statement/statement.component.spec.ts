@@ -12,7 +12,7 @@ describe('StatementComponent Logic Functions', () => {
       amount: 100,
       date: new Date('2023-01-10'),
       description: 'Currency Exchange',
-      id_user: systemConfig.userId
+      id_user: 'u1,
     },
     {
       id: '2',
@@ -20,7 +20,7 @@ describe('StatementComponent Logic Functions', () => {
       amount: 200,
       date: new Date('2023-01-15'),
       description: 'Loan',
-      id_user: systemConfig.userId
+      id_user: 'u1,
     },
     {
       id: '3',
@@ -28,7 +28,7 @@ describe('StatementComponent Logic Functions', () => {
       amount: 50,
       date: new Date('2023-01-20'),
       description: 'Transfer',
-      id_user: systemConfig.userId
+      id_user: 'u1,
     },
     {
       id: '4',
@@ -36,7 +36,7 @@ describe('StatementComponent Logic Functions', () => {
       amount: 75,
       date: new Date('2023-01-05'),
       description: 'Currency Exchange 2',
-      id_user: systemConfig.userId
+      id_user: 'u1,
     },
     {
       id: '5',
@@ -44,7 +44,7 @@ describe('StatementComponent Logic Functions', () => {
       amount: 300,
       date: new Date('2023-01-25'),
       description: 'Loan 2',
-      id_user: systemConfig.userId
+      id_user: 'u1,
     },
     {
       id: '6',
@@ -52,7 +52,7 @@ describe('StatementComponent Logic Functions', () => {
       amount: 25,
       date: new Date('2023-01-30'),
       description: 'Transfer 2',
-      id_user: systemConfig.userId
+      id_user: 'u1,
     },
     {
       id: '7',
@@ -60,15 +60,12 @@ describe('StatementComponent Logic Functions', () => {
       amount: 150,
       date: new Date('2023-01-01'),
       description: 'Currency Exchange 3',
-      id_user: systemConfig.userId
-    }
+      id_user: 'u1,
+    },
   ];
 
   beforeEach(() => {
-    component = new StatementComponent(
-      {} as any,
-      {} as any
-    );
+    component = new StatementComponent({} as any, {} as any, {} as any);
 
     component.transactions = [...mockTransactions];
   });
@@ -102,7 +99,7 @@ describe('StatementComponent Logic Functions', () => {
         amount: 100,
         date: new Date(),
         description: 'Test',
-        id_user: systemConfig.userId
+        id_user: 'u1,
       };
 
       expect(component.isDeposit(depositTransaction)).toBeTrue();
@@ -116,7 +113,7 @@ describe('StatementComponent Logic Functions', () => {
         amount: 50,
         date: new Date(),
         description: 'Test',
-        id_user: systemConfig.userId
+        id_user: 'u1,
       };
 
       expect(component.isDeposit(withdrawalTransaction)).toBeFalse();
@@ -143,9 +140,15 @@ describe('StatementComponent Logic Functions', () => {
 
   describe('getTransactionTypeLabel', () => {
     it('should return correct labels for transaction types', () => {
-      expect(component.getTransactionTypeLabel(TransactionType.Exchange)).toBe('Câmbio de Moeda');
-      expect(component.getTransactionTypeLabel(TransactionType.Loan)).toBe('Empréstimo e Financiamento');
-      expect(component.getTransactionTypeLabel(TransactionType.Transfer)).toBe('DOC/TED');
+      expect(component.getTransactionTypeLabel(TransactionType.Exchange)).toBe(
+        'Câmbio de Moeda'
+      );
+      expect(component.getTransactionTypeLabel(TransactionType.Loan)).toBe(
+        'Empréstimo e Financiamento'
+      );
+      expect(component.getTransactionTypeLabel(TransactionType.Transfer)).toBe(
+        'DOC/TED'
+      );
     });
 
     it('should return the type itself if no label is found', () => {

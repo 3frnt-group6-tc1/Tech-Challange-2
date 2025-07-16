@@ -1,4 +1,11 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnChanges,
+  SimpleChanges,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonComponent } from '../button/button.component';
 import { FormsModule } from '@angular/forms';
@@ -9,28 +16,34 @@ import { Transaction } from '../../models/transaction';
   standalone: true,
   imports: [CommonModule, ButtonComponent, FormsModule],
   templateUrl: './edit-modal.component.html',
-  styleUrls: ['./edit-modal.component.scss']
+  styleUrls: ['./edit-modal.component.scss'],
 })
 export class EditModalComponent implements OnChanges {
   @Input() isOpen: boolean = false;
   @Input() transaction: Transaction | null = null;
-  @Output() save = new EventEmitter<{ id: string; amount: number; description: string }>();
+  @Output() save = new EventEmitter<{
+    id: string;
+    value: number;
+    from: string;
+    to: string;
+    description: string;
+  }>();
   @Output() cancel = new EventEmitter<void>();
 
-  amount: number = 0;
+  value: number = 0;
   description: string = '';
-  amountFormatted: string = '';
+  valueFormatted: string = '';
 
   descriptionTouched = false;
-  amountTouched = false;
+  valueTouched = false;
 
   ngOnChanges(changes: SimpleChanges): void {
     if (this.transaction) {
-      this.amount = this.transaction.amount;
+      this.value = this.transaction.value;
       this.description = this.transaction.description;
-      this.amountFormatted = this.formatAmount(this.amount);
+      this.valueFormatted = this.formatValue(this.value);
       this.descriptionTouched = false;
-      this.amountTouched = false;
+      this.valueTouched = false;
     }
   }
 
@@ -38,23 +51,27 @@ export class EditModalComponent implements OnChanges {
     return this.description.trim().length >= 3;
   }
 
-  get isAmountValid(): boolean {
-    return this.amount > 0;
+  get isValueValid(): boolean {
+    return this.value > 0;
   }
 
   get isFormValid(): boolean {
-    return this.isDescriptionValid && this.isAmountValid;
+    return this.isDescriptionValid && this.isValueValid;
   }
 
   onSave(): void {
     this.descriptionTouched = true;
-    this.amountTouched = true;
+    this.valueTouched = true;
 
     if (this.transaction && this.transaction.id && this.isFormValid) {
+      // Split description to get from and to
+      const parts = this.description.split(' → ');
       this.save.emit({
         id: this.transaction.id,
-        amount: this.amount,
-        description: this.description.trim()
+        value: this.value,
+        from: parts[0] || this.transaction.from,
+        to: parts[1] || this.transaction.to,
+        description: this.description,
       });
     }
   }
@@ -63,10 +80,10 @@ export class EditModalComponent implements OnChanges {
     this.cancel.emit();
   }
 
-  formatAmount(value: number): string {
+  formatValue(value: number): string {
     return value.toLocaleString('pt-BR', {
       style: 'currency',
-      currency: 'BRL'
+      currency: 'BRL',
     });
   }
 
@@ -96,8 +113,8 @@ export class EditModalComponent implements OnChanges {
     integer = integer.replace(/^0+/, '') || '0';
     integer = integer.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 
-    this.amountFormatted = `${integer},${cents}`;
-    this.amount = Number(integer.replace(/\./g, '') + '.' + cents);
-    this.amountTouched = true;
+    this.valueFormatted = `${integer},${cents}`;
+    this.value = Number(integer.replace(/\./g, '') + '.' + cents);
+    this.valueTouched = true;
   }
 }

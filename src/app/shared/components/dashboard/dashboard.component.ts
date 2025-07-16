@@ -2,15 +2,16 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { TransactionService } from '../../services/Transaction/transaction-service';
-import { UserService } from '../../services/User/user-service';
+import { AccountService } from '../../services/Account/account.service';
+import { AuthService, AuthUser } from '../../services/Auth/auth.service';
 import {
   Transaction,
   isCredit,
   isDebit,
-  TRANSACTION_TYPE_LABELS
+  TRANSACTION_TYPE_LABELS,
 } from '../../models/transaction';
-import { systemConfig } from '../../../app.config';
+import { Account, AccountSummary } from '../../models/account';
+import { Card } from '../../models/card';
 import { TransactionData } from '../../models/transaction-data';
 import { TransactionEventService } from '../../services/TransactionEvent/transaction-event.service';
 import { TransactionChartComponent } from '../../components/transaction-chart/transaction-chart.component';
@@ -23,19 +24,23 @@ import { TransactionChartComponent } from '../../components/transaction-chart/tr
   styleUrls: ['./dashboard.component.scss'],
 })
 export class DashboardComponent implements OnInit, OnDestroy {
-  userId: string = systemConfig.userId;
   userName: string = '';
+  currentUser: AuthUser | null = null;
   currentDate: string = '';
   currentMonthName: string = '';
   balance: string = '';
   accountType: string = 'Conta Corrente';
   totalEntries: string = '';
   totalExits: string = '';
-  idUser: string = '';
   transactionTypeLabels = TRANSACTION_TYPE_LABELS;
 
   showBalance: boolean = true;
   isLoading: boolean = true;
+
+  // Dados da conta
+  accounts: Account[] = [];
+  currentAccount: Account | null = null;
+  cards: Card[] = [];
 
   transactionData: TransactionData[] = [];
   transactions: Transaction[] = [];
@@ -44,14 +49,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   constructor(
-    private transactionService: TransactionService,
-    private userService: UserService,
+    private authService: AuthService,
+    private accountService: AccountService,
     private transactionEventService: TransactionEventService
   ) {}
 
   ngOnInit(): void {
     this.setCurrentDate();
-    this.fetchUser();
+    this.subscribeToAuthUser();
     this.subscribeToTransactionEvents();
   }
 
@@ -63,32 +68,32 @@ export class DashboardComponent implements OnInit, OnDestroy {
   subscribeToTransactionEvents(): void {
     this.transactionEventService.transactionCreated$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(transaction => {
-        if (transaction.id_user === this.userId) {
-          this.transactions = [...this.transactions, transaction];
-          this.filterCurrentMonthTransactions();
-          this.updateDashboardData();
-        }
+      .subscribe((transaction) => {
+        this.transactions = [...this.transactions, transaction];
+        this.filterCurrentMonthTransactions();
+        this.updateDashboardData();
       });
 
     this.transactionEventService.transactionUpdated$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(transaction => {
-        if (transaction.id_user === this.userId) {
-          this.transactions = this.transactions.map(t =>
-            t.id === transaction.id ? transaction : t
-          );
-          this.filterCurrentMonthTransactions();
-          this.updateDashboardData();
-        }
+      .subscribe((transaction) => {
+        this.transactions = this.transactions.map((t) =>
+          t.id === transaction.id ? transaction : t
+        );
+        this.filterCurrentMonthTransactions();
+        this.updateDashboardData();
       });
 
     this.transactionEventService.transactionDeleted$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(transactionId => {
-        const deletedTransaction = this.transactions.find(t => t.id === transactionId);
-        if (deletedTransaction && deletedTransaction.id_user === this.userId) {
-          this.transactions = this.transactions.filter(t => t.id !== transactionId);
+      .subscribe((transactionId) => {
+        const deletedTransaction = this.transactions.find(
+          (t) => t.id === transactionId
+        );
+        if (deletedTransaction) {
+          this.transactions = this.transactions.filter(
+            (t) => t.id !== transactionId
+          );
           this.filterCurrentMonthTransactions();
           this.updateDashboardData();
         }
@@ -107,8 +112,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
     ];
 
     const months = [
-      'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-      'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+      'Janeiro',
+      'Fevereiro',
+      'Março',
+      'Abril',
+      'Maio',
+      'Junho',
+      'Julho',
+      'Agosto',
+      'Setembro',
+      'Outubro',
+      'Novembro',
+      'Dezembro',
     ];
 
     const today = new Date();
@@ -123,38 +138,43 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.currentMonthName = months[today.getMonth()];
   }
 
-  fetchUser(): void {
-    this.isLoading = true;
-    this.userService.getById(systemConfig.userId).subscribe({
-      next: (response) => this.successUser(response),
-      error: (error) => {
-        this.isLoading = false;
-        this.errorMessage = 'Erro ao buscar usuário.';
-        console.error('Error fetching user name:', error);
-      }
-    });
+  private subscribeToAuthUser(): void {
+    this.authService.currentUser$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((user: AuthUser | null) => {
+        this.currentUser = user;
+        if (user) {
+          this.successUser(user);
+        }
+      });
   }
 
-  successUser(response: any): void {
+  successUser(user: AuthUser): void {
     this.errorMessage = '';
-    this.userName = response.name;
-    this.idUser = response.id;
-    this.fetchTransactions(this.idUser);
+    this.userName = user.username;
+    this.fetchAccountData();
   }
 
-  fetchTransactions(id: string): void {
-    this.transactionService.getByUserId(id).subscribe({
-      next: (response) => {
-        this.transactions = response;
+  fetchAccountData(): void {
+    this.accountService.getByUserId().subscribe({
+      next: (response: AccountSummary) => {
+        this.accounts = response.result.account;
+        this.transactions = response.result.transactions;
+        this.cards = response.result.cards;
+
+        // Define a conta principal (primeira conta)
+        this.currentAccount = this.accounts[0];
+        this.accountType = this.currentAccount.type;
+
         this.filterCurrentMonthTransactions();
         this.successTransaction();
         this.isLoading = false;
       },
       error: (error) => {
         this.isLoading = false;
-        this.errorMessage = 'Erro ao buscar transações.';
-        console.error('Error fetching transactions:', error);
-      }
+        this.errorMessage = 'Erro ao buscar dados da conta.';
+        console.error('Error fetching account data:', error);
+      },
     });
   }
 
@@ -163,10 +183,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const currentMonth = today.getMonth();
     const currentYear = today.getFullYear();
 
-    this.currentMonthTransactions = this.transactions.filter(transaction => {
-      const transactionDate = new Date(transaction.date);
-      return transactionDate.getMonth() === currentMonth &&
-             transactionDate.getFullYear() === currentYear;
+    this.currentMonthTransactions = this.transactions.filter((transaction) => {
+      const transactionDate = transaction.date
+        ? new Date(transaction.date)
+        : new Date();
+      return (
+        transactionDate.getMonth() === currentMonth &&
+        transactionDate.getFullYear() === currentYear
+      );
     });
   }
 
@@ -180,10 +204,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     this.currentMonthTransactions.forEach((transaction) => {
       if (isCredit(transaction.type)) {
-        totalEntries += transaction.amount;
+        totalEntries += transaction.value;
       }
       if (isDebit(transaction.type)) {
-        totalExits += transaction.amount;
+        totalExits += transaction.value;
       }
     });
 
@@ -195,11 +219,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
       '1': { entries: 0, exits: 0 },
       '2': { entries: 0, exits: 0 },
       '3': { entries: 0, exits: 0 },
-      '4': { entries: 0, exits: 0 }
+      '4': { entries: 0, exits: 0 },
     };
 
     this.currentMonthTransactions.forEach((transaction) => {
-      const date = new Date(transaction.date);
+      const date = transaction.date ? new Date(transaction.date) : new Date();
       const dayOfMonth = date.getDate();
 
       let week = '1';
@@ -214,10 +238,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
       }
 
       if (isCredit(transaction.type)) {
-        weeklyData[week].entries += transaction.amount;
+        weeklyData[week].entries += transaction.value;
       }
       if (isDebit(transaction.type)) {
-        weeklyData[week].exits += transaction.amount;
+        weeklyData[week].exits += transaction.value;
       }
     });
 

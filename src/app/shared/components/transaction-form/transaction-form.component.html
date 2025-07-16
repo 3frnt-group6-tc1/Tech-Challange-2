@@ -1,14 +1,15 @@
 <!-- transaction-form.component.html -->
 <div class="rounded-xl shadow p-6 bg-white pb-[80px]">
   <!-- Título e borda (sem interferência do layout flex) -->
-  <div class="pb-4">
-    <div class="border-b-2">
-      <app-text variant="title-bold" as="h1" class="mb-4 border-gray-200 block">
-        Nova Transação
-      </app-text>
-    </div>
+  <div class="border-b-2">
+    <app-text
+      variant="subtitle"
+      as="h1"
+      color="text-gray-900"
+      class="mb-4 border-gray-200 block"
+      >Nova Transação</app-text
+    >
   </div>
-
   <!-- Container flex com layout responsivo -->
   <div class="flex flex-col md:flex-row">
     <!-- Container de inputs: centralizado apenas em telas pequenas -->
@@ -21,19 +22,19 @@
         (ngSubmit)="submitForm()"
         #transactionForm="ngForm"
       >
+        <!-- Input de tipo de transação -->
         <div class="mb-4">
           <app-input
             class="w-full"
-            [(ngModel)]="form.type"
-            name="type"
-            required
             [options]="transactionOptions"
             placeholder="Selecione o tipo de transação"
             size="G"
+            (selectionChange)="onTransactionTypeChange($event)"
           >
           </app-input>
         </div>
 
+        <!-- Input de valor -->
         <div class="mb-4">
           <div class="relative inline-block w-full">
             <div
@@ -47,15 +48,125 @@
                 type="text"
                 placeholder="00,00"
                 class="bg-transparent w-full outline-none text-cyan-blue-500 placeholder-cyan-blue-500 placeholder-opacity-70"
-                [(ngModel)]="form.amount"
+                [(ngModel)]="valorTransacao"
                 name="amount"
                 autocomplete="off"
                 inputmode="numeric"
-                (click)="form.amount = ''"
+                (input)="onAmountChange($event)"
+                (keypress)="allowOnlyNumbers($event)"
                 required
               />
             </div>
           </div>
+        </div>
+
+        <!-- Input de origem (from) -->
+        <div class="mb-4">
+          <input
+            type="text"
+            class="w-full max-w-[360px] bg-gray-100 border border-cyan-blue-500 text-cyan-blue-500 font-lato font-medium rounded-md p-4"
+            [(ngModel)]="form.from"
+            name="from"
+            required
+            placeholder="De (origem da transação)"
+            size="G"
+          />
+        </div>
+
+        <!-- Input de destino (to) -->
+        <div class="mb-4">
+          <input
+            type="text"
+            class="w-full max-w-[360px] bg-gray-100 border border-cyan-blue-500 text-cyan-blue-500 font-lato font-medium rounded-md p-4"
+            [(ngModel)]="form.to"
+            name="to"
+            required
+            placeholder="Para (destino da transação)"
+            size="G"
+          />
+        </div>
+
+        <!-- Input de descrição com sugestões -->
+        <div class="mb-4 relative">
+          <input
+            type="text"
+            placeholder="Descrição da transação"
+            class="w-full max-w-[360px] bg-gray-100 border border-cyan-blue-500 text-cyan-blue-500 font-lato font-medium rounded-md p-4"
+            [(ngModel)]="form.description"
+            name="description"
+            (input)="onDescriptionChange($event)"
+            (keypress)="allowOnlyLetters($event)"
+            (focus)="showSuggestions = true"
+            (blur)="hideSuggestionsDelayed()"
+          />
+
+          <!-- Sugestões automáticas com scroll -->
+          <ul
+            *ngIf="showSuggestions && filteredCategorySuggestions.length > 0"
+            class="absolute z-10 mt-1 bg-white border border-gray-300 rounded-md shadow-md w-full max-w-[360px] max-h-[150px] overflow-y-auto"
+          >
+            <li
+              *ngFor="let suggestion of filteredCategorySuggestions"
+              class="px-4 py-2 cursor-pointer hover:bg-cyan-100 text-cyan-blue-500"
+              (mousedown)="selectCategorySuggestion(suggestion)"
+            >
+              {{ suggestion }}
+            </li>
+          </ul>
+        </div>
+
+        <!-- Upload de arquivos estilizado -->
+        <div class="mb-4 w-full max-w-[360px]">
+          <label class="block text-sm text-gray-700 mb-1">Anexos</label>
+
+          <!-- Envolve o botão com um label -->
+          <label class="inline-block w-fit cursor-pointer relative">
+            <app-button
+              theme="outline-cyan-blue"
+              size="G"
+              label="Selecionar arquivo"
+            ></app-button>
+
+            <!-- Input escondido -->
+            <input
+              type="file"
+              (change)="onFileSelected($event)"
+              multiple
+              class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
+            />
+          </label>
+
+          <!-- Lista de arquivos -->
+          <ul
+            *ngIf="selectedFiles && selectedFiles.length > 0"
+            class="mt-2 text-sm text-gray-600 max-h-[120px] overflow-y-auto border rounded-md px-2 py-1"
+          >
+            <li
+              *ngFor="let file of selectedFiles; let i = index"
+              class="flex justify-between items-center py-1"
+            >
+              <span class="truncate w-56">{{ file.name }}</span>
+              <button
+                type="button"
+                (click)="removeFile(i)"
+                class="text-red-500 text-xs hover:underline"
+              >
+                Remover
+              </button>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Status da submissão -->
+        <div
+          *ngIf="submitStatus.message"
+          class="mb-4 p-3 rounded-md max-w-[360px]"
+          [ngClass]="{
+            'bg-green-100 text-green-800': submitStatus.success,
+            'bg-red-100 text-red-800': !submitStatus.success
+          }"
+        >
+          {{ submitStatus.message }}
         </div>
 
         <app-button

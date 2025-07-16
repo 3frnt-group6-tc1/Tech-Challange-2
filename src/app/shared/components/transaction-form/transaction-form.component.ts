@@ -6,21 +6,31 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TransactionService } from '../../services/Transaction/transaction-service';
 import {
+  S3UploadService,
+  S3UploadResult,
+} from '../../services/S3/s3-upload.service';
+import {
   Transaction,
   TransactionType,
   TRANSACTION_TYPE_LABELS,
 } from '../../models/transaction';
-import { systemConfig } from '../../../app.config';
+import { AuthService } from '../../services/Auth/auth.service';
+import { firstValueFrom } from 'rxjs';
 
 export interface TransactionForm {
   type: string;
-  amount: string;
+  value: string;
+  from: string;
+  to: string;
+  description: string;
+  anexo?: string;
 }
 
 @Component({
   selector: 'app-transaction-form',
   templateUrl: './transaction-form.component.html',
   styleUrls: ['./transaction-form.component.scss'],
+  standalone: true,
   imports: [
     ButtonComponent,
     TextComponent,
@@ -30,43 +40,325 @@ export interface TransactionForm {
   ],
 })
 export class TransactionFormComponent implements OnInit {
-  transactionOptions = Object.keys(TRANSACTION_TYPE_LABELS);
+  transactionOptions = [
+    { display: 'Receita (Câmbio de Moeda)', value: TransactionType.Exchange },
+    { display: 'Despesa (DOC/TED)', value: TransactionType.Transfer },
+    {
+      display: 'Empréstimo (Empréstimo e Financiamento)',
+      value: TransactionType.Loan,
+    },
+  ];
+
+  categorySuggestions: string[] = [
+    'Alimentação',
+    'Transporte',
+    'Lazer',
+    'Educação',
+    'Saúde',
+    'Investimentos',
+    'Moradia',
+    'Viagem',
+    'Compras',
+    'Salário',
+  ];
+  filteredCategorySuggestions: string[] = [];
+  showSuggestions = false;
+
   form: TransactionForm = this.createEmptyForm();
+  valorTransacao: string = '';
+
+  submitStatus: {
+    success: boolean;
+    message: string;
+  } = {
+    success: false,
+    message: '',
+  };
+
+  selectedFiles: File[] = [];
+  uploadedFiles: S3UploadResult[] = [];
 
   private createEmptyForm(): TransactionForm {
     return {
-      type: this.transactionOptions[0],
-      amount: '00,00',
+      type: this.transactionOptions[0].display,
+      value: '00,00',
+      from: '',
+      to: '',
+      description: '',
+      anexo: '',
     };
   }
 
-  constructor(private transactionService: TransactionService) {}
+  constructor(
+    private transactionService: TransactionService,
+    private s3UploadService: S3UploadService,
+    private authService: AuthService
+  ) {}
 
   ngOnInit() {}
 
-  submitForm() {
-    const type = TRANSACTION_TYPE_LABELS[this.form.type] as TransactionType;
-    const amount = Number((this.form.amount as string).replace(',', '.'));
-
-    const transaction: Transaction = {
-      type,
-      amount,
-      date: new Date(),
-      description: this.form.type,
-      id_user: systemConfig.userId,
-    } as Transaction;
-
-    this.transactionService.create(transaction).subscribe(
-      () => {
-        this.resetForm();
-      },
-      (error) => {
-        console.error('Error creating transaction:', error);
-      }
+  onTransactionTypeChange(value: TransactionType): void {
+    const selectedOption = this.transactionOptions.find(
+      (option) => option.value === value
     );
+    this.form.type = selectedOption?.display || '';
   }
 
-  resetForm() {
+  onAmountChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    let value = input.value.replace(/\D/g, '');
+    value = value.substring(0, 12);
+
+    while (value.length < 3) value = '0' + value;
+
+    const cents = value.slice(-2);
+    let integer = value.slice(0, -2);
+    integer = integer.replace(/^0+/, '') || '0';
+    integer = integer.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+
+    const formatted = `${integer},${cents}`;
+    this.valorTransacao = formatted;
+    this.form.value = formatted;
+  }
+
+  onDescriptionChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.form.description = input.value;
+
+    const value = input.value.toLowerCase();
+    this.filteredCategorySuggestions = this.categorySuggestions
+      .filter((c) => c.toLowerCase().includes(value))
+      .slice(0, 5);
+    this.showSuggestions = true;
+  }
+
+  selectCategorySuggestion(suggestion: string): void {
+    this.form.description = suggestion;
+    this.filteredCategorySuggestions = [];
+    this.showSuggestions = false;
+  }
+
+  hideSuggestionsDelayed(): void {
+    setTimeout(() => {
+      this.showSuggestions = false;
+    }, 200);
+  }
+
+  getTransactionTypeLabel(type: TransactionType): string {
+    const labels = Object.entries(TRANSACTION_TYPE_LABELS).find(
+      ([_, value]) => value === type
+    );
+    return labels ? labels[0] : type;
+  }
+
+  async submitForm(): Promise<void> {
+    // Validações
+    if (
+      !this.form.type ||
+      !this.form.value ||
+      !this.form.from?.trim() ||
+      !this.form.to?.trim()
+    ) {
+      this.submitStatus = {
+        success: false,
+        message: 'Preencha todos os campos obrigatórios.',
+      };
+      return;
+    }
+
+    this.submitStatus = { success: true, message: 'Processando transação...' };
+
+    try {
+      // Upload files to S3 if any are selected
+      let attachments: any[] = [];
+
+      if (this.selectedFiles.length > 0) {
+        this.submitStatus.message = 'Fazendo upload dos arquivos...';
+
+        // Validate files before upload
+        for (const file of this.selectedFiles) {
+          const validation = this.s3UploadService.validateFile(file, 10, [
+            'image/jpeg',
+            'image/png',
+            'application/pdf',
+            'text/plain',
+          ]);
+          if (!validation.valid) {
+            this.submitStatus = {
+              success: false,
+              message: validation.error || 'Arquivo inválido',
+            };
+            return;
+          }
+        }
+
+        // Upload files to S3
+        const uploadResults = await firstValueFrom(
+          this.s3UploadService.uploadMultipleFiles(this.selectedFiles)
+        );
+
+        if (!uploadResults || uploadResults.some((result) => !result.success)) {
+          this.submitStatus = {
+            success: false,
+            message: 'Erro ao fazer upload dos arquivos.',
+          };
+          return;
+        }
+
+        this.uploadedFiles = uploadResults;
+        attachments = uploadResults.map((result) => ({
+          name: result.key.split('/').pop(),
+          key: result.key,
+          url: result.url,
+          type: 's3',
+        }));
+      }
+
+      this.submitStatus.message = 'Salvando transação...';
+
+      this.authService.currentUser$.subscribe((currentUser) => {
+        if (!currentUser) {
+          this.submitStatus = {
+            success: false,
+            message: 'Usuário não autenticado.',
+          };
+          return;
+        }
+
+        // Encontrar o tipo de transação baseado na seleção
+        const selectedOption = this.transactionOptions.find(
+          (option) => option.display === this.form.type
+        );
+        const type = selectedOption?.value || TransactionType.Transfer;
+        const value = Number(
+          this.form.value.replace(/\./g, '').replace(',', '.')
+        );
+
+        const transaction: Transaction = {
+          type,
+          value,
+          description: this.form.description,
+          accountId: this.authService.getPrimaryAccountId() || '',
+          from: this.form.from,
+          to: this.form.to,
+          anexo:
+            this.form.anexo ||
+            (this.uploadedFiles.length > 0
+              ? this.uploadedFiles[0].key
+              : undefined),
+        };
+
+        // Get account ID for the transaction
+        const accountId = this.authService.getPrimaryAccountId();
+        if (!accountId) {
+          this.submitStatus = {
+            success: false,
+            message: 'Erro: ID da conta não encontrado.',
+          };
+          return;
+        }
+
+        this.transactionService.create(transaction, accountId).subscribe({
+          next: () => {
+            this.submitStatus = {
+              success: true,
+              message: 'Transação criada com sucesso!',
+            };
+            this.resetForm();
+          },
+          error: (error) => {
+            this.submitStatus = {
+              success: false,
+              message: 'Erro ao salvar transação.',
+            };
+            console.error('Error creating transaction:', error);
+          },
+        });
+      });
+    } catch (error) {
+      this.submitStatus = {
+        success: false,
+        message: 'Erro inesperado ao processar transação.',
+      };
+      console.error(error);
+    }
+  }
+
+  resetForm(): void {
     this.form = this.createEmptyForm();
+    this.valorTransacao = '';
+    this.selectedFiles = [];
+    this.uploadedFiles = [];
+    setTimeout(() => {
+      if (this.submitStatus.success) this.submitStatus.message = '';
+    }, 3000);
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.selectedFiles.push(...Array.from(input.files));
+    }
+  }
+
+  removeFile(index: number): void {
+    // If file was already uploaded to S3, optionally delete it
+    if (this.uploadedFiles[index]) {
+      const uploadedFile = this.uploadedFiles[index];
+      this.s3UploadService.deleteFile(uploadedFile.key).subscribe({
+        next: () => console.log('File removed from S3'),
+        error: (err) => console.error('Error removing file from S3:', err),
+      });
+      this.uploadedFiles.splice(index, 1);
+    }
+
+    this.selectedFiles.splice(index, 1);
+  }
+
+  allowOnlyNumbers(event: KeyboardEvent): void {
+    const isNumber = /^[0-9]$/;
+    if (!isNumber.test(event.key)) {
+      event.preventDefault();
+    }
+  }
+
+  allowOnlyLetters(event: KeyboardEvent): void {
+    const regex = /^[a-zA-ZÀ-ÿ\s]*$/;
+    if (!regex.test(event.key)) {
+      event.preventDefault();
+    }
+  }
+
+  /**
+   * Get signed URL for viewing/downloading an uploaded file
+   */
+  getFileViewUrl(fileKey: string): void {
+    this.s3UploadService.getSignedUrlForDownload(fileKey).subscribe({
+      next: (response) => {
+        window.open(response.signedUrl, '_blank');
+      },
+      error: (err) => {
+        console.error('Error getting file URL:', err);
+      },
+    });
+  }
+
+  /**
+   * Get file size in readable format
+   */
+  getFileSize(file: File): string {
+    const bytes = file.size;
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+
+  /**
+   * Check if file is an image for preview
+   */
+  isImageFile(file: File): boolean {
+    return file.type.startsWith('image/');
   }
 }

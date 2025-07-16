@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { LayoutComponent } from '../../shared/components/layout/layout.component';
 import { DashboardComponent } from '../../shared/components/dashboard/dashboard.component';
 import { StatementComponent } from '../../shared/components/statement/statement.component';
-import { NewTransactionComponent } from '../../shared/components/new-transaction/new-transaction.component';
+import { TransactionFormComponent } from '../../shared/components/transaction-form/transaction-form.component';
 
 @Component({
   selector: 'app-panel',
@@ -11,8 +11,8 @@ import { NewTransactionComponent } from '../../shared/components/new-transaction
     LayoutComponent,
     DashboardComponent,
     StatementComponent,
-    NewTransactionComponent,
-],
+    TransactionFormComponent,
+  ],
   templateUrl: './panel.component.html',
   styleUrl: './panel.component.scss',
 })

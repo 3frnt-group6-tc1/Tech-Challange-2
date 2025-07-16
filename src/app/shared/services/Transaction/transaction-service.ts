@@ -1,14 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
-import {
-  Transaction,
-  TransactionType,
-  DEBIT_TYPES,
-  CREDIT_TYPES,
-} from '../../models/transaction';
-import { Balance } from '../../models/balance';
+import { tap } from 'rxjs/operators';
+import { Transaction } from '../../models/transaction';
 import { apiConfig } from '../../../app.config';
 import { TransactionEventService } from '../TransactionEvent/transaction-event.service';
 
@@ -23,7 +17,11 @@ export class TransactionService {
     private transactionEventService: TransactionEventService
   ) {}
 
-  create(transaction: Transaction): Observable<Transaction> {
+  create(transaction: Transaction, accountId: string): Observable<Transaction> {
+    if (!transaction.accountId) {
+      transaction.accountId = accountId;
+    }
+
     return this.http.post<Transaction>(this.apiUrl, transaction).pipe(
       tap((createdTransaction) => {
         this.transactionEventService.notifyTransactionCreated(
@@ -33,14 +31,15 @@ export class TransactionService {
     );
   }
 
-  read(transactionId: string): Observable<Transaction> {
-    return this.http.get<Transaction>(`${this.apiUrl}/${transactionId}`);
-  }
-
   update(
     transactionId: string,
-    transaction: Transaction
+    transaction: Transaction,
+    accountId: string
   ): Observable<Transaction> {
+    if (!transaction.accountId) {
+      transaction.accountId = accountId;
+    }
+
     return this.http
       .put<Transaction>(`${this.apiUrl}/${transactionId}`, transaction)
       .pipe(
@@ -56,117 +55,6 @@ export class TransactionService {
     return this.http.delete<void>(`${this.apiUrl}/${transactionId}`).pipe(
       tap(() => {
         this.transactionEventService.notifyTransactionDeleted(transactionId);
-      })
-    );
-  }
-
-  getAll(): Observable<Transaction[]> {
-    return this.http.get<Transaction[]>(this.apiUrl);
-  }
-
-  getById(transactionId: string): Observable<Transaction> {
-    return this.http.get<Transaction>(`${this.apiUrl}/${transactionId}`);
-  }
-
-  getByUserId(
-    userId: string,
-    types?: TransactionType[]
-  ): Observable<Transaction[]> {
-    let url = `${this.apiUrl}?id_user=${userId}`;
-    if (types && types.length > 0) {
-      url += `&type=${types.join(',')}`;
-    }
-    return this.http.get<Transaction[]>(url);
-  }
-
-  getByUserIdWithFilters(
-    userId: string,
-    filters: {
-      description?: string;
-      type?: string;
-      category?: string;
-      minValue?: number;
-      maxValue?: number;
-      date?: string;
-      page?: number;
-      limit?: number;
-    }
-  ): Observable<Transaction[]> {
-    let url = `${this.apiUrl}?id_user=${userId}`;
-
-    if (filters.description && filters.description.trim() !== '') {
-      url += `&description_like=${encodeURIComponent(filters.description)}`;
-    }
-
-    if (filters.type && filters.type !== '') {
-      if (filters.type === 'credit') {
-        CREDIT_TYPES.forEach((type) => {
-          url += `&type=${type}`;
-        });
-      } else if (filters.type === 'debit') {
-        DEBIT_TYPES.forEach((type) => {
-          url += `&type=${type}`;
-        });
-      }
-    }
-
-    if (filters.category && filters.category !== '') {
-      url += `&type=${filters.category}`;
-    }
-
-    if (filters.minValue !== undefined && filters.minValue !== null) {
-      url += `&amount_gte=${filters.minValue}`;
-    }
-
-    if (filters.maxValue !== undefined && filters.maxValue !== null) {
-      url += `&amount_lte=${filters.maxValue}`;
-    }
-
-    if (filters.date) {
-      const selectedDate = new Date(filters.date);
-      const startOfDay = new Date(selectedDate);
-      startOfDay.setHours(0, 0, 0, 0);
-      const endOfDay = new Date(selectedDate);
-      endOfDay.setHours(23, 59, 59, 999);
-
-      url += `&date_gte=${startOfDay.toISOString()}&date_lte=${endOfDay.toISOString()}`;
-    }
-
-    // Paginação
-    if (filters.page && filters.limit) {
-      const start = (filters.page - 1) * filters.limit;
-      url += `&_start=${start}&_limit=${filters.limit}`;
-    }
-
-    url += `&_sort=date&_order=desc`;
-
-    return this.http.get<Transaction[]>(url);
-  }
-
-  getCreditsByUserId(userId: string): Observable<Transaction[]> {
-    return this.getByUserId(userId, CREDIT_TYPES);
-  }
-
-  getDebitsByUserId(userId: string): Observable<Transaction[]> {
-    return this.getByUserId(userId, DEBIT_TYPES);
-  }
-
-  getUserBalance(userId: string): Observable<Balance> {
-    return this.getByUserId(userId).pipe(
-      map((transactions) => {
-        const totalCredits = transactions
-          .filter((t) => CREDIT_TYPES.includes(t.type))
-          .reduce((sum, t) => sum + t.amount, 0);
-
-        const totalDebits = transactions
-          .filter((t) => DEBIT_TYPES.includes(t.type))
-          .reduce((sum, t) => sum + t.amount, 0);
-
-        return {
-          totalCredits,
-          totalDebits,
-          balance: totalCredits - totalDebits,
-        };
       })
     );
   }

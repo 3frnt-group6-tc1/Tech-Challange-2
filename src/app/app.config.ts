@@ -1,27 +1,27 @@
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 
 import { routes } from './app.routes';
+import { authInterceptor } from './shared/interceptors/auth.interceptor';
 
 export const apiConfig = {
-  baseUrl: 'http://localhost:8080',
-  usersEndpoint: '/users',
-  transactionsEndpoint: '/transactions',
+  baseUrl: 'http://tech-challenge-2-alb-1096144064.us-east-1.elb.amazonaws.com',
+  usersEndpoint: '/user',
+  accountsEndpoint: '/account',
+  transactionsEndpoint: '/account/transaction',
 };
 
 export const systemConfig: {
   version: string;
   company: string;
   year: number;
-  userId: string;
   isLogged?: boolean;
   loggedPages: string[];
 } = {
   version: '1.0.0',
   company: 'CDJMV',
   year: new Date().getFullYear(),
-  userId: 'u2',
   isLogged: false,
   loggedPages: ['/panel', '/transactions', '/cards', '/configurations'],
 };
@@ -30,6 +30,6 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-    provideHttpClient(),
+    provideHttpClient(withInterceptors([authInterceptor])),
   ],
 };
