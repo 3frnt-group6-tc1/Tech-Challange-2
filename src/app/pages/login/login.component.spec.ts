@@ -1,16 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { LoginComponent } from './login.component';
 import { AuthService } from '../../shared/services/Auth/auth.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('LoginComponent', () => {
   let component: LoginComponent;
   let fixture: ComponentFixture<LoginComponent>;
   let authServiceSpy: jasmine.SpyObj<AuthService>;
-  let routerSpy: jasmine.SpyObj<Router>;
+  let router: Router;
+  let routerSpy: jasmine.Spy;
 
   beforeEach(async () => {
     const authSpy = jasmine.createSpyObj('AuthService', [
@@ -20,17 +22,17 @@ describe('LoginComponent', () => {
     const routerSpyObj = jasmine.createSpyObj('Router', ['navigate']);
 
     await TestBed.configureTestingModule({
-      imports: [LoginComponent, FormsModule, CommonModule],
-      providers: [
-        { provide: AuthService, useValue: authSpy },
-        { provide: Router, useValue: routerSpyObj },
-      ],
+      imports: [LoginComponent, FormsModule, CommonModule, RouterTestingModule],
+      providers: [{ provide: AuthService, useValue: authSpy }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(LoginComponent);
     component = fixture.componentInstance;
     authServiceSpy = TestBed.inject(AuthService) as jasmine.SpyObj<AuthService>;
-    routerSpy = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+    router = TestBed.inject(Router);
+
+    // Spy on the router's navigate method
+    routerSpy = spyOn(router, 'navigate');
   });
 
   it('should create', () => {
@@ -42,7 +44,7 @@ describe('LoginComponent', () => {
 
     component.ngOnInit();
 
-    expect(routerSpy.navigate).toHaveBeenCalledWith(['/panel']);
+    expect(routerSpy).toHaveBeenCalledWith(['/panel']);
   });
 
   it('should not redirect if not authenticated', () => {
@@ -50,7 +52,7 @@ describe('LoginComponent', () => {
 
     component.ngOnInit();
 
-    expect(routerSpy.navigate).not.toHaveBeenCalled();
+    expect(routerSpy).not.toHaveBeenCalled();
   });
 
   describe('form validation', () => {
@@ -112,7 +114,7 @@ describe('LoginComponent', () => {
       component.onSubmit();
 
       expect(authServiceSpy.login).toHaveBeenCalledWith(component.credentials);
-      expect(routerSpy.navigate).toHaveBeenCalledWith(['/panel']);
+      expect(routerSpy).toHaveBeenCalledWith(['/panel']);
       expect(component.isLoading).toBe(false);
     });
 

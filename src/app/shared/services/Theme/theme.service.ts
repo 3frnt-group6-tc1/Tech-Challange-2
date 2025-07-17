@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ThemeService {
   private darkModeClass = 'dark';
@@ -15,21 +15,37 @@ export class ThemeService {
     const isDark = this.isDarkMode();
     if (isDark) {
       this.disableDarkMode();
-      localStorage.setItem(this.storageKey, '0');
+      try {
+        localStorage.setItem(this.storageKey, '0');
+      } catch (error) {
+        // Continue without localStorage if not available
+      }
     } else {
       this.enableDarkMode();
-      localStorage.setItem(this.storageKey, '1');
+      try {
+        localStorage.setItem(this.storageKey, '1');
+      } catch (error) {
+        // Continue without localStorage if not available
+      }
     }
   }
 
   enableDarkMode(): void {
     document.documentElement.classList.add(this.darkModeClass);
-    localStorage.setItem(this.storageKey, '1');
+    try {
+      localStorage.setItem(this.storageKey, '1');
+    } catch (error) {
+      // Continue without localStorage if not available
+    }
   }
 
   disableDarkMode(): void {
     document.documentElement.classList.remove(this.darkModeClass);
-    localStorage.setItem(this.storageKey, '0');
+    try {
+      localStorage.setItem(this.storageKey, '0');
+    } catch (error) {
+      // Continue without localStorage if not available
+    }
   }
 
   isDarkMode(): boolean {
@@ -37,13 +53,22 @@ export class ThemeService {
   }
 
   loadTheme(): void {
-    const stored = localStorage.getItem(this.storageKey);
+    try {
+      const stored = localStorage.getItem(this.storageKey);
 
-    if (stored === '1') {
-      this.enableDarkMode();
-    } else if (stored === '0') {
-      this.disableDarkMode();
-    } else {
+      if (stored === '1') {
+        this.enableDarkMode();
+      } else if (stored === '0') {
+        this.disableDarkMode();
+      } else {
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          this.enableDarkMode();
+        } else {
+          this.disableDarkMode();
+        }
+      }
+    } catch (error) {
+      // Fallback to system preference if localStorage is not available
       if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
         this.enableDarkMode();
       } else {

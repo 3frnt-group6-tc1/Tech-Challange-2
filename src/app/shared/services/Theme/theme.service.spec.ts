@@ -145,6 +145,9 @@ describe('ThemeService', () => {
     });
 
     it('should use system preference when no localStorage value exists', () => {
+      // Clear localStorage to ensure no stored value
+      localStorage.clear();
+
       // Mock window.matchMedia to return dark theme preference
       const mockMatchMedia = jasmine.createSpy('matchMedia').and.returnValue({
         matches: true,
@@ -154,15 +157,19 @@ describe('ThemeService', () => {
         value: mockMatchMedia,
       });
 
-      service.loadTheme();
+      // Create a new service instance after mocking matchMedia
+      const newService = new ThemeService();
 
       expect(mockMatchMedia).toHaveBeenCalledWith(
         '(prefers-color-scheme: dark)'
       );
-      expect(service.isDarkMode()).toBe(true);
+      expect(newService.isDarkMode()).toBe(true);
     });
 
     it('should use light theme when system prefers light and no localStorage value', () => {
+      // Clear localStorage to ensure no stored value
+      localStorage.clear();
+
       // Mock window.matchMedia to return light theme preference
       const mockMatchMedia = jasmine.createSpy('matchMedia').and.returnValue({
         matches: false,
@@ -172,12 +179,13 @@ describe('ThemeService', () => {
         value: mockMatchMedia,
       });
 
-      service.loadTheme();
+      // Create a new service instance after mocking matchMedia
+      const newService = new ThemeService();
 
       expect(mockMatchMedia).toHaveBeenCalledWith(
         '(prefers-color-scheme: dark)'
       );
-      expect(service.isDarkMode()).toBe(false);
+      expect(newService.isDarkMode()).toBe(false);
     });
 
     it('should prioritize localStorage value over system preference', () => {
@@ -212,13 +220,14 @@ describe('ThemeService', () => {
         value: mockMatchMedia,
       });
 
-      service.loadTheme();
+      // Create a new service instance after mocking matchMedia
+      const newService = new ThemeService();
 
       // Should fall back to system preference
       expect(mockMatchMedia).toHaveBeenCalledWith(
         '(prefers-color-scheme: dark)'
       );
-      expect(service.isDarkMode()).toBe(false);
+      expect(newService.isDarkMode()).toBe(false);
     });
   });
 
@@ -233,6 +242,9 @@ describe('ThemeService', () => {
     });
 
     it('should handle missing localStorage gracefully', () => {
+      // Clear localStorage first
+      localStorage.clear();
+
       // Mock localStorage to throw an error
       spyOn(Storage.prototype, 'getItem').and.throwError(
         'Storage not available'
@@ -247,8 +259,11 @@ describe('ThemeService', () => {
         value: mockMatchMedia,
       });
 
-      // Should not throw an error
-      expect(() => new ThemeService()).not.toThrow();
+      // Should not throw an error and should create service successfully
+      expect(() => {
+        const newService = new ThemeService();
+        expect(newService.isDarkMode()).toBe(false);
+      }).not.toThrow();
     });
   });
 
@@ -285,6 +300,22 @@ describe('ThemeService', () => {
       // Toggle back to light mode
       service.toggleDarkMode();
       expect(localStorage.getItem('darkMode')).toBe('0');
+    });
+
+    it('should handle localStorage errors gracefully during operations', () => {
+      // Mock localStorage.setItem to throw an error
+      spyOn(Storage.prototype, 'setItem').and.throwError(
+        'Storage not available'
+      );
+
+      // These operations should not throw errors
+      expect(() => service.enableDarkMode()).not.toThrow();
+      expect(() => service.disableDarkMode()).not.toThrow();
+      expect(() => service.toggleDarkMode()).not.toThrow();
+
+      // DOM manipulation should still work
+      service.enableDarkMode();
+      expect(document.documentElement.classList.contains('dark')).toBe(true);
     });
   });
 

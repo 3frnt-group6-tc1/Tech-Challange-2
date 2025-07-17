@@ -24,7 +24,10 @@ export class SafeStorageService {
 
             if (this.hasCorruptedStrings(parsedData)) {
               console.log(`Cleaning corrupted data for key: ${key}`);
-              const cleanedData = this.cleanEncodingIssues(parsedData);
+              const cleanedData = this.cleanEncodingIssues(
+                parsedData,
+                new WeakSet()
+              );
               sessionStorage.setItem(key, JSON.stringify(cleanedData));
             }
           }
@@ -55,7 +58,7 @@ export class SafeStorageService {
   safeStringify(data: any): string {
     try {
       // First, ensure the data is properly decoded if it was double-encoded
-      const cleanData = this.cleanEncodingIssues(data);
+      const cleanData = this.cleanEncodingIssues(data, new WeakSet());
 
       // Use JSON.stringify with proper character handling
       return JSON.stringify(cleanData, (key, value) => {
@@ -79,7 +82,7 @@ export class SafeStorageService {
     try {
       const parsed = JSON.parse(jsonString);
       // Clean any encoding issues in the parsed data
-      return this.cleanEncodingIssues(parsed);
+      return this.cleanEncodingIssues(parsed, new WeakSet());
     } catch (error) {
       console.error('Error parsing JSON:', error);
       return null;
@@ -167,7 +170,15 @@ export class SafeStorageService {
   /**
    * Clean encoding issues from data (fix double UTF-8 encoding)
    */
-  private cleanEncodingIssues(data: any): any {
+  private cleanEncodingIssues(data: any, visited = new WeakSet()): any {
+    // Prevent infinite recursion with circular references
+    if (typeof data === 'object' && data !== null) {
+      if (visited.has(data)) {
+        return data;
+      }
+      visited.add(data);
+    }
+
     if (typeof data === 'string') {
       try {
         // Check if the string contains double-encoded UTF-8 characters
@@ -193,12 +204,12 @@ export class SafeStorageService {
     } else if (typeof data === 'object' && data !== null) {
       // Recursively clean objects and arrays
       if (Array.isArray(data)) {
-        return data.map((item) => this.cleanEncodingIssues(item));
+        return data.map((item) => this.cleanEncodingIssues(item, visited));
       } else {
         const cleaned: any = {};
         for (const key in data) {
           if (data.hasOwnProperty(key)) {
-            cleaned[key] = this.cleanEncodingIssues(data[key]);
+            cleaned[key] = this.cleanEncodingIssues(data[key], visited);
           }
         }
         return cleaned;
@@ -213,7 +224,8 @@ export class SafeStorageService {
    */
   private isValidUtf8String(str: string): boolean {
     try {
-      // Check if string contains common Portuguese/accented characters
+      // For testing purposes, let's assume most strings are valid
+      // Check for obvious corruption patterns
       const accentedChars =
         /[àáâãäåçèéêëìíîïñòóôõöùúûüýÿÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝŸ]/;
 
@@ -223,7 +235,6 @@ export class SafeStorageService {
         const doubleEncodingPattern = /Ã[£¡¢¤¥§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿]/;
         return !doubleEncodingPattern.test(str);
       }
-
       return true;
     } catch (error) {
       return false;
@@ -235,7 +246,7 @@ export class SafeStorageService {
    */
   private hasCorruptedStrings(obj: any): boolean {
     if (typeof obj === 'string') {
-      // Check for common double-encoding patterns like "JoÃ£o"
+      // Check for double-encoding patterns like "JoÃ£o"
       const doubleEncodingPattern = /Ã[£¡¢¤¥§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿]/;
       return doubleEncodingPattern.test(obj);
     }
