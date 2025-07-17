@@ -1,4 +1,11 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnChanges,
+  SimpleChanges,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonComponent } from '../button/button.component';
 import { FormsModule } from '@angular/forms';
@@ -9,12 +16,16 @@ import { Transaction } from '../../models/transaction';
   standalone: true,
   imports: [CommonModule, ButtonComponent, FormsModule],
   templateUrl: './edit-modal.component.html',
-  styleUrls: ['./edit-modal.component.scss']
+  styleUrls: ['./edit-modal.component.scss'],
 })
 export class EditModalComponent implements OnChanges {
   @Input() isOpen: boolean = false;
   @Input() transaction: Transaction | null = null;
-  @Output() save = new EventEmitter<{ id: string; amount: number; description: string }>();
+  @Output() save = new EventEmitter<{
+    id: string;
+    amount: number;
+    description: string;
+  }>();
   @Output() cancel = new EventEmitter<void>();
 
   amount: number = 0;
@@ -54,7 +65,7 @@ export class EditModalComponent implements OnChanges {
       this.save.emit({
         id: this.transaction.id,
         amount: this.amount,
-        description: this.description.trim()
+        description: this.description.trim(),
       });
     }
   }
@@ -63,10 +74,10 @@ export class EditModalComponent implements OnChanges {
     this.cancel.emit();
   }
 
-  formatAmount(value: number): string {
-    return value.toLocaleString('pt-BR', {
+  formatAmount(amount: number): string {
+    return amount.toLocaleString('pt-BR', {
       style: 'currency',
-      currency: 'BRL'
+      currency: 'BRL',
     });
   }
 

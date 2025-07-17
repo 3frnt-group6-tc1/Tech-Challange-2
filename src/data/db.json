@@ -318,5 +318,43 @@
       "date": "2025-06-02T02:01:38.372Z",
       "id_user": "u2"
     }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "accountId": "u1",
+      "type": "credit",
+      "is_blocked": false,
+      "number": "4532015112830366",
+      "dueDate": "2025-12-31T00:00:00.000Z",
+      "functions": "credit,debit,withdraw",
+      "cvc": "123",
+      "paymentDate": "2025-01-15T00:00:00.000Z",
+      "name": "João Silva"
+    },
+    {
+      "id": "c2",
+      "accountId": "u1",
+      "type": "debit",
+      "is_blocked": false,
+      "number": "5555444433332222",
+      "dueDate": "2026-08-31T00:00:00.000Z",
+      "functions": "debit,withdraw",
+      "cvc": "456",
+      "paymentDate": "2025-08-10T00:00:00.000Z",
+      "name": "João Silva"
+    },
+    {
+      "id": "c3",
+      "accountId": "u2",
+      "type": "credit",
+      "is_blocked": true,
+      "number": "4111111111111111",
+      "dueDate": "2025-06-30T00:00:00.000Z",
+      "functions": "credit,debit,withdraw",
+      "cvc": "789",
+      "paymentDate": "2025-07-05T00:00:00.000Z",
+      "name": "Maria Souza"
+    }
   ]
 }

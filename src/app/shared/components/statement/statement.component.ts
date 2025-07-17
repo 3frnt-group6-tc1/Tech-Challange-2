@@ -9,6 +9,7 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { DeleteModalComponent } from '../modal/delete-modal.component';
 import { EditModalComponent } from '../modal/edit-modal.component';
+import { S3UploadService } from '../../services/S3/s3-upload.service';
 
 import {
   Transaction,
@@ -16,15 +17,16 @@ import {
   isCredit,
   isDebit,
   TRANSACTION_TYPE_LABELS,
-  Attachment,
 } from '../../models/transaction';
 import { TransactionService } from '../../services/Transaction/transaction-service';
-import { systemConfig } from '../../../app.config';
+import { AuthService } from '../../services/Auth/auth.service';
 import { TransactionEventService } from '../../services/TransactionEvent/transaction-event.service';
 import { IconArrowRightComponent } from '../../assets/icons/icon-arrow-right.component';
 import { BrlPipe } from '../../pipes/brl.pipe';
 import { FormsModule } from '@angular/forms';
 import { IconClipComponent } from '../../assets/icons/icon-clip.component';
+import { AccountService } from '../../services/Account/account.service';
+import { AccountStatement } from '../../models/account';
 
 @Component({
   selector: 'app-statement',
@@ -56,7 +58,6 @@ export class StatementComponent implements OnInit, OnDestroy {
   transactionLabels = TRANSACTION_TYPE_LABELS;
   isLoading = false;
 
-  // Propriedades para paginação e scroll infinito
   currentPage = 1;
   itemsPerPage = 10;
   isLoadingMore = false;
@@ -71,14 +72,17 @@ export class StatementComponent implements OnInit, OnDestroy {
   alertMessage = '';
   isEditModalOpen = false;
   transactionToEdit: Transaction | null = null;
+  loadingAttachment = false;
 
   filters = {
+    startDate: '',
+    endDate: '',
+    type: '', // deposito, saque, transferencia
+    minValue: '',
+    maxValue: '',
+    from: '',
+    to: '',
     description: '',
-    type: '',
-    category: '',
-    minValue: null as number | null,
-    maxValue: null as number | null,
-    date: '',
   };
 
   get transactionTypeKeys(): string[] {
@@ -86,11 +90,8 @@ export class StatementComponent implements OnInit, OnDestroy {
   }
 
   get recentTransactions(): Transaction[] {
-    // Se showAllTransactions for true, usa paginação; senão mostra apenas 6 transações
     if (this.showAllTransactions) {
       const itemsToShow = this.currentPage * this.itemsPerPage;
-      this.allTransactionsLoaded =
-        itemsToShow >= this.filteredTransactions.length;
       return this.filteredTransactions.slice(0, itemsToShow);
     } else {
       return this.filteredTransactions.slice(0, 6);
@@ -98,37 +99,41 @@ export class StatementComponent implements OnInit, OnDestroy {
   }
 
   constructor(
+    private accountService: AccountService,
     private transactionService: TransactionService,
-    private transactionEventService: TransactionEventService
+    private transactionEventService: TransactionEventService,
+    private s3UploadService: S3UploadService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
     this.resetPagination();
-    this.loadUserTransactions();
+
+    // Wait for primary account to be available before loading transactions
+    this.authService.primaryAccount$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((account) => {
+        if (account) {
+          this.loadUserTransactions();
+        }
+      });
 
     this.transactionEventService.transactionCreated$
       .pipe(takeUntil(this.destroy$))
       .subscribe((transaction) => {
-        if (transaction.id_user === systemConfig.userId) {
-          // Reaplica os filtros para incluir a nova transação
-          this.resetPagination();
-          this.loadUserTransactions();
-        }
+        this.resetPagination();
+        this.loadUserTransactions();
       });
 
     this.transactionEventService.transactionUpdated$
       .pipe(takeUntil(this.destroy$))
       .subscribe((transaction) => {
-        if (transaction.id_user === systemConfig.userId) {
-          // Reaplica os filtros para refletir a atualização
-          this.loadUserTransactions();
-        }
+        this.loadUserTransactions();
       });
 
     this.transactionEventService.transactionDeleted$
       .pipe(takeUntil(this.destroy$))
       .subscribe((transactionId) => {
-        // Remove localmente e reaplica filtros
         this.filteredTransactions = this.filteredTransactions.filter(
           (t) => t.id !== transactionId
         );
@@ -142,7 +147,6 @@ export class StatementComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  // Métodos para controle de paginação e scroll infinito
   resetPagination(): void {
     this.currentPage = 1;
     this.allTransactionsLoaded = false;
@@ -152,50 +156,58 @@ export class StatementComponent implements OnInit, OnDestroy {
   loadMore(): void {
     if (this.isLoadingMore || this.allTransactionsLoaded) return;
 
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) {
+      console.error('User not authenticated');
+      return;
+    }
+
     this.isLoadingMore = true;
-    const userId = systemConfig.userId;
+    const accountId = this.authService.getPrimaryAccountId();
 
     const filterParams = {
-      description: this.filters.description || undefined,
+      startDate: this.filters.startDate || undefined,
+      endDate: this.filters.endDate || undefined,
       type: this.filters.type || undefined,
-      category: this.filters.category || undefined,
       minValue: this.filters.minValue || undefined,
       maxValue: this.filters.maxValue || undefined,
-      date: this.filters.date || undefined,
+      from: this.filters.from || undefined,
+      to: this.filters.to || undefined,
+      description: this.filters.description || undefined,
       page: this.currentPage + 1,
       limit: this.itemsPerPage,
     };
 
-    setTimeout(() => {
-      this.transactionService
-        .getByUserIdWithFilters(userId, filterParams)
-        .subscribe({
-          next: (newTransactions) => {
-            if (newTransactions.length < this.itemsPerPage) {
-              this.allTransactionsLoaded = true;
-            }
+    this.accountService.getStatement(accountId ?? '', filterParams).subscribe({
+      next: (accountStatement: AccountStatement) => {
+        const newTransactions = accountStatement?.result?.transactions
+          ? accountStatement.result.transactions
+          : [];
 
-            // Adiciona as novas transações sem duplicatas
-            const existingIds = new Set(
-              this.filteredTransactions.map((t) => t.id)
-            );
-            const uniqueNewTransactions = newTransactions.filter(
-              (t) => !existingIds.has(t.id)
-            );
+        if (newTransactions.length < this.itemsPerPage) {
+          this.allTransactionsLoaded = true;
+        }
 
-            this.filteredTransactions = [
-              ...this.filteredTransactions,
-              ...uniqueNewTransactions,
-            ];
-            this.currentPage++;
-            this.isLoadingMore = false;
-          },
-          error: (error) => {
-            this.isLoadingMore = false;
-            console.error('Error loading more transactions:', error);
-          },
-        });
-    }, 3000);
+        const existingIds = new Set(this.filteredTransactions.map((t) => t.id));
+        const uniqueNewTransactions = newTransactions.filter(
+          (t: Transaction) => !existingIds.has(t.id)
+        );
+
+        this.filteredTransactions = [
+          ...this.filteredTransactions,
+          ...uniqueNewTransactions,
+        ];
+
+        this.totalTransactions = this.filteredTransactions.length;
+
+        this.currentPage++;
+        this.isLoadingMore = false;
+      },
+      error: (error: any) => {
+        this.isLoadingMore = false;
+        console.error('Error loading more transactions:', error);
+      },
+    });
   }
 
   onFiltersChange(): void {
@@ -204,31 +216,51 @@ export class StatementComponent implements OnInit, OnDestroy {
   }
 
   loadUserTransactions(): void {
-    const userId = systemConfig.userId;
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) {
+      console.error('User not authenticated');
+      return;
+    }
+
+    const accountId = this.authService.getPrimaryAccountId();
+
+    if (!accountId) {
+      console.warn(
+        'Primary account not loaded yet, waiting for account data...'
+      );
+      return;
+    }
+
     this.isLoading = true;
 
     const filterParams = {
-      description: this.filters.description || undefined,
+      startDate: this.filters.startDate || undefined,
+      endDate: this.filters.endDate || undefined,
       type: this.filters.type || undefined,
-      category: this.filters.category || undefined,
       minValue: this.filters.minValue || undefined,
       maxValue: this.filters.maxValue || undefined,
-      date: this.filters.date || undefined,
+      from: this.filters.from || undefined,
+      to: this.filters.to || undefined,
+      description: this.filters.description || undefined,
+      page: 1,
+      limit: this.itemsPerPage,
     };
 
-    this.transactionService
-      .getByUserIdWithFilters(userId, filterParams)
-      .subscribe({
-        next: (transactions) => {
-          this.filteredTransactions = transactions.filter((t) => t.id);
-          this.totalTransactions = this.filteredTransactions.length;
-          this.isLoading = false;
-        },
-        error: (error) => {
-          this.isLoading = false;
-          console.error('Error fetching filtered transactions:', error);
-        },
-      });
+    this.accountService.getStatement(accountId ?? '', filterParams).subscribe({
+      next: (accountStatement: AccountStatement) => {
+        const transactions = accountStatement?.result?.transactions;
+        this.filteredTransactions = transactions.filter((t) => t.id);
+        this.totalTransactions = this.filteredTransactions.length;
+        this.allTransactionsLoaded =
+          this.filteredTransactions.length < this.itemsPerPage;
+
+        this.isLoading = false;
+      },
+      error: (error: any) => {
+        this.isLoading = false;
+        console.error('Error fetching account statement:', error);
+      },
+    });
   }
 
   isDeposit(transaction: Transaction): boolean {
@@ -239,7 +271,10 @@ export class StatementComponent implements OnInit, OnDestroy {
     return isDebit(transaction.type);
   }
 
-  formatDate(date: Date | string): string {
+  formatDate(date: Date | string | undefined): string {
+    if (!date) {
+      return new Date().toLocaleDateString();
+    }
     const dateObj = date instanceof Date ? date : new Date(date);
     return dateObj.toLocaleDateString();
   }
@@ -300,8 +335,25 @@ export class StatementComponent implements OnInit, OnDestroy {
     description: string;
   }): void {
     if (this.transactionToEdit) {
-      const updated = { ...this.transactionToEdit, ...updatedTransaction };
-      this.transactionService.update(updated.id, updated).subscribe({
+      const updated = {
+        ...this.transactionToEdit,
+        amount: updatedTransaction.amount,
+        description: updatedTransaction.description,
+      };
+
+      // Get account ID for the transaction update
+      const accountId = this.authService.getPrimaryAccountId();
+      if (!accountId) {
+        console.error('Account ID not found');
+        return;
+      }
+
+      if (!updated.id) {
+        console.error('Transaction ID not found');
+        return;
+      }
+
+      this.transactionService.update(updated.id, updated, accountId).subscribe({
         next: () => {
           this.isEditModalOpen = false;
           this.transactionToEdit = null;
@@ -310,6 +362,7 @@ export class StatementComponent implements OnInit, OnDestroy {
           setTimeout(() => {
             this.showAlert = false;
           }, 2000);
+          this.loadUserTransactions();
         },
         error: (error) => {
           console.error('Error updating transaction:', error);
@@ -330,30 +383,38 @@ export class StatementComponent implements OnInit, OnDestroy {
     }
   }
 
-  openFirstAttachment(attachments?: Attachment[]): void {
-    if (!attachments || attachments.length === 0) return;
+  hasAttachments(anexo?: string): boolean {
+    if (!anexo || anexo.length === 0) return false;
+    return !!anexo;
+  }
 
-    const first = attachments[0];
+  hasViewableAttachments(anexo?: string): boolean {
+    return this.hasAttachments(anexo);
+  }
 
-    const fileUrl = first.data;
+  openAttachment(anexo?: string): void {
+    if (!anexo || anexo.length === 0) return;
 
-    const newTab = window.open();
-    if (newTab) {
-      if (first.type.startsWith('image/')) {
-        newTab.document.write(`
-          <html>
-            <head><title>${first.name}</title></head>
-            <body style="margin:0;">
-              <img src="${fileUrl}" style="width:100%;height:auto;display:block;" />
-            </body>
-          </html>
-        `);
-      } else {
-        newTab.location.href = fileUrl;
-      }
-      newTab.document.close();
-    } else {
-      console.error('Não foi possível abrir a nova aba.');
-    }
+    this.loadingAttachment = true;
+    this.s3UploadService.getSignedUrlForDownload(anexo).subscribe({
+      next: (response) => {
+        this.openFileInNewTab(response.signedUrl, anexo);
+        this.loadingAttachment = false;
+      },
+      error: (err) => {
+        console.error('Error getting signed URL for file:', err);
+        this.loadingAttachment = false;
+      },
+    });
+  }
+
+  private openFileInNewTab(fileUrl: string, fileName: string): void {
+    const link = document.createElement('a');
+    link.href = fileUrl;
+    link.download = fileName;
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 }

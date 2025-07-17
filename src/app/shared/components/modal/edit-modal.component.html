@@ -1,8 +1,25 @@
-<div *ngIf="isOpen" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+<div
+  *ngIf="isOpen"
+  class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+>
   <div class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full mx-4 relative">
-    <button (click)="onCancel()" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+    <button
+      (click)="onCancel()"
+      class="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-6 w-6"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M6 18L18 6M6 6l12 12"
+        />
       </svg>
     </button>
 
@@ -18,7 +35,10 @@
         (keypress)="onlyNumbers($event)"
         class="w-full p-2 border border-gray-300 rounded"
       />
-      <p *ngIf="!isAmountValid && amountTouched" class="text-red-500 text-xs mt-1">
+      <p
+        *ngIf="!isAmountValid && amountTouched"
+        class="text-red-500 text-xs mt-1"
+      >
         Informe um valor válido maior que R$ 0,00.
       </p>
     </div>
@@ -32,7 +52,10 @@
         (blur)="descriptionTouched = true"
         class="w-full p-2 border border-gray-300 rounded"
       />
-      <p *ngIf="!isDescriptionValid && descriptionTouched" class="text-red-500 text-xs mt-1">
+      <p
+        *ngIf="!isDescriptionValid && descriptionTouched"
+        class="text-red-500 text-xs mt-1"
+      >
         A descrição deve ter pelo menos 3 caracteres.
       </p>
     </div>

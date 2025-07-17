@@ -1,9 +1,17 @@
 <section id="sobre" class="bg-primary-gradient dark:bg-primary-gradient-dark">
   <div class="container flex flex-col gap-12 py-12">
     <!-- Primeira dobra -->
-    <div class="flex flex-col-reverse md:flex-col xl:flex-row justify-center items-center gap-12 xl:gap-16">
-      <div class="w-full max-w-full md:max-w-[470px] flex justify-center text-center">
-        <app-text variant="title-bold" as="h1" color="text-white dark:text-gray-200">
+    <div
+      class="flex flex-col-reverse md:flex-col xl:flex-row justify-center items-center gap-12 xl:gap-16"
+    >
+      <div
+        class="w-full max-w-full md:max-w-[470px] flex justify-center text-center"
+      >
+        <app-text
+          variant="title-bold"
+          as="h1"
+          color="text-white dark:text-gray-200"
+        >
           Experimente mais liberdade no controle da sua vida financeira. Crie
           sua conta com a gente!
         </app-text>
@@ -12,27 +20,475 @@
     </div>
 
     <!-- Segunda Dobra -->
-    <div id="servico" class="flex flex-col gap-9 text-center">
-      <app-text variant="title-bold" as="h1" color="text-white dark:text-gray-200">
+    <div id="vantagens" class="flex flex-col gap-9 text-center">
+      <app-text
+        variant="title-bold"
+        as="h1"
+        color="text-white dark:text-gray-200"
+      >
         Vantagens do nosso banco:
       </app-text>
 
-      <div class="flex flex-wrap lg:flex-row justify-center lg:justify-between gap-12 xl:py-[75px]">
-        <div class="flex flex-col lg:col-span-2 items-center text-center gap-9 w-[260px]"
+      <div
+        class="flex flex-wrap lg:flex-row justify-center lg:justify-between gap-12 xl:py-[75px]"
+      >
+        <div
+          class="flex flex-col lg:col-span-2 items-center text-center gap-9 w-[260px]"
           *ngFor="let vantagem of vantagens"
         >
-          <ng-container
-            *ngComponentOutlet="vantagem.icon; inputs: inputs">
+          <ng-container *ngComponentOutlet="vantagem.icon; inputs: inputs">
           </ng-container>
 
-          <app-text variant="subtitle" as="h2" color="text-white dark:text-gray-200">
+          <app-text
+            variant="subtitle"
+            as="h2"
+            color="text-white dark:text-gray-200"
+          >
             {{ vantagem.titulo }}
           </app-text>
 
-          <app-text variant="text-regular" as="p" color="text-white dark:text-gray-200">
+          <app-text
+            variant="text-regular"
+            as="p"
+            color="text-white dark:text-gray-200"
+          >
             {{ vantagem.descricao }}
           </app-text>
         </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="bg-gray-200 dark:bg-black-900" id="servico">
+  <div class="container mx-auto px-4 py-16">
+    <!-- Terceira Dobra - Outros Serviços -->
+    <div id="outros-servicos" class="flex flex-col gap-12 text-center">
+      <div class="max-w-3xl mx-auto">
+        <app-text
+          variant="title-bold"
+          as="h2"
+          color="text-black-900 dark:text-white"
+          class="mb-4"
+        >
+          Outros Serviços
+        </app-text>
+        <app-text
+          variant="text-regular"
+          as="p"
+          color="text-black-600 dark:text-gray-250"
+          class="text-lg"
+        >
+          Descubra todos os serviços que oferecemos para facilitar sua vida
+          financeira
+        </app-text>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mt-12">
+        <div
+          class="bg-white dark:bg-black-700 p-6 rounded-lg shadow-x-light border border-gray-100 dark:border-black-600"
+          *ngFor="let servico of outrosServicos"
+        >
+          <div class="flex flex-col items-center text-center gap-4">
+            <div
+              class="w-16 h-16 bg-cyan-blue-100 dark:bg-cyan-blue-900 rounded-lg flex items-center justify-center"
+            >
+              <img
+                [src]="getIconPath(servico.icon)"
+                [alt]="servico.title"
+                class="w-8 h-8"
+              />
+            </div>
+
+            <div class="space-y-2">
+              <app-text
+                variant="subtitle"
+                as="h3"
+                color="text-black-900 dark:text-white"
+                class="font-semibold"
+              >
+                {{ servico.title }}
+              </app-text>
+
+              <app-text
+                variant="text-regular"
+                as="p"
+                color="text-black-600 dark:text-gray-250"
+                class="text-sm"
+              >
+                {{ servico.description }}
+              </app-text>
+            </div>
+
+            <div
+              *ngIf="servico.isComingSoon"
+              class="inline-flex items-center px-3 py-1 bg-orange-500 text-white text-xs font-medium rounded-full"
+            >
+              Em breve
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Seção de Contato -->
+<section id="contato" class="bg-primary-gradient dark:bg-primary-gradient-dark">
+  <div class="container mx-auto px-4 py-20">
+    <div class="max-w-4xl mx-auto">
+      <!-- Header -->
+      <div class="text-center mb-12">
+        <div
+          class="inline-flex items-center justify-center w-16 h-16 bg-cyan-blue-500 rounded-lg shadow-x-light mb-6"
+        >
+          <svg
+            class="w-8 h-8 text-white"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+            ></path>
+          </svg>
+        </div>
+
+        <app-text
+          variant="title-bold"
+          as="h2"
+          color="text-white dark:text-white"
+          class="mb-4"
+        >
+          Entre em Contato
+        </app-text>
+        <app-text
+          variant="text-regular"
+          as="p"
+          color="text-white dark:text-white"
+          class="text-lg max-w-2xl mx-auto"
+        >
+          Tem alguma dúvida ou sugestão? Nossa equipe está pronta para ajudar
+          você. Envie-nos uma mensagem e responderemos o mais breve possível!
+        </app-text>
+      </div>
+
+      <!-- Form Container -->
+      <div
+        class="bg-white dark:bg-black-700 p-8 md:p-12 rounded-lg shadow-x-light border border-gray-100 dark:border-black-600"
+      >
+        <form [formGroup]="contatoForm" (ngSubmit)="onSubmitContato()">
+          <!-- Form Grid -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Left Column -->
+            <div class="space-y-6">
+              <!-- Nome -->
+              <div>
+                <label
+                  for="nome"
+                  class="block text-sm font-semibold text-black-900 dark:text-white mb-3"
+                >
+                  Nome Completo *
+                </label>
+                <input
+                  type="text"
+                  id="nome"
+                  formControlName="nome"
+                  class="w-full px-4 py-3 bg-gray-100 dark:bg-black-600 border border-gray-200 dark:border-black-600 rounded-lg focus:border-cyan-blue-500 dark:focus:border-cyan-blue-500 dark:text-white placeholder-black-600 dark:placeholder-gray-250 text-base"
+                  placeholder="Digite seu nome completo"
+                />
+                <div
+                  *ngIf="isFieldInvalid('nome')"
+                  class="flex items-center mt-2 text-red-600 text-sm"
+                >
+                  <svg
+                    class="w-4 h-4 mr-1.5"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                      clip-rule="evenodd"
+                    ></path>
+                  </svg>
+                  {{ getErrorMessage("nome") }}
+                </div>
+              </div>
+
+              <!-- Email -->
+              <div>
+                <label
+                  for="email"
+                  class="block text-sm font-semibold text-black-900 dark:text-white mb-3"
+                >
+                  E-mail *
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  formControlName="email"
+                  class="w-full px-4 py-3 bg-gray-100 dark:bg-black-600 border border-gray-200 dark:border-black-600 rounded-lg focus:border-cyan-blue-500 dark:focus:border-cyan-blue-500 dark:text-white placeholder-black-600 dark:placeholder-gray-250 text-base"
+                  placeholder="seu@email.com"
+                />
+                <div
+                  *ngIf="isFieldInvalid('email')"
+                  class="flex items-center mt-2 text-red-600 text-sm"
+                >
+                  <svg
+                    class="w-4 h-4 mr-1.5"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                      clip-rule="evenodd"
+                    ></path>
+                  </svg>
+                  {{ getErrorMessage("email") }}
+                </div>
+              </div>
+
+              <!-- Telefone -->
+              <div>
+                <label
+                  for="telefone"
+                  class="block text-sm font-semibold text-black-900 dark:text-white mb-3"
+                >
+                  Telefone
+                </label>
+                <input
+                  type="tel"
+                  id="telefone"
+                  formControlName="telefone"
+                  class="w-full px-4 py-3 bg-gray-100 dark:bg-black-600 border border-gray-200 dark:border-black-600 rounded-lg focus:border-cyan-blue-500 dark:focus:border-cyan-blue-500 dark:text-white placeholder-black-600 dark:placeholder-gray-250 text-base"
+                  placeholder="(11) 99999-9999"
+                />
+              </div>
+
+              <!-- Assunto -->
+              <div>
+                <label
+                  for="assunto"
+                  class="block text-sm font-semibold text-black-900 dark:text-white mb-3"
+                >
+                  Assunto *
+                </label>
+                <select
+                  id="assunto"
+                  formControlName="assunto"
+                  class="w-full px-4 py-3 bg-gray-100 dark:bg-black-600 border border-gray-200 dark:border-black-600 rounded-lg focus:border-cyan-blue-500 dark:focus:border-cyan-blue-500 dark:text-white text-base appearance-none"
+                >
+                  <option value="">Selecione um assunto</option>
+                  <option value="duvida">Dúvida</option>
+                  <option value="sugestao">Sugestão</option>
+                  <option value="reclamacao">Reclamação</option>
+                  <option value="elogio">Elogio</option>
+                  <option value="outros">Outros</option>
+                </select>
+                <div
+                  *ngIf="isFieldInvalid('assunto')"
+                  class="flex items-center mt-2 text-red-600 text-sm"
+                >
+                  <svg
+                    class="w-4 h-4 mr-1.5"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                      clip-rule="evenodd"
+                    ></path>
+                  </svg>
+                  {{ getErrorMessage("assunto") }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="space-y-6">
+              <!-- Mensagem -->
+              <div>
+                <label
+                  for="mensagem"
+                  class="block text-sm font-semibold text-black-900 dark:text-white mb-3"
+                >
+                  Mensagem *
+                </label>
+                <textarea
+                  id="mensagem"
+                  formControlName="mensagem"
+                  rows="12"
+                  class="w-full px-4 py-3 bg-gray-100 dark:bg-black-600 border border-gray-200 dark:border-black-600 rounded-lg focus:border-cyan-blue-500 dark:focus:border-cyan-blue-500 dark:text-white placeholder-black-600 dark:placeholder-gray-250 text-base resize-none"
+                  placeholder="Digite sua mensagem aqui..."
+                ></textarea>
+                <div
+                  class="text-xs text-black-600 dark:text-gray-250 mt-1 text-right"
+                >
+                  {{ contatoForm.get("mensagem")?.value?.length || 0 }}/500
+                </div>
+                <div
+                  *ngIf="isFieldInvalid('mensagem')"
+                  class="flex items-center mt-2 text-red-600 text-sm"
+                >
+                  <svg
+                    class="w-4 h-4 mr-1.5"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                      clip-rule="evenodd"
+                    ></path>
+                  </svg>
+                  {{ getErrorMessage("mensagem") }}
+                </div>
+              </div>
+
+              <!-- Contact Info -->
+              <div
+                class="bg-gray-200 dark:bg-black-600 rounded-lg p-6 border border-gray-100 dark:border-black-600"
+              >
+                <h3
+                  class="text-lg font-semibold text-black-900 dark:text-white mb-4"
+                >
+                  Outras formas de contato
+                </h3>
+                <div class="space-y-3 text-sm">
+                  <div
+                    class="flex items-center text-black-600 dark:text-gray-250"
+                  >
+                    <svg
+                      class="w-5 h-5 mr-3 text-cyan-blue-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                      ></path>
+                    </svg>
+                    (11) 4000-1234
+                  </div>
+                  <div
+                    class="flex items-center text-black-600 dark:text-gray-250"
+                  >
+                    <svg
+                      class="w-5 h-5 mr-3 text-cyan-blue-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                      ></path>
+                    </svg>
+                    contato&#64;bytebank.com.br
+                  </div>
+                  <div
+                    class="flex items-center text-black-600 dark:text-gray-250"
+                  >
+                    <svg
+                      class="w-5 h-5 mr-3 text-cyan-blue-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                      ></path>
+                    </svg>
+                    Seg a Sex: 8h às 18h
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="flex justify-center mt-8">
+            <button
+              type="submit"
+              [disabled]="contatoForm.invalid || isEnviando"
+              class="px-8 py-3 bg-cyan-blue-500 hover:bg-cyan-blue-900 disabled:bg-gray-250 text-white font-semibold rounded-lg disabled:cursor-not-allowed shadow-x-light focus:outline-none"
+            >
+              <span class="flex items-center justify-center">
+                <svg
+                  *ngIf="!isEnviando"
+                  class="w-5 h-5 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                  ></path>
+                </svg>
+                <svg
+                  *ngIf="isEnviando"
+                  class="w-5 h-5 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  ></path>
+                </svg>
+                <span *ngIf="!isEnviando">Enviar Mensagem</span>
+                <span *ngIf="isEnviando">Enviando...</span>
+              </span>
+            </button>
+          </div>
+
+          <!-- Mensagem de sucesso -->
+          <div
+            *ngIf="mensagemSucesso"
+            class="mt-6 p-4 bg-green-600 text-white rounded-lg"
+          >
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <svg
+                  class="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  ></path>
+                </svg>
+              </div>
+              <div class="ml-3">
+                <p class="font-medium">{{ mensagemSucesso }}</p>
+              </div>
+            </div>
+          </div>
+        </form>
       </div>
     </div>
   </div>

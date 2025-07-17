@@ -19,6 +19,12 @@
       [active]="currentRoute === '/cards'"
     ></app-menu-item>
     <app-menu-item
+      [label]="'Outros Serviços'"
+      [route]="'/other-services'"
+      [iconComponent]="iconList"
+      [active]="currentRoute === '/other-services'"
+    ></app-menu-item>
+    <app-menu-item
       [label]="'Configurações'"
       [route]="'/configurations'"
       [iconComponent]="iconSettings"

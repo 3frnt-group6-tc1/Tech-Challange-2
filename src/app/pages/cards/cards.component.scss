@@ -1,0 +1,151 @@
+/* Card 3D Flip Animation */
+.card-container {
+  perspective: 1000px;
+  width: 100%;
+  height: 224px; /* h-56 = 14rem = 224px */
+  position: relative;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+  cursor: pointer;
+
+  &.flipped {
+    transform: rotateY(180deg);
+  }
+}
+
+.card-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 1rem;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  }
+}
+
+.card-front {
+  z-index: 2;
+}
+
+.card-back {
+  transform: rotateY(180deg);
+}
+
+/* Flipped state hover effect */
+.card-container.flipped .card-face:hover {
+  transform: rotateY(180deg) translateY(-4px);
+}
+
+/* Card gradient animations */
+.card-face {
+  background-size: 400% 400%;
+  animation: gradientShift 8s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Card number masking on smaller screens */
+@media (max-width: 640px) {
+  .card-face {
+    font-size: 0.875rem;
+  }
+
+  .card-container {
+    height: 200px;
+  }
+}
+
+/* Form styling improvements */
+.form-container {
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+@media (prefers-color-scheme: dark) {
+  .form-container {
+    background: rgba(31, 41, 55, 0.95);
+  }
+}
+
+/* Button hover effects */
+button {
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+}
+
+/* Loading animation */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive grid improvements */
+@media (min-width: 1024px) {
+  .cards-grid {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  }
+}
+
+/* Card chip styling */
+.chip {
+  background: linear-gradient(45deg, #ffd700, #ffed4e);
+  border-radius: 4px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Card magnetic stripe effect */
+.magnetic-stripe {
+  background: linear-gradient(90deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Status indicators */
+.status-blocked {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Smooth transitions for all interactive elements */
+* {
+  transition: color 0.2s ease, background-color 0.2s ease,
+    border-color 0.2s ease;
+}

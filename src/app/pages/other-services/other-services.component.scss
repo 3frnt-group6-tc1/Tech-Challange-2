@@ -1,0 +1,97 @@
+// Service card animations and styles
+.service-card {
+  transition: all 0.3s ease-in-out;
+
+  &:hover:not(.opacity-75) {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+
+    .dark & {
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    }
+  }
+
+  &:active:not(.opacity-75) {
+    transform: translateY(-2px);
+  }
+
+  // Coming soon styling
+  &.opacity-75 {
+    cursor: not-allowed;
+
+    &:hover {
+      transform: none;
+      box-shadow: none;
+    }
+  }
+}
+
+// Icon container styling
+.service-card .bg-blue-100 {
+  transition: background-color 0.3s ease-in-out;
+}
+
+.service-card:hover:not(.opacity-75) .bg-blue-100 {
+  background-color: rgb(59 130 246 / 0.2);
+}
+
+// Grid responsive adjustments
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+// Dark mode enhancements
+@media (prefers-color-scheme: dark) {
+  .service-card {
+    background-color: #1f2937;
+    border-color: #374151;
+
+    &:hover:not(.opacity-75) {
+      background-color: #374151;
+    }
+  }
+}
+
+// Animation for page load
+.service-card {
+  animation: fadeInUp 0.6s ease-out;
+  animation-fill-mode: both;
+}
+
+.service-card:nth-child(1) {
+  animation-delay: 0.1s;
+}
+.service-card:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.service-card:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.service-card:nth-child(4) {
+  animation-delay: 0.4s;
+}
+.service-card:nth-child(5) {
+  animation-delay: 0.5s;
+}
+.service-card:nth-child(6) {
+  animation-delay: 0.6s;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

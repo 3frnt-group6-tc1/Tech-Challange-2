@@ -31,32 +31,31 @@
     class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4 pt-4"
   >
     <input
-      type="text"
+      type="date"
       class="border rounded p-2 text-sm w-full"
-      placeholder="Buscar por descrição"
-      [(ngModel)]="filters.description"
-      name="description"
+      placeholder="Data inicial (YYYY-MM-DD)"
+      [(ngModel)]="filters.startDate"
+      name="startDate"
+      (ngModelChange)="onFiltersChange()"
+    />
+
+    <input
+      type="date"
+      class="border rounded p-2 text-sm w-full"
+      placeholder="Data final (YYYY-MM-DD)"
+      [(ngModel)]="filters.endDate"
+      name="endDate"
       (ngModelChange)="onFiltersChange()"
     />
 
     <select
       class="border rounded p-2 text-sm w-full"
+      name="category"
       [(ngModel)]="filters.type"
       name="type"
       (ngModelChange)="onFiltersChange()"
     >
       <option value="">Tipo</option>
-      <option value="credit">Crédito</option>
-      <option value="debit">Débito</option>
-    </select>
-
-    <select
-      class="border rounded p-2 text-sm w-full"
-      [(ngModel)]="filters.category"
-      name="category"
-      (ngModelChange)="onFiltersChange()"
-    >
-      <option value="">Categoria</option>
       <option
         *ngFor="let label of transactionTypeKeys"
         [value]="transactionLabels[label]"
@@ -72,6 +71,8 @@
       [(ngModel)]="filters.minValue"
       name="minValue"
       (ngModelChange)="onFiltersChange()"
+      step="0.01"
+      min="0"
     />
 
     <input
@@ -81,17 +82,36 @@
       [(ngModel)]="filters.maxValue"
       name="maxValue"
       (ngModelChange)="onFiltersChange()"
+      step="0.01"
+      min="0"
     />
 
-    <div class="flex gap-2">
-      <input
-        type="date"
-        class="border rounded p-2 text-sm w-full"
-        [(ngModel)]="filters.date"
-        name="date"
-        (ngModelChange)="onFiltersChange()"
-      />
-    </div>
+    <input
+      type="text"
+      class="border rounded p-2 text-sm w-full"
+      placeholder="De (origem)"
+      [(ngModel)]="filters.from"
+      name="from"
+      (ngModelChange)="onFiltersChange()"
+    />
+
+    <input
+      type="text"
+      class="border rounded p-2 text-sm w-full"
+      placeholder="Para (destino)"
+      [(ngModel)]="filters.to"
+      name="to"
+      (ngModelChange)="onFiltersChange()"
+    />
+
+    <input
+      type="text"
+      class="border rounded p-2 text-sm w-full"
+      placeholder="Descrição"
+      [(ngModel)]="filters.description"
+      name="description"
+      (ngModelChange)="onFiltersChange()"
+    />
   </form>
 
   <div *ngIf="isLoading" class="text-center py-4">
@@ -318,15 +338,27 @@
               </button>
             </td>
             <td class="py-2 sm:py-4 text-center pl-1">
-              <ng-container *ngIf="transaction.attachments?.length">
+              <ng-container *ngIf="hasAttachments(transaction.anexo)">
                 <button
-                  (click)="openFirstAttachment(transaction.attachments!)"
-                  class="text-cyan-blue-500 hover:text-cyan-700"
-                  title="Visualizar anexo"
+                  (click)="openAttachment(transaction.anexo!)"
+                  [disabled]="loadingAttachment"
+                  class="{{
+                    isDeposit(transaction) ? 'text-green-600' : 'text-red-600'
+                  }} relative disabled:opacity-50"
+                  [title]="'Visualizar anexo'"
                 >
                   <app-icon-clip
-                    class="w-5 h-5 inline-block text-cyan-blue-500 hover:text-cyan-700"
+                    *ngIf="!loadingAttachment"
+                    class="w-5 h-5 inline-block {{
+                      isDeposit(transaction) ? 'text-green-600' : 'text-red-600'
+                    }}"
                   ></app-icon-clip>
+                  <div
+                    *ngIf="loadingAttachment"
+                    class="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin inline-block {{
+                      isDeposit(transaction) ? 'text-green-600' : 'text-red-600'
+                    }}"
+                  ></div>
                 </button>
               </ng-container>
             </td>
@@ -374,7 +406,7 @@
       !isLoading &&
       recentTransactions.length > 0 &&
       allTransactionsLoaded &&
-      totalTransactions > itemsPerPage
+      totalTransactions > 0
     "
     class="text-center mt-4 py-2"
   >

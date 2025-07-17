@@ -12,14 +12,16 @@ import { TransactionService } from '../../services/Transaction/transaction-servi
 
 // Mock do TransactionService
 const mockTransactionService = {
-  create: () => of({
-    id: '123',
-    type: 'exchange',
-    description: 'Transação de teste',
-    amount: 1000,
-    date: new Date(),
-    id_user: 'user123'
-  })
+  create: (transaction: any, accountId: string) =>
+    of({
+      id: '123',
+      type: 'exchange',
+      description: 'Transação de teste',
+      amount: 1000,
+      date: new Date(),
+      id_user: 'user123',
+      accountId: accountId,
+    }),
 };
 
 const meta: Meta<TransactionFormComponent> = {
@@ -29,12 +31,12 @@ const meta: Meta<TransactionFormComponent> = {
   decorators: [
     moduleMetadata({
       imports: [
-        ButtonComponent, 
-        TextComponent, 
-        InputComponent, 
-        CommonModule, 
+        ButtonComponent,
+        TextComponent,
+        InputComponent,
+        CommonModule,
         HttpClientModule,
-        FormsModule
+        FormsModule,
       ],
       providers: [
         { provide: TransactionService, useValue: mockTransactionService },
@@ -45,16 +47,16 @@ const meta: Meta<TransactionFormComponent> = {
             queryParams: of({}),
             snapshot: {
               paramMap: {
-                get: () => null
+                get: () => null,
               },
               queryParamMap: {
-                get: () => null
-              }
-            }
-          }
-        }
-      ]
-    })
+                get: () => null,
+              },
+            },
+          },
+        },
+      ],
+    }),
   ],
   argTypes: {
     form: {
@@ -65,7 +67,8 @@ const meta: Meta<TransactionFormComponent> = {
   parameters: {
     docs: {
       description: {
-        component: 'Componente de formulário simplificado para criação de novas transações financeiras.'
+        component:
+          'Componente de formulário simplificado para criação de novas transações financeiras.',
       },
     },
   },
@@ -78,8 +81,11 @@ export const Default: Story = {
   args: {
     form: {
       type: 'Câmbio de Moeda',
-      amount: '00,00'
-    }
+      value: '00,00',
+      from: '',
+      to: '',
+      description: '',
+    },
   },
   render: (args) => ({
     props: args,
@@ -126,11 +132,11 @@ export const Default: Story = {
                       type="text"
                       placeholder="00,00"
                       class="bg-transparent w-full outline-none text-cyan-blue-500 placeholder-cyan-blue-500 placeholder-opacity-70"
-                      [(ngModel)]="form.amount"
+                      [(ngModel)]="form.value"
                       name="amount"
                       autocomplete="off"
                       inputmode="numeric"
-                      (click)="form.amount = ''"
+                      (click)="form.value = ''"
                       required
                     />
                   </div>
@@ -148,16 +154,19 @@ export const Default: Story = {
           </div>
         </div>
       </div>
-    `
-  })
+    `,
+  }),
 };
 
 export const WithAmount: Story = {
   args: {
     form: {
       type: 'Câmbio de Moeda',
-      amount: '1.000,00'
-    }
+      value: '1.000,00',
+      from: '',
+      to: '',
+      description: '',
+    },
   },
 };
 
@@ -165,8 +174,11 @@ export const TransferType: Story = {
   args: {
     form: {
       type: 'DOC/TED',
-      amount: '500,00'
-    }
+      value: '500,00',
+      from: '',
+      to: '',
+      description: '',
+    },
   },
 };
 
@@ -174,7 +186,10 @@ export const LoanType: Story = {
   args: {
     form: {
       type: 'Empréstimo e Financiamento',
-      amount: '5.000,00'
-    }
+      value: '5.000,00',
+      from: '',
+      to: '',
+      description: '',
+    },
   },
 };

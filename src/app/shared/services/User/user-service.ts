@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { User } from '../../models/user';
+import { map } from 'rxjs/operators';
+import { User, UserResponse, UsersListResponse } from '../../models/user';
 import { apiConfig } from '../../../app.config';
 
 @Injectable({
@@ -13,15 +14,21 @@ export class UserService {
   constructor(private http: HttpClient) {}
 
   create(user: User): Observable<User> {
-    return this.http.post<User>(this.apiUrl, user);
+    return this.http
+      .post<UserResponse>(this.apiUrl, user)
+      .pipe(map((response) => response.result));
   }
 
   read(userId: string): Observable<User> {
-    return this.http.get<User>(`${this.apiUrl}/${userId}`);
+    return this.http
+      .get<UserResponse>(`${this.apiUrl}/${userId}`)
+      .pipe(map((response) => response.result));
   }
 
   update(userId: string, user: User): Observable<User> {
-    return this.http.put<User>(`${this.apiUrl}/${userId}`, user);
+    return this.http
+      .put<UserResponse>(`${this.apiUrl}/${userId}`, user)
+      .pipe(map((response) => response.result));
   }
 
   delete(userId: string): Observable<void> {
@@ -29,10 +36,14 @@ export class UserService {
   }
 
   getAll(): Observable<User[]> {
-    return this.http.get<User[]>(this.apiUrl);
+    return this.http
+      .get<UsersListResponse>(this.apiUrl)
+      .pipe(map((response) => response.result));
   }
 
   getById(userId: string): Observable<User> {
-    return this.http.get<User>(`${this.apiUrl}/${userId}`);
+    return this.http
+      .get<UserResponse>(`${this.apiUrl}/${userId}`)
+      .pipe(map((response) => response.result));
   }
 }

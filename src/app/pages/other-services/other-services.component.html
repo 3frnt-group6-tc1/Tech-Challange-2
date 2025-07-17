@@ -1,0 +1,127 @@
+<app-layout>
+  <section
+    class="container flex-1 flex flex-col w-full min-h-[calc(100vh-130px)] p-6"
+  >
+    <div class="max-w-6xl mx-auto w-full">
+      <div
+        class="mx-auto bg-white rounded-xl shadow-md overflow-visible w-full xl:max-w-2/3"
+      >
+        <app-dashboard></app-dashboard>
+      </div>
+
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-white mb-8 pt-8">
+        Outros Serviços
+      </h1>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div
+          *ngFor="let service of services"
+          class="service-card bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer border border-gray-200 dark:border-gray-700"
+          (click)="onServiceClick(service)"
+          [class.opacity-75]="service.isComingSoon"
+        >
+          <div class="p-6 flex flex-col items-center text-center h-full">
+            <!-- Icon -->
+            <div
+              class="w-16 h-16 mb-4 flex items-center justify-center bg-blue-100 dark:bg-blue-900 rounded-full"
+            >
+              <img
+                [src]="getIconPath(service.icon)"
+                [alt]="service.title"
+                class="w-8 h-8 text-blue-600 dark:text-blue-400"
+                onerror="this.style.display='none'"
+              />
+              <!-- Fallback icon se a imagem não carregar -->
+              <svg
+                *ngIf="!getIconPath(service.icon)"
+                class="w-8 h-8 text-blue-600 dark:text-blue-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                />
+              </svg>
+            </div>
+
+            <!-- Title -->
+            <h3
+              class="text-lg font-semibold text-gray-800 dark:text-white mb-2"
+            >
+              {{ service.title }}
+              <span
+                *ngIf="service.isComingSoon"
+                class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full ml-2"
+              >
+                Em breve
+              </span>
+            </h3>
+
+            <!-- Description -->
+            <p class="text-gray-600 dark:text-gray-300 text-sm flex-1">
+              {{ service.description }}
+            </p>
+
+            <!-- Action indicator -->
+            <div class="mt-4 flex items-center justify-center">
+              <span
+                *ngIf="!service.isComingSoon"
+                class="text-blue-600 dark:text-blue-400 text-sm font-medium flex items-center"
+              >
+                Acessar
+                <svg
+                  class="w-4 h-4 ml-1"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </span>
+              <span
+                *ngIf="service.isComingSoon"
+                class="text-gray-400 dark:text-gray-500 text-sm"
+              >
+                Disponível em breve
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Coming Soon Message -->
+      <div
+        class="mt-8 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4"
+      >
+        <div class="flex items-center">
+          <svg
+            class="w-5 h-5 text-blue-600 dark:text-blue-400 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <p class="text-blue-800 dark:text-blue-300 text-sm">
+            Estamos trabalhando para trazer novos serviços para você. Fique
+            atento às novidades!
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+</app-layout>

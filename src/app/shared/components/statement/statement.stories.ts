@@ -13,36 +13,41 @@ import { TransactionEventService } from '../../services/TransactionEvent/transac
 // Mock dos componentes de ícones
 @Component({
   selector: 'app-icon-arrow-pencil',
-  template: '<svg width="16" height="16" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z"></path></svg>',
-  standalone: true
+  template:
+    '<svg width="16" height="16" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z"></path></svg>',
+  standalone: true,
 })
 class MockIconArrowPencilComponent {}
 
 @Component({
   selector: 'app-icon-bin',
-  template: '<svg width="16" height="16" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12z"></path></svg>',
-  standalone: true
+  template:
+    '<svg width="16" height="16" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12z"></path></svg>',
+  standalone: true,
 })
 class MockIconBinComponent {}
 
 @Component({
   selector: 'app-icon-dollar',
-  template: '<svg width="16" height="16" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path></svg>',
-  standalone: true
+  template:
+    '<svg width="16" height="16" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path></svg>',
+  standalone: true,
 })
 class MockIconDollarComponent {}
 
 @Component({
   selector: 'app-icon-arrow-down-left',
-  template: '<svg width="16" height="16" viewBox="0 0 24 24"><path d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"></path></svg>',
-  standalone: true
+  template:
+    '<svg width="16" height="16" viewBox="0 0 24 24"><path d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"></path></svg>',
+  standalone: true,
 })
 class MockIconArrowDownLeftComponent {}
 
 @Component({
   selector: 'app-icon-arrow-right',
-  template: '<svg width="16" height="16" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"></path></svg>',
-  standalone: true
+  template:
+    '<svg width="16" height="16" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"></path></svg>',
+  standalone: true,
 })
 class MockIconArrowRightComponent {}
 
@@ -52,7 +57,7 @@ class MockIconArrowRightComponent {}
   inputs: ['isOpen'],
   outputs: ['confirm', 'cancel'],
   standalone: true,
-  imports: [CommonModule]
+  imports: [CommonModule],
 })
 class MockDeleteModalComponent {}
 
@@ -62,46 +67,51 @@ class MockDeleteModalComponent {}
   inputs: ['isOpen', 'transaction'],
   outputs: ['confirm', 'cancel'],
   standalone: true,
-  imports: [CommonModule]
+  imports: [CommonModule],
 })
 class MockEditModalComponent {}
 
 // Mock do TransactionService e TransactionEventService
 const mockTransactionService = {
-  getByUserId: () => of([
-    {
-      id: '1',
-      type: 'exchange',
-      description: 'Câmbio de moeda',
-      amount: 1500.75,
-      date: new Date('2023-05-10'),
-      id_user: 'user123'
-    },
-    {
-      id: '2',
-      type: 'transfer',
-      description: 'Transferência bancária',
-      amount: 750.50,
-      date: new Date('2023-05-08'),
-      id_user: 'user123'
-    },
-    {
-      id: '3',
-      type: 'loan',
-      description: 'Empréstimo pessoal',
-      amount: 3000,
-      date: new Date('2023-05-05'),
-      id_user: 'user123'
-    }
-  ]),
+  getByUserId: (userId: string, accountId: string, types?: any[]) =>
+    of([
+      {
+        id: '1',
+        type: 'exchange',
+        description: 'Câmbio de moeda',
+        amount: 1500.75,
+        date: new Date('2023-05-10'),
+        id_user: 'user123',
+        accountId: accountId,
+      },
+      {
+        id: '2',
+        type: 'transfer',
+        description: 'Transferência bancária',
+        amount: 750.5,
+        date: new Date('2023-05-08'),
+        id_user: 'user123',
+        accountId: accountId,
+      },
+      {
+        id: '3',
+        type: 'loan',
+        description: 'Empréstimo pessoal',
+        amount: 3000,
+        date: new Date('2023-05-05'),
+        id_user: 'user123',
+        accountId: accountId,
+      },
+    ]),
   delete: () => of({}),
-  update: () => of({})
+  update: (transactionId: string, transaction: any, accountId: string) =>
+    of({ ...transaction, accountId }),
 };
 
 const mockTransactionEventService = {
   transactionCreated$: of({}),
   transactionUpdated$: of({}),
-  transactionDeleted$: of({})
+  transactionDeleted$: of({}),
 };
 
 // Criando um mock do BrlPipe
@@ -118,7 +128,7 @@ const meta: Meta<StatementComponent> = {
   decorators: [
     moduleMetadata({
       imports: [
-        CommonModule, 
+        CommonModule,
         HttpClientModule,
         TextComponent,
         MockIconArrowPencilComponent,
@@ -127,12 +137,15 @@ const meta: Meta<StatementComponent> = {
         MockIconArrowDownLeftComponent,
         MockIconArrowRightComponent,
         MockDeleteModalComponent,
-        MockEditModalComponent
+        MockEditModalComponent,
       ],
       providers: [
         { provide: BrlPipe, useClass: MockBrlPipe },
         { provide: TransactionService, useValue: mockTransactionService },
-        { provide: TransactionEventService, useValue: mockTransactionEventService },
+        {
+          provide: TransactionEventService,
+          useValue: mockTransactionEventService,
+        },
         {
           provide: ActivatedRoute,
           useValue: {
@@ -140,16 +153,16 @@ const meta: Meta<StatementComponent> = {
             queryParams: of({}),
             snapshot: {
               paramMap: {
-                get: () => null
+                get: () => null,
               },
               queryParamMap: {
-                get: () => null
-              }
-            }
-          }
-        }
-      ]
-    })
+                get: () => null,
+              },
+            },
+          },
+        },
+      ],
+    }),
   ],
   argTypes: {
     showDetails: {
@@ -176,7 +189,8 @@ const meta: Meta<StatementComponent> = {
   parameters: {
     docs: {
       description: {
-        component: 'Componente que exibe um extrato de transações financeiras com opções para editar e excluir transações.'
+        component:
+          'Componente que exibe um extrato de transações financeiras com opções para editar e excluir transações.',
       },
     },
   },
@@ -191,7 +205,7 @@ export const Default: Story = {
     showAllTransactions: false,
     customTitle: 'Transações',
     showLastTransactionsSubtitle: true,
-    swapColumns: false
+    swapColumns: false,
   },
 };
 
@@ -201,7 +215,7 @@ export const AllTransactions: Story = {
     showAllTransactions: true,
     customTitle: 'Histórico Completo',
     showLastTransactionsSubtitle: false,
-    swapColumns: false
+    swapColumns: false,
   },
 };
 
@@ -211,7 +225,7 @@ export const CompactView: Story = {
     showAllTransactions: false,
     customTitle: 'Resumo',
     showLastTransactionsSubtitle: false,
-    swapColumns: false
+    swapColumns: false,
   },
 };
 
@@ -221,6 +235,6 @@ export const SwappedColumns: Story = {
     showAllTransactions: false,
     customTitle: 'Transações',
     showLastTransactionsSubtitle: true,
-    swapColumns: true
+    swapColumns: true,
   },
 };

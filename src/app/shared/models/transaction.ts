@@ -12,17 +12,14 @@ export const DEBIT_TYPES: TransactionType[] = [TransactionType.Transfer];
 
 export interface Transaction {
   id?: string;
-  type: TransactionType;
+  accountId: string;
   amount: number;
-  date: Date;
+  type: TransactionType;
   description: string;
-  id_user: string;
-  attachments?: Attachment[]; // campo opcional
-}
-export interface Attachment {
-  name: string;
-  type: string;
-  data: string;
+  from: string;
+  to: string;
+  date?: Date;
+  anexo?: string;
 }
 
 export function isCredit(type: TransactionType): boolean {

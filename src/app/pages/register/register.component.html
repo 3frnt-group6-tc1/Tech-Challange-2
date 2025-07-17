@@ -1,0 +1,253 @@
+<div
+  class="min-h-screen flex items-center justify-center bg-gradient-to-br py-12 px-4 sm:px-6 lg:px-8"
+>
+  <div class="max-w-md w-full space-y-8">
+    <div>
+      <div class="mx-auto h-12 w-12 flex items-center justify-center">
+        <img src="/assets/icons/logo.svg" alt="ByteBank" class="h-10 w-10" />
+      </div>
+      <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+        Criar conta
+      </h2>
+      <p class="mt-2 text-center text-sm text-gray-600">
+        Crie sua conta ByteBank
+      </p>
+    </div>
+
+    <form class="mt-8 space-y-6" (ngSubmit)="onSubmit()" #registerForm="ngForm">
+      <div class="rounded-md shadow-sm space-y-4">
+        <div>
+          <label
+            for="name"
+            class="block text-sm font-medium text-gray-700 mb-1"
+          >
+            Nome completo
+          </label>
+          <input
+            id="name"
+            name="name"
+            type="text"
+            autocomplete="name"
+            required
+            [(ngModel)]="credentials.name"
+            (input)="clearError(); clearSuccess()"
+            class="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+            placeholder="Digite seu nome completo"
+            [class.border-red-500]="errorMessage"
+          />
+        </div>
+
+        <div>
+          <label
+            for="username"
+            class="block text-sm font-medium text-gray-700 mb-1"
+          >
+            Nome de usuário
+          </label>
+          <input
+            id="username"
+            name="username"
+            type="text"
+            autocomplete="username"
+            required
+            [(ngModel)]="credentials.username"
+            (input)="clearError(); clearSuccess()"
+            class="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+            placeholder="Digite seu nome de usuário"
+            [class.border-red-500]="errorMessage"
+          />
+        </div>
+
+        <div>
+          <label
+            for="email"
+            class="block text-sm font-medium text-gray-700 mb-1"
+          >
+            Email
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            autocomplete="email"
+            required
+            [(ngModel)]="credentials.email"
+            (input)="clearError(); clearSuccess()"
+            class="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+            placeholder="Digite seu email"
+            [class.border-red-500]="errorMessage"
+          />
+        </div>
+
+        <div>
+          <label
+            for="password"
+            class="block text-sm font-medium text-gray-700 mb-1"
+          >
+            Senha
+          </label>
+          <div class="relative">
+            <input
+              id="password"
+              name="password"
+              [type]="showPassword ? 'text' : 'password'"
+              autocomplete="new-password"
+              required
+              [(ngModel)]="credentials.password"
+              (input)="clearError(); clearSuccess()"
+              class="relative block w-full px-3 py-2 pr-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+              placeholder="Digite sua senha"
+              [class.border-red-500]="errorMessage"
+            />
+            <button
+              type="button"
+              class="absolute inset-y-0 right-0 pr-3 flex items-center"
+              (click)="togglePasswordVisibility()"
+            >
+              <img
+                [src]="
+                  showPassword
+                    ? '/assets/icons/eye.svg'
+                    : '/assets/icons/eye.svg'
+                "
+                alt="Toggle password visibility"
+                class="h-5 w-5 text-gray-400 hover:text-gray-500"
+                [class.opacity-50]="!showPassword"
+              />
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label
+            for="confirmPassword"
+            class="block text-sm font-medium text-gray-700 mb-1"
+          >
+            Confirmar senha
+          </label>
+          <div class="relative">
+            <input
+              id="confirmPassword"
+              name="confirmPassword"
+              [type]="showConfirmPassword ? 'text' : 'password'"
+              autocomplete="new-password"
+              required
+              [(ngModel)]="confirmPassword"
+              (input)="clearError(); clearSuccess()"
+              class="relative block w-full px-3 py-2 pr-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+              placeholder="Confirme sua senha"
+              [class.border-red-500]="errorMessage"
+            />
+            <button
+              type="button"
+              class="absolute inset-y-0 right-0 pr-3 flex items-center"
+              (click)="toggleConfirmPasswordVisibility()"
+            >
+              <img
+                [src]="
+                  showConfirmPassword
+                    ? '/assets/icons/eye.svg'
+                    : '/assets/icons/eye.svg'
+                "
+                alt="Toggle confirm password visibility"
+                class="h-5 w-5 text-gray-400 hover:text-gray-500"
+                [class.opacity-50]="!showConfirmPassword"
+              />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error Message -->
+      <div *ngIf="errorMessage" class="rounded-md bg-red-50 p-4">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <svg
+              class="h-5 w-5 text-red-400"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </div>
+          <div class="ml-3">
+            <p class="text-sm text-red-800">{{ errorMessage }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Success Message -->
+      <div *ngIf="successMessage" class="rounded-md bg-green-50 p-4">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <svg
+              class="h-5 w-5 text-green-400"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </div>
+          <div class="ml-3">
+            <p class="text-sm text-green-800">{{ successMessage }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <button
+          type="submit"
+          [disabled]="isLoading || !registerForm.form.valid"
+          class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+        >
+          <span
+            *ngIf="isLoading"
+            class="absolute left-0 inset-y-0 flex items-center pl-3"
+          >
+            <svg
+              class="animate-spin h-5 w-5 text-white"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+          </span>
+          {{ isLoading ? "Criando conta..." : "Criar conta" }}
+        </button>
+      </div>
+
+      <div class="text-center">
+        <p class="text-sm text-gray-600">
+          Já tem uma conta?
+          <a
+            routerLink="/login"
+            class="font-medium text-indigo-600 hover:text-indigo-500"
+          >
+            Fazer login
+          </a>
+        </p>
+      </div>
+    </form>
+  </div>
+</div>
