@@ -151,7 +151,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   successUser(user: AuthUser): void {
     this.errorMessage = '';
-    this.userName = user.username;
+    this.userName = user.name || user.username;
     this.fetchAccountData();
   }
 
@@ -204,10 +204,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     this.currentMonthTransactions.forEach((transaction) => {
       if (isCredit(transaction.type)) {
-        totalEntries += transaction.value;
+        totalEntries += transaction.amount;
       }
       if (isDebit(transaction.type)) {
-        totalExits += transaction.value;
+        totalExits += transaction.amount;
       }
     });
 
@@ -238,10 +238,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
       }
 
       if (isCredit(transaction.type)) {
-        weeklyData[week].entries += transaction.value;
+        weeklyData[week].entries += transaction.amount;
       }
       if (isDebit(transaction.type)) {
-        weeklyData[week].exits += transaction.value;
+        weeklyData[week].exits += transaction.amount;
       }
     });
 
@@ -252,8 +252,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }));
   }
 
-  formatBalance(value: number): string {
-    return value.toLocaleString('pt-BR', {
+  formatBalance(amount: number): string {
+    return amount.toLocaleString('pt-BR', {
       style: 'currency',
       currency: 'BRL',
     });

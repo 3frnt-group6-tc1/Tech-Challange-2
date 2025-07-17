@@ -50,14 +50,18 @@
 
     <select
       class="border rounded p-2 text-sm w-full"
+      name="category"
       [(ngModel)]="filters.type"
       name="type"
       (ngModelChange)="onFiltersChange()"
     >
       <option value="">Tipo</option>
-      <option value="deposito">Depósito</option>
-      <option value="saque">Saque</option>
-      <option value="transferencia">Transferência</option>
+      <option
+        *ngFor="let label of transactionTypeKeys"
+        [value]="transactionLabels[label]"
+      >
+        {{ label }}
+      </option>
     </select>
 
     <input
@@ -298,7 +302,7 @@
                 "
                 class="text-xs sm:text-sm whitespace-nowrap"
               >
-                {{ transaction.value | brl }}
+                {{ transaction.amount | brl }}
               </app-text>
             </td>
 
@@ -334,7 +338,7 @@
               </button>
             </td>
             <td class="py-2 sm:py-4 text-center pl-1">
-              <ng-container *ngIf="hasViewableAttachments(transaction.anexo)">
+              <ng-container *ngIf="hasAttachments(transaction.anexo)">
                 <button
                   (click)="openAttachment(transaction.anexo!)"
                   [disabled]="loadingAttachment"
@@ -402,7 +406,7 @@
       !isLoading &&
       recentTransactions.length > 0 &&
       allTransactionsLoaded &&
-      totalTransactions > itemsPerPage
+      totalTransactions > 0
     "
     class="text-center mt-4 py-2"
   >

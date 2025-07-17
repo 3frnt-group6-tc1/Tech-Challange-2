@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { LayoutComponent } from '../../shared/components/layout/layout.component';
-import { DashboardComponent } from '../../shared/components/dashboard/dashboard.component';
 import { StatementComponent } from '../../shared/components/statement/statement.component';
 import { TransactionFormComponent } from '../../shared/components/transaction-form/transaction-form.component';
+import { DashboardComponent } from '../../shared/components/dashboard/dashboard.component';
 
 @Component({
   selector: 'app-panel',

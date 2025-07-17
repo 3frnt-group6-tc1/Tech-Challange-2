@@ -101,7 +101,10 @@ describe('LoginComponent', () => {
 
     it('should login successfully and redirect', () => {
       const mockResponse = {
-        token: 'mock-token',
+        message: 'Login successful',
+        result: {
+          token: 'mock-token',
+        },
         user: { id: '1', email: 'test@example.com', username: 'test' },
       };
       authServiceSpy.login.and.returnValue(of(mockResponse));

@@ -15,6 +15,14 @@ export const routes: Routes = [
     canActivate: [loginGuard],
   },
   {
+    path: 'register',
+    loadComponent: () =>
+      import('./pages/register/register.component').then(
+        (m) => m.RegisterComponent
+      ),
+    canActivate: [loginGuard],
+  },
+  {
     path: 'panel',
     loadComponent: () =>
       import('./pages/panel/panel.component').then((m) => m.PainelComponent),
@@ -39,6 +47,14 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/configurations/configurations.component').then(
         (m) => m.ConfigurationsComponent
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'other-services',
+    loadComponent: () =>
+      import('./pages/other-services/other-services.component').then(
+        (m) => m.OtherServicesComponent
       ),
     canActivate: [authGuard],
   },

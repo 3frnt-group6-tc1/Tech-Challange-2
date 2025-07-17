@@ -7,6 +7,9 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "test:services": "ng test --include='**/services/**/*.spec.ts' --watch=false",
+    "test:services:watch": "ng test --include='**/services/**/*.spec.ts' --watch=true",
+    "test:services:coverage": "ng test --include='**/services/**/*.spec.ts' --code-coverage --watch=false",
     "server": "json-server --watch ./src/data/db.json --port 8080",
     "storybook": "ng run tech-challenge:storybook",
     "build-storybook": "ng run tech-challenge:build-storybook"

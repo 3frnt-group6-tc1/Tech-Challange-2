@@ -24,13 +24,14 @@ export interface AuthUser {
   id: string;
   email: string;
   username: string;
+  name?: string;
 }
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private readonly apiUrl = apiConfig.baseUrl;
+  private readonly apiUrl = apiConfig.baseUrl + apiConfig.usersEndpoint;
   private readonly TOKEN_KEY = 'auth_token';
   private readonly USER_KEY = 'auth_user';
   private readonly PRIMARY_ACCOUNT_KEY = 'primary_account';
@@ -75,6 +76,7 @@ export class AuthService {
         id: tokenData.id,
         email: tokenData.email,
         username: tokenData.username,
+        name: tokenData.name,
       };
     } catch (error) {
       console.error('Error decoding token:', error);
@@ -131,7 +133,7 @@ export class AuthService {
     });
 
     return this.http
-      .post<LoginResponse>(`${this.apiUrl}/user/auth`, credentials, { headers })
+      .post<LoginResponse>(`${this.apiUrl}/auth`, credentials, { headers })
       .pipe(
         tap((response) => {
           this.setSession(response);
@@ -256,10 +258,15 @@ export class AuthService {
 
     this.accountService.getPrimaryAccountByUserId().subscribe({
       next: (primaryAccount: any) => {
-        this.setPrimaryAccount(primaryAccount);
+        if (primaryAccount) {
+          this.setPrimaryAccount(primaryAccount);
+        } else {
+          console.warn('No primary account found for user');
+        }
       },
       error: (error) => {
         console.error('Error loading primary account:', error);
+        // Optionally set a retry mechanism or notify components about the error
       },
     });
   }
@@ -277,5 +284,17 @@ export class AuthService {
    */
   private getStoredPrimaryAccount(): Account | null {
     return this.safeStorage.getSessionItem<Account>(this.PRIMARY_ACCOUNT_KEY);
+  }
+
+  /**
+   * Update current user data
+   */
+  updateCurrentUser(updatedUser: Partial<AuthUser>): void {
+    const currentUser = this.getCurrentUser();
+    if (currentUser) {
+      const newUserData = { ...currentUser, ...updatedUser };
+      this.safeStorage.setSessionItem(this.USER_KEY, newUserData);
+      this.currentUserSubject.next(newUserData);
+    }
   }
 }

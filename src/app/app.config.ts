@@ -7,9 +7,10 @@ import { authInterceptor } from './shared/interceptors/auth.interceptor';
 
 export const apiConfig = {
   baseUrl: 'http://tech-challenge-2-alb-1096144064.us-east-1.elb.amazonaws.com',
-  usersEndpoint: '/user',
-  accountsEndpoint: '/account',
-  transactionsEndpoint: '/account/transaction',
+  usersEndpoint: '/users',
+  accountsEndpoint: '/accounts',
+  transactionsEndpoint: '/accounts/transaction',
+  cardsEndpoint: '/cards',
 };
 
 export const systemConfig: {
@@ -23,7 +24,13 @@ export const systemConfig: {
   company: 'CDJMV',
   year: new Date().getFullYear(),
   isLogged: false,
-  loggedPages: ['/panel', '/transactions', '/cards', '/configurations'],
+  loggedPages: [
+    '/panel',
+    '/transactions',
+    '/cards',
+    '/configurations',
+    '/other-services',
+  ],
 };
 
 export const appConfig: ApplicationConfig = {

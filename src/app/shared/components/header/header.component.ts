@@ -119,7 +119,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((user: AuthUser | null) => {
         this.currentUser = user;
-        this.userName = user?.username || '';
+        this.userName = user?.name || user?.username || '';
       });
   }
 
@@ -134,7 +134,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
     this.userService.getById(currentUser.id).subscribe({
       next: (response: any) => {
-        this.userName = response.name;
+        this.userName = response.name || response.username;
         this.isLoading = false;
       },
       error: (error: any) => {
@@ -226,6 +226,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
     } else {
       this.router.navigate(['/login']);
     }
+  }
+
+  goToRegister(): void {
+    this.router.navigate(['/register']);
   }
 
   logout(): void {

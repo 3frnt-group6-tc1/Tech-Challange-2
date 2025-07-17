@@ -1,7 +1,7 @@
 export enum TransactionType {
-  Exchange = 'cambio',
-  Loan = 'emprestimo',
-  Transfer = 'transferencia',
+  Exchange = 'exchange',
+  Loan = 'loan',
+  Transfer = 'transfer',
 }
 
 export const CREDIT_TYPES: TransactionType[] = [
@@ -10,24 +10,16 @@ export const CREDIT_TYPES: TransactionType[] = [
 ];
 export const DEBIT_TYPES: TransactionType[] = [TransactionType.Transfer];
 
-// Interface simplificada alinhada com a API oficial
 export interface Transaction {
   id?: string;
   accountId: string;
-  value: number;
+  amount: number;
   type: TransactionType;
   description: string;
   from: string;
   to: string;
-  date?: string;
+  date?: Date;
   anexo?: string;
-}
-
-export interface Attachment {
-  name: string;
-  type: string;
-  key?: string; // S3 key
-  url?: string; // S3 URL
 }
 
 export function isCredit(type: TransactionType): boolean {

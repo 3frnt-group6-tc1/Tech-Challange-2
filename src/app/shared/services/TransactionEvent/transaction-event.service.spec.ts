@@ -7,7 +7,7 @@ describe('TransactionEventService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [TransactionEventService]
+      providers: [TransactionEventService],
     });
     service = TestBed.inject(TransactionEventService);
   });
@@ -20,14 +20,16 @@ describe('TransactionEventService', () => {
     it('should emit a transaction created event when notifyTransactionCreated is called', (done: DoneFn) => {
       const mockTransaction: Transaction = {
         id: '1',
-        id_user: 'user1',
+        accountId: 'user1',
         date: new Date('2023-05-10'),
         amount: 100,
         description: 'Test transaction',
-        type: TransactionType.Exchange
+        type: TransactionType.Exchange,
+        from: 'account1',
+        to: 'account2',
       };
 
-      service.transactionCreated$.subscribe(transaction => {
+      service.transactionCreated$.subscribe((transaction) => {
         expect(transaction).toEqual(mockTransaction);
         done();
       });
@@ -36,14 +38,15 @@ describe('TransactionEventService', () => {
     });
 
     it('should allow multiple subscribers to receive transaction created events', () => {
-
       const mockTransaction: Transaction = {
         id: '1',
-        id_user: 'user1',
+        accountId: 'user1',
         date: new Date('2023-05-10'),
         amount: 100,
         description: 'Test transaction',
-        type: TransactionType.Loan
+        type: TransactionType.Loan,
+        from: 'account1',
+        to: 'account2',
       };
 
       const subscriber1 = jasmine.createSpy('subscriber1');
@@ -63,14 +66,16 @@ describe('TransactionEventService', () => {
     it('should emit a transaction updated event when notifyTransactionUpdated is called', (done: DoneFn) => {
       const mockTransaction: Transaction = {
         id: '1',
-        id_user: 'user1',
+        accountId: 'user1',
         date: new Date('2023-05-10'),
         amount: 150,
         description: 'Updated transaction',
-        type: TransactionType.Transfer
+        type: TransactionType.Transfer,
+        from: 'account1',
+        to: 'account2',
       };
 
-      service.transactionUpdated$.subscribe(transaction => {
+      service.transactionUpdated$.subscribe((transaction) => {
         expect(transaction).toEqual(mockTransaction);
         done();
       });
@@ -81,11 +86,13 @@ describe('TransactionEventService', () => {
     it('should allow multiple subscribers to receive transaction updated events', () => {
       const mockTransaction: Transaction = {
         id: '1',
-        id_user: 'user1',
+        accountId: 'user1',
         date: new Date('2023-05-10'),
         amount: 150,
         description: 'Updated transaction',
-        type: TransactionType.Exchange
+        type: TransactionType.Exchange,
+        from: 'account1',
+        to: 'account2',
       };
 
       const subscriber1 = jasmine.createSpy('subscriber1');
@@ -105,7 +112,7 @@ describe('TransactionEventService', () => {
     it('should emit a transaction ID when notifyTransactionDeleted is called', (done: DoneFn) => {
       const transactionId = '1';
 
-      service.transactionDeleted$.subscribe(id => {
+      service.transactionDeleted$.subscribe((id) => {
         expect(id).toBe(transactionId);
         done();
       });
@@ -133,11 +140,13 @@ describe('TransactionEventService', () => {
     it('should keep event streams separated', () => {
       const mockTransaction: Transaction = {
         id: '1',
-        id_user: 'user1',
+        accountId: 'user1',
         date: new Date('2023-05-10'),
         amount: 100,
         description: 'Test transaction',
-        type: TransactionType.Loan
+        type: TransactionType.Loan,
+        from: 'account1',
+        to: 'account2',
       };
 
       const transactionId = '1';
@@ -182,11 +191,13 @@ describe('TransactionEventService', () => {
     it('should only emit to subscribers who subscribed before the event was triggered', () => {
       const mockTransaction: Transaction = {
         id: '1',
-        id_user: 'user1',
+        accountId: 'user1',
         date: new Date('2023-05-10'),
         amount: 100,
         description: 'Test transaction',
-        type: TransactionType.Transfer
+        type: TransactionType.Transfer,
+        from: 'account1',
+        to: 'account2',
       };
 
       const earlySubscriber = jasmine.createSpy('earlySubscriber');
@@ -204,11 +215,13 @@ describe('TransactionEventService', () => {
     it('should allow subscribers to unsubscribe', () => {
       const mockTransaction: Transaction = {
         id: '1',
-        id_user: 'user1',
+        accountId: 'user1',
         date: new Date('2023-05-10'),
         amount: 100,
         description: 'Test transaction',
-        type: TransactionType.Exchange
+        type: TransactionType.Exchange,
+        from: 'account1',
+        to: 'account2',
       };
 
       const subscriber = jasmine.createSpy('subscriber');

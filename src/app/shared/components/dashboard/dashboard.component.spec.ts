@@ -1,78 +1,107 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  TestBed,
+  fakeAsync,
+  tick,
+} from '@angular/core/testing';
 import { DashboardComponent } from './dashboard.component';
-import { TransactionService } from '../../services/Transaction/transaction-service';
-import { UserService } from '../../services/User/user-service';
+import { AccountService } from '../../services/Account/account.service';
+import { AuthService } from '../../services/Auth/auth.service';
 import { TransactionEventService } from '../../services/TransactionEvent/transaction-event.service';
 import { of, throwError, Subject } from 'rxjs';
 import { Transaction, TransactionType } from '../../models/transaction';
 import { systemConfig } from '../../../app.config';
-import { User } from '../../models/user';
+import { Account, AccountSummary } from '../../models/account';
 
 describe('DashboardComponent', () => {
   let component: DashboardComponent;
   let fixture: ComponentFixture<DashboardComponent>;
-  let transactionServiceMock: jasmine.SpyObj<TransactionService>;
-  let userServiceMock: jasmine.SpyObj<UserService>;
+  let accountServiceMock: jasmine.SpyObj<AccountService>;
+  let authServiceMock: jasmine.SpyObj<AuthService>;
   let transactionEventServiceMock: {
     transactionCreated$: Subject<Transaction>;
     transactionUpdated$: Subject<Transaction>;
     transactionDeleted$: Subject<string>;
   };
 
-  const mockUser: User = {
-    id: 'u1,
+  const mockUser = {
+    id: 'u1',
+    username: 'testuser',
     name: 'Test User',
     email: 'test@example.com',
-    password: 'password123'
   };
 
-  const mockTransactions: Transaction[] = [
-    {
-      id: '1',
-      id_user: 'u1,
-      type: TransactionType.Exchange,
-      amount: 200,
-      description: 'Salary',
-      date: new Date('2023-01-05')
+  const mockAccount: Account = {
+    id: 'acc1',
+    userId: 'u1',
+    type: 'Conta Corrente',
+  };
+
+  const mockAccountSummary: AccountSummary = {
+    message: 'Success',
+    result: {
+      account: [mockAccount],
+      transactions: [
+        {
+          id: '1',
+          accountId: 'u1',
+          type: TransactionType.Exchange,
+          amount: 200,
+          description: 'Salary',
+          date: new Date('2023-01-05'),
+          from: 'account1',
+          to: 'account2',
+        },
+        {
+          id: '2',
+          accountId: 'u1',
+          type: TransactionType.Loan,
+          amount: 500,
+          description: 'Loan',
+          date: new Date('2023-01-10'),
+          from: 'account1',
+          to: 'account2',
+        },
+        {
+          id: '3',
+          accountId: 'u1',
+          type: TransactionType.Transfer,
+          amount: 300,
+          description: 'Bills',
+          date: new Date('2023-01-20'),
+          from: 'account1',
+          to: 'account2',
+        },
+      ],
+      cards: [],
     },
-    {
-      id: '2',
-      id_user: 'u1,
-      type: TransactionType.Loan,
-      amount: 500,
-      description: 'Loan',
-      date: new Date('2023-01-10')
-    },
-    {
-      id: '3',
-      id_user: 'u1,
-      type: TransactionType.Transfer,
-      amount: 300,
-      description: 'Bills',
-      date: new Date('2023-01-20')
-    }
-  ];
+  };
 
   beforeEach(async () => {
-    transactionServiceMock = jasmine.createSpyObj('TransactionService', ['getByUserId']);
-    userServiceMock = jasmine.createSpyObj('UserService', ['getById']);
+    accountServiceMock = jasmine.createSpyObj('AccountService', [
+      'getByUserId',
+    ]);
+    authServiceMock = jasmine.createSpyObj('AuthService', ['currentUser$']);
 
     transactionEventServiceMock = {
       transactionCreated$: new Subject<Transaction>(),
       transactionUpdated$: new Subject<Transaction>(),
-      transactionDeleted$: new Subject<string>()
+      transactionDeleted$: new Subject<string>(),
     };
 
-    userServiceMock.getById.and.returnValue(of(mockUser));
-    transactionServiceMock.getByUserId.and.returnValue(of(mockTransactions));
+    authServiceMock.currentUser$ = of(mockUser);
+    accountServiceMock.getByUserId.and.returnValue(of(mockAccountSummary));
 
     await TestBed.configureTestingModule({
       imports: [DashboardComponent],
       providers: [
-        { provide: TransactionService, useValue: transactionServiceMock },
-        { provide: UserService, useValue: userServiceMock },
-        { provide: TransactionEventService, useValue: transactionEventServiceMock }
-      ]
+        { provide: AccountService, useValue: accountServiceMock },
+        { provide: AuthService, useValue: authServiceMock },
+        {
+          provide: TransactionEventService,
+          useValue: transactionEventServiceMock,
+        },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(DashboardComponent);
@@ -98,49 +127,56 @@ describe('DashboardComponent', () => {
       expect(component.currentDate).toContain('15/01/2023 10:30');
     });
 
-    it('should fetch user on init', () => {
-      expect(userServiceMock.getById).toHaveBeenCalledWith('u1);
+    it('should fetch account data on init', () => {
+      expect(accountServiceMock.getByUserId).toHaveBeenCalled();
       expect(component.userName).toBe('Test User');
     });
 
-    it('should fetch transactions after user is loaded', () => {
-      expect(transactionServiceMock.getByUserId).toHaveBeenCalledWith(mockUser.id);
+    it('should load transactions after account data is fetched', () => {
       expect(component.transactions.length).toBe(3);
     });
 
     it('should calculate balance correctly on init', () => {
       // Use normalized formatting to avoid invisible character issues
-      expect(component.balance.replace(/\s/g, '')).toBe('R$400,00'.replace(/\s/g, ''));
+      expect(component.balance.replace(/\s/g, '')).toBe(
+        'R$400,00'.replace(/\s/g, '')
+      );
     });
 
     it('should calculate total entries correctly', () => {
-      expect(component.totalEntries.replace(/\s/g, '')).toBe('R$700,00'.replace(/\s/g, ''));
+      expect(component.totalEntries.replace(/\s/g, '')).toBe(
+        'R$700,00'.replace(/\s/g, '')
+      );
     });
 
     it('should calculate total exits correctly', () => {
-      expect(component.totalExits.replace(/\s/g, '')).toBe('R$300,00'.replace(/\s/g, ''));
+      expect(component.totalExits.replace(/\s/g, '')).toBe(
+        'R$300,00'.replace(/\s/g, '')
+      );
     });
 
     it('should organize transactions into weekly data', () => {
       expect(component.transactionData.length).toBe(4);
 
-      const week1 = component.transactionData.find(d => d.day === 'Semana 1');
+      const week1 = component.transactionData.find((d) => d.day === 'Semana 1');
       expect(week1?.entries).toBe(200);
       expect(week1?.exits).toBe(0);
 
-      const week2 = component.transactionData.find(d => d.day === 'Semana 2');
+      const week2 = component.transactionData.find((d) => d.day === 'Semana 2');
       expect(week2?.entries).toBe(500);
       expect(week2?.exits).toBe(0);
 
-      const week3 = component.transactionData.find(d => d.day === 'Semana 3');
+      const week3 = component.transactionData.find((d) => d.day === 'Semana 3');
       expect(week3?.entries).toBe(0);
       expect(week3?.exits).toBe(300);
     });
   });
 
   describe('Error Handling', () => {
-    it('should handle user fetch error', fakeAsync(() => {
-      userServiceMock.getById.and.returnValue(throwError(() => new Error('User fetch error')));
+    it('should handle account fetch error', fakeAsync(() => {
+      accountServiceMock.getByUserId.and.returnValue(
+        throwError(() => new Error('Account fetch error'))
+      );
 
       fixture = TestBed.createComponent(DashboardComponent);
       component = fixture.componentInstance;
@@ -148,21 +184,7 @@ describe('DashboardComponent', () => {
       tick();
 
       expect(component.isLoading).toBeFalse();
-      expect(component.errorMessage).toBe('Erro ao buscar usuário.');
-    }));
-
-    it('should handle transaction fetch error', fakeAsync(() => {
-      transactionServiceMock.getByUserId.and.returnValue(throwError(() => new Error('Transaction fetch error')));
-
-      userServiceMock.getById.and.returnValue(of(mockUser));
-
-      fixture = TestBed.createComponent(DashboardComponent);
-      component = fixture.componentInstance;
-      fixture.detectChanges();
-      tick();
-
-      expect(component.isLoading).toBeFalse();
-      expect(component.errorMessage).toBe('Erro ao buscar transações.');
+      expect(component.errorMessage).toBe('Erro ao buscar dados da conta.');
     }));
   });
 
@@ -170,70 +192,98 @@ describe('DashboardComponent', () => {
     it('should handle new transaction events', () => {
       const newTransaction: Transaction = {
         id: '4',
-        id_user: 'u1,
+        accountId: 'u1',
         type: TransactionType.Exchange,
         amount: 150,
         description: 'New Income',
-        date: new Date('2023-01-25')
+        date: new Date('2023-01-25'),
+        from: 'account1',
+        to: 'account2',
       };
 
       expect(component.transactions.length).toBe(3);
-      expect(component.balance.replace(/\s/g, '')).toBe('R$400,00'.replace(/\s/g, ''));
+      expect(component.balance.replace(/\s/g, '')).toBe(
+        'R$400,00'.replace(/\s/g, '')
+      );
 
       transactionEventServiceMock.transactionCreated$.next(newTransaction);
 
       expect(component.transactions.length).toBe(4);
-      expect(component.balance.replace(/\s/g, '')).toBe('R$550,00'.replace(/\s/g, ''));
+      expect(component.balance.replace(/\s/g, '')).toBe(
+        'R$550,00'.replace(/\s/g, '')
+      );
 
-      const week4 = component.transactionData.find(d => d.day === 'Semana 4');
+      const week4 = component.transactionData.find((d) => d.day === 'Semana 4');
       expect(week4?.entries).toBe(150);
     });
 
     it('should handle transaction update events', () => {
       const updatedTransaction: Transaction = {
-        ...mockTransactions[0],
-        amount: 300
+        id: '1',
+        accountId: 'u1',
+        type: TransactionType.Exchange,
+        amount: 300,
+        description: 'Updated Salary',
+        date: new Date('2023-01-05'),
+        from: 'account1',
+        to: 'account2',
       };
 
-      expect(component.totalEntries.replace(/\s/g, '')).toBe('R$700,00'.replace(/\s/g, ''));
+      expect(component.totalEntries.replace(/\s/g, '')).toBe(
+        'R$700,00'.replace(/\s/g, '')
+      );
 
       transactionEventServiceMock.transactionUpdated$.next(updatedTransaction);
 
-      expect(component.totalEntries.replace(/\s/g, '')).toBe('R$800,00'.replace(/\s/g, ''));
-      expect(component.balance.replace(/\s/g, '')).toBe('R$500,00'.replace(/\s/g, ''));
+      expect(component.totalEntries.replace(/\s/g, '')).toBe(
+        'R$800,00'.replace(/\s/g, '')
+      );
+      expect(component.balance.replace(/\s/g, '')).toBe(
+        'R$500,00'.replace(/\s/g, '')
+      );
     });
 
     it('should handle transaction delete events', () => {
       expect(component.transactions.length).toBe(3);
-      expect(component.totalEntries.replace(/\s/g, '')).toBe('R$700,00'.replace(/\s/g, ''));
+      expect(component.totalEntries.replace(/\s/g, '')).toBe(
+        'R$700,00'.replace(/\s/g, '')
+      );
 
       transactionEventServiceMock.transactionDeleted$.next('1');
 
       expect(component.transactions.length).toBe(2);
-      expect(component.totalEntries.replace(/\s/g, '')).toBe('R$500,00'.replace(/\s/g, ''));
-      expect(component.balance.replace(/\s/g, '')).toBe('R$200,00'.replace(/\s/g, ''));
+      expect(component.totalEntries.replace(/\s/g, '')).toBe(
+        'R$500,00'.replace(/\s/g, '')
+      );
+      expect(component.balance.replace(/\s/g, '')).toBe(
+        'R$200,00'.replace(/\s/g, '')
+      );
     });
 
-    it('should ignore transaction events for other users', () => {
+    it('should add transaction events regardless of user', () => {
       const otherUserTransaction: Transaction = {
         id: '5',
-        id_user: 'different-user-id',
+        accountId: 'different-user-id',
         type: TransactionType.Exchange,
         amount: 100,
         description: 'Other User Income',
-        date: new Date()
+        date: new Date(),
+        from: 'account1',
+        to: 'account2',
       };
 
       expect(component.transactions.length).toBe(3);
 
-      transactionEventServiceMock.transactionCreated$.next(otherUserTransaction);
-      expect(component.transactions.length).toBe(3);
+      transactionEventServiceMock.transactionCreated$.next(
+        otherUserTransaction
+      );
+      expect(component.transactions.length).toBe(4);
 
       transactionEventServiceMock.transactionUpdated$.next({
         ...otherUserTransaction,
-        amount: 200
+        amount: 200,
       });
-      expect(component.transactions.length).toBe(3);
+      expect(component.transactions.length).toBe(4);
 
       transactionEventServiceMock.transactionDeleted$.next('5');
       expect(component.transactions.length).toBe(3);
@@ -254,15 +304,23 @@ describe('DashboardComponent', () => {
 
   describe('Helper Functions', () => {
     it('should format balance correctly', () => {
-      expect(component.formatBalance(1234.56).replace(/\s/g, '')).toBe('R$1.234,56'.replace(/\s/g, ''));
-      expect(component.formatBalance(0).replace(/\s/g, '')).toBe('R$0,00'.replace(/\s/g, ''));
-      expect(component.formatBalance(-1000).replace(/\s/g, '')).toBe('-R$1.000,00'.replace(/\s/g, ''));
+      expect(component.formatBalance(1234.56).replace(/\s/g, '')).toBe(
+        'R$1.234,56'.replace(/\s/g, '')
+      );
+      expect(component.formatBalance(0).replace(/\s/g, '')).toBe(
+        'R$0,00'.replace(/\s/g, '')
+      );
+      expect(component.formatBalance(-1000).replace(/\s/g, '')).toBe(
+        '-R$1.000,00'.replace(/\s/g, '')
+      );
     });
 
     it('should set current date with correct format', () => {
       component.setCurrentDate();
       // Modify the regex to account for "Domingo" without the -feira suffix
-      expect(component.currentDate).toMatch(/^[A-Za-z\u00C0-\u00FF]+(-feira)?, \d{2}\/\d{2}\/\d{4} \d{2}:\d{2}$/);
+      expect(component.currentDate).toMatch(
+        /^[A-Za-z\u00C0-\u00FF]+(-feira)?, \d{2}\/\d{2}\/\d{4} \d{2}:\d{2}$/
+      );
     });
   });
 });

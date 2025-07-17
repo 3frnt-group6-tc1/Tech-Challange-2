@@ -5,26 +5,15 @@ import { InputComponent } from '../input/input.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TransactionService } from '../../services/Transaction/transaction-service';
-import {
-  S3UploadService,
-  S3UploadResult,
-} from '../../services/S3/s3-upload.service';
+import { S3UploadService } from '../../services/S3/s3-upload.service';
 import {
   Transaction,
-  TransactionType,
   TRANSACTION_TYPE_LABELS,
+  TransactionType,
 } from '../../models/transaction';
 import { AuthService } from '../../services/Auth/auth.service';
 import { firstValueFrom } from 'rxjs';
-
-export interface TransactionForm {
-  type: string;
-  value: string;
-  from: string;
-  to: string;
-  description: string;
-  anexo?: string;
-}
+import { S3UploadResult } from '../../models/file';
 
 @Component({
   selector: 'app-transaction-form',
@@ -64,7 +53,7 @@ export class TransactionFormComponent implements OnInit {
   filteredCategorySuggestions: string[] = [];
   showSuggestions = false;
 
-  form: TransactionForm = this.createEmptyForm();
+  form: Transaction = this.createEmptyForm();
   valorTransacao: string = '';
 
   submitStatus: {
@@ -78,10 +67,11 @@ export class TransactionFormComponent implements OnInit {
   selectedFiles: File[] = [];
   uploadedFiles: S3UploadResult[] = [];
 
-  private createEmptyForm(): TransactionForm {
+  private createEmptyForm(): Transaction {
     return {
-      type: this.transactionOptions[0].display,
-      value: '00,00',
+      accountId: '',
+      type: TransactionType.Exchange,
+      amount: 0,
       from: '',
       to: '',
       description: '',
@@ -98,10 +88,7 @@ export class TransactionFormComponent implements OnInit {
   ngOnInit() {}
 
   onTransactionTypeChange(value: TransactionType): void {
-    const selectedOption = this.transactionOptions.find(
-      (option) => option.value === value
-    );
-    this.form.type = selectedOption?.display || '';
+    this.form.type = value;
   }
 
   onAmountChange(event: Event): void {
@@ -118,7 +105,7 @@ export class TransactionFormComponent implements OnInit {
 
     const formatted = `${integer},${cents}`;
     this.valorTransacao = formatted;
-    this.form.value = formatted;
+    this.form.amount = Number(integer.replace(/\./g, '') + '.' + cents);
   }
 
   onDescriptionChange(event: Event): void {
@@ -152,10 +139,9 @@ export class TransactionFormComponent implements OnInit {
   }
 
   async submitForm(): Promise<void> {
-    // Validações
     if (
       !this.form.type ||
-      !this.form.value ||
+      !this.form.amount ||
       !this.form.from?.trim() ||
       !this.form.to?.trim()
     ) {
@@ -169,9 +155,6 @@ export class TransactionFormComponent implements OnInit {
     this.submitStatus = { success: true, message: 'Processando transação...' };
 
     try {
-      // Upload files to S3 if any are selected
-      let attachments: any[] = [];
-
       if (this.selectedFiles.length > 0) {
         this.submitStatus.message = 'Fazendo upload dos arquivos...';
 
@@ -206,74 +189,59 @@ export class TransactionFormComponent implements OnInit {
         }
 
         this.uploadedFiles = uploadResults;
-        attachments = uploadResults.map((result) => ({
-          name: result.key.split('/').pop(),
-          key: result.key,
-          url: result.url,
-          type: 's3',
-        }));
       }
 
       this.submitStatus.message = 'Salvando transação...';
 
-      this.authService.currentUser$.subscribe((currentUser) => {
-        if (!currentUser) {
-          this.submitStatus = {
-            success: false,
-            message: 'Usuário não autenticado.',
-          };
-          return;
-        }
-
-        // Encontrar o tipo de transação baseado na seleção
-        const selectedOption = this.transactionOptions.find(
-          (option) => option.display === this.form.type
-        );
-        const type = selectedOption?.value || TransactionType.Transfer;
-        const value = Number(
-          this.form.value.replace(/\./g, '').replace(',', '.')
-        );
-
-        const transaction: Transaction = {
-          type,
-          value,
-          description: this.form.description,
-          accountId: this.authService.getPrimaryAccountId() || '',
-          from: this.form.from,
-          to: this.form.to,
-          anexo:
-            this.form.anexo ||
-            (this.uploadedFiles.length > 0
-              ? this.uploadedFiles[0].key
-              : undefined),
+      const currentUser = await firstValueFrom(this.authService.currentUser$);
+      if (!currentUser) {
+        this.submitStatus = {
+          success: false,
+          message: 'Usuário não autenticado.',
         };
+        return;
+      }
 
-        // Get account ID for the transaction
-        const accountId = this.authService.getPrimaryAccountId();
-        if (!accountId) {
+      // Get account ID for the transaction
+      const accountId = this.authService.getPrimaryAccountId();
+      if (!accountId) {
+        this.submitStatus = {
+          success: false,
+          message:
+            'Erro: Conta principal não encontrada. Tente fazer login novamente.',
+        };
+        return;
+      }
+
+      const transaction: Transaction = {
+        type: this.form.type,
+        amount: this.form.amount,
+        description: this.form.description,
+        accountId: accountId,
+        from: this.form.from,
+        to: this.form.to,
+        anexo:
+          this.form.anexo ||
+          (this.uploadedFiles.length > 0
+            ? this.uploadedFiles[0].key
+            : undefined),
+      };
+
+      this.transactionService.create(transaction, accountId).subscribe({
+        next: () => {
+          this.submitStatus = {
+            success: true,
+            message: 'Transação criada com sucesso!',
+          };
+          this.resetForm();
+        },
+        error: (error) => {
           this.submitStatus = {
             success: false,
-            message: 'Erro: ID da conta não encontrado.',
+            message: 'Erro ao salvar transação.',
           };
-          return;
-        }
-
-        this.transactionService.create(transaction, accountId).subscribe({
-          next: () => {
-            this.submitStatus = {
-              success: true,
-              message: 'Transação criada com sucesso!',
-            };
-            this.resetForm();
-          },
-          error: (error) => {
-            this.submitStatus = {
-              success: false,
-              message: 'Erro ao salvar transação.',
-            };
-            console.error('Error creating transaction:', error);
-          },
-        });
+          console.error('Error creating transaction:', error);
+        },
       });
     } catch (error) {
       this.submitStatus = {

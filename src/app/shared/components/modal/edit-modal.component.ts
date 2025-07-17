@@ -23,27 +23,25 @@ export class EditModalComponent implements OnChanges {
   @Input() transaction: Transaction | null = null;
   @Output() save = new EventEmitter<{
     id: string;
-    value: number;
-    from: string;
-    to: string;
+    amount: number;
     description: string;
   }>();
   @Output() cancel = new EventEmitter<void>();
 
-  value: number = 0;
+  amount: number = 0;
   description: string = '';
-  valueFormatted: string = '';
+  amountFormatted: string = '';
 
   descriptionTouched = false;
-  valueTouched = false;
+  amountTouched = false;
 
   ngOnChanges(changes: SimpleChanges): void {
     if (this.transaction) {
-      this.value = this.transaction.value;
+      this.amount = this.transaction.amount;
       this.description = this.transaction.description;
-      this.valueFormatted = this.formatValue(this.value);
+      this.amountFormatted = this.formatAmount(this.amount);
       this.descriptionTouched = false;
-      this.valueTouched = false;
+      this.amountTouched = false;
     }
   }
 
@@ -51,27 +49,23 @@ export class EditModalComponent implements OnChanges {
     return this.description.trim().length >= 3;
   }
 
-  get isValueValid(): boolean {
-    return this.value > 0;
+  get isAmountValid(): boolean {
+    return this.amount > 0;
   }
 
   get isFormValid(): boolean {
-    return this.isDescriptionValid && this.isValueValid;
+    return this.isDescriptionValid && this.isAmountValid;
   }
 
   onSave(): void {
     this.descriptionTouched = true;
-    this.valueTouched = true;
+    this.amountTouched = true;
 
     if (this.transaction && this.transaction.id && this.isFormValid) {
-      // Split description to get from and to
-      const parts = this.description.split(' → ');
       this.save.emit({
         id: this.transaction.id,
-        value: this.value,
-        from: parts[0] || this.transaction.from,
-        to: parts[1] || this.transaction.to,
-        description: this.description,
+        amount: this.amount,
+        description: this.description.trim(),
       });
     }
   }
@@ -80,8 +74,8 @@ export class EditModalComponent implements OnChanges {
     this.cancel.emit();
   }
 
-  formatValue(value: number): string {
-    return value.toLocaleString('pt-BR', {
+  formatAmount(amount: number): string {
+    return amount.toLocaleString('pt-BR', {
       style: 'currency',
       currency: 'BRL',
     });
@@ -113,8 +107,8 @@ export class EditModalComponent implements OnChanges {
     integer = integer.replace(/^0+/, '') || '0';
     integer = integer.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 
-    this.valueFormatted = `${integer},${cents}`;
-    this.value = Number(integer.replace(/\./g, '') + '.' + cents);
-    this.valueTouched = true;
+    this.amountFormatted = `${integer},${cents}`;
+    this.amount = Number(integer.replace(/\./g, '') + '.' + cents);
+    this.amountTouched = true;
   }
 }

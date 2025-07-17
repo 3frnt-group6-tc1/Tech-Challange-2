@@ -58,64 +58,6 @@
   }
 }
 
-/* Card number masking on smaller screens */
-@media (max-width: 640px) {
-  .card-face {
-    font-size: 0.875rem;
-  }
-
-  .card-container {
-    height: 200px;
-  }
-}
-
-/* Form styling improvements */
-.form-container {
-  backdrop-filter: blur(10px);
-  background: rgba(255, 255, 255, 0.95);
-}
-
-@media (prefers-color-scheme: dark) {
-  .form-container {
-    background: rgba(31, 41, 55, 0.95);
-  }
-}
-
-/* Button hover effects */
-button {
-  transition: all 0.2s ease;
-
-  &:hover:not(:disabled) {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  }
-
-  &:active:not(:disabled) {
-    transform: translateY(0);
-  }
-}
-
-/* Loading animation */
-.animate-spin {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Responsive grid improvements */
-@media (min-width: 1024px) {
-  .cards-grid {
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  }
-}
-
 /* Card chip styling */
 .chip {
   background: linear-gradient(45deg, #ffd700, #ffed4e);
@@ -142,10 +84,4 @@ button {
   50% {
     opacity: 0.7;
   }
-}
-
-/* Smooth transitions for all interactive elements */
-* {
-  transition: color 0.2s ease, background-color 0.2s ease,
-    border-color 0.2s ease;
 }

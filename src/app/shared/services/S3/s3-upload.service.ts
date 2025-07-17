@@ -4,25 +4,11 @@ import { Observable, from, forkJoin, of } from 'rxjs';
 import { switchMap, map, catchError } from 'rxjs/operators';
 import { apiConfig } from '../../../app.config';
 import { AuthService } from '../Auth/auth.service';
-
-export interface S3SignedUrlResponse {
-  signedUrl: string;
-  key: string;
-  bucket: string;
-}
-
-export interface S3UploadResult {
-  success: boolean;
-  key: string;
-  url: string;
-  error?: string;
-}
-
-export interface FileUploadRequest {
-  fileName: string;
-  fileType: string;
-  fileSize: number;
-}
+import {
+  FileUploadRequest,
+  S3SignedUrlResponse,
+  S3UploadResult,
+} from '../../models/file';
 
 @Injectable({
   providedIn: 'root',

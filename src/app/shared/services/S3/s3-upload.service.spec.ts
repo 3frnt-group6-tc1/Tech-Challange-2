@@ -3,11 +3,8 @@ import {
   HttpClientTestingModule,
   HttpTestingController,
 } from '@angular/common/http/testing';
-import {
-  S3UploadService,
-  S3SignedUrlResponse,
-  S3UploadResult,
-} from './s3-upload.service';
+import { S3UploadService } from './s3-upload.service';
+import { S3SignedUrlResponse } from '../../models/file';
 
 describe('S3UploadService', () => {
   let service: S3UploadService;
@@ -30,12 +27,6 @@ describe('S3UploadService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should set and get token', () => {
-    const newToken = 'new-test-token';
-    service.setToken(newToken);
-    expect(service.getToken()).toBe(newToken);
-  });
-
   it('should include authorization header in signed URL request', () => {
     const mockResponse: S3SignedUrlResponse = {
       signedUrl: 'https://test-signed-url.com',
@@ -49,7 +40,6 @@ describe('S3UploadService', () => {
       fileSize: 1024,
     };
 
-    service.setToken('test-token');
     service.getSignedUrlForUpload(fileRequest).subscribe((response) => {
       expect(response).toEqual(mockResponse);
     });
