@@ -1,0 +1,99 @@
+<div class="bg-white rounded-xl shadow-md p-6">
+  <div *ngIf="isLoading" class="flex flex-col items-center justify-center p-8">
+    <p class="text-gray-600">Carregando resumo dos investimentos...</p>
+  </div>
+
+  <div *ngIf="!isLoading">
+    <!-- Cabeçalho -->
+    <div class="mb-6">
+      <h3 class="text-lg font-bold text-gray-900 mb-2">
+        Total em Investimentos
+      </h3>
+      <p class="text-gray-500 text-sm">
+        Resumo dos seus investimentos por tipo
+      </p>
+    </div>
+
+    <!-- Valor Total -->
+    <div class="mb-6 text-center">
+      <p class="text-3xl font-bold text-gray-900" *ngIf="showBalance">
+        {{ formatCurrency(displaySummary.totalValue) }}
+      </p>
+      <p class="text-3xl font-bold text-gray-500" *ngIf="!showBalance">****</p>
+      <div class="flex items-center justify-center mt-2" *ngIf="showBalance">
+        <span
+          class="text-green-600 text-sm font-medium mr-2"
+          [class]="getProfitClass()"
+        >
+          {{ getProfitIcon() }}{{ formatCurrency(displaySummary.totalProfit) }}
+        </span>
+        <span class="text-green-600 text-sm" [class]="getProfitClass()">
+          ({{ formatPercentage(displaySummary.profitPercentage) }})
+        </span>
+      </div>
+      <div class="flex items-center justify-center mt-2" *ngIf="!showBalance">
+        <span class="text-gray-500 text-sm font-medium mr-2">****</span>
+        <span class="text-gray-500 text-sm">(***)</span>
+      </div>
+    </div>
+
+    <!-- Separação por Tipo -->
+    <div class="space-y-4">
+      <!-- Categorias Dinâmicas -->
+      <div
+        class="bg-gray-50 rounded-lg p-4"
+        *ngFor="let category of displaySummary.categories"
+      >
+        <div class="flex justify-between items-center mb-2">
+          <div class="flex items-center">
+            <div
+              class="w-3 h-3 rounded-full mr-3"
+              [style.background-color]="category.color"
+            ></div>
+            <span class="font-medium text-gray-700">{{ category.name }}</span>
+          </div>
+          <span class="text-gray-900 font-bold" *ngIf="showBalance">
+            {{ formatCurrency(category.value) }}
+          </span>
+          <span class="text-gray-500 font-bold" *ngIf="!showBalance">
+            ****
+          </span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-2">
+          <div
+            class="h-2 rounded-full"
+            [style.background-color]="category.color"
+            [style.width.%]="category.percentage"
+          ></div>
+        </div>
+        <p class="text-xs text-gray-500 mt-1">
+          {{ category.percentage.toFixed(1) }}% do total
+        </p>
+      </div>
+    </div>
+
+    <!-- Estatísticas Adicionais -->
+    <div class="mt-6 pt-4 border-t border-gray-200">
+      <div class="grid grid-cols-2 gap-4 text-center">
+        <div>
+          <p class="text-xs text-gray-500">Rentabilidade</p>
+          <p class="text-lg font-bold text-green-600" *ngIf="showBalance">
+            {{ formatPercentage(displaySummary.profitPercentage) }}
+          </p>
+          <p class="text-lg font-bold text-gray-500" *ngIf="!showBalance">
+            ***
+          </p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500">Lucro Total</p>
+          <p class="text-lg font-bold text-green-600" *ngIf="showBalance">
+            {{ formatCurrency(displaySummary.totalProfit) }}
+          </p>
+          <p class="text-lg font-bold text-gray-500" *ngIf="!showBalance">
+            ****
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

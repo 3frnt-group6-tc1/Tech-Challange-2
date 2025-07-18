@@ -5,6 +5,7 @@ import { IconHomeComponent } from '../../assets/icons/icon-home.component';
 import { IconDollarComponent } from '../../assets/icons/icon-dollar.component';
 import { IconListComponent } from '../../assets/icons/icon-list.component';
 import { IconCardComponent } from '../../assets/icons/icon-card.component';
+import { IconInvestmentComponent } from '../../assets/icons/icon-investment.component';
 import { IconSettingsComponent } from '../../assets/icons/icon-settings.component';
 
 @Component({
@@ -20,6 +21,7 @@ export class AsideComponent {
   iconDollar: any = IconDollarComponent;
   iconList: any = IconListComponent;
   iconCard: any = IconCardComponent;
+  iconInvestment: any = IconInvestmentComponent;
   iconSettings: any = IconSettingsComponent;
 
   constructor(private router: Router) {}

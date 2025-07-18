@@ -207,7 +207,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         totalEntries += transaction.amount;
       }
       if (isDebit(transaction.type)) {
-        totalExits += transaction.amount;
+        totalExits += transaction.amount * -1;
       }
     });
 
@@ -248,7 +248,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.transactionData = Object.entries(weeklyData).map(([day, data]) => ({
       day: `Semana ${day}`,
       entries: data.entries,
-      exits: data.exits,
+      exits: data.exits * -1,
     }));
   }
 

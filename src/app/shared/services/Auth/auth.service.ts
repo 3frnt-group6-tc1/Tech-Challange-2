@@ -4,8 +4,6 @@ import { Observable, BehaviorSubject } from 'rxjs';
 import { map, tap, switchMap } from 'rxjs/operators';
 import { apiConfig } from '../../../app.config';
 import { SafeStorageService } from '../Storage';
-import { AccountService } from '../Account/account.service';
-import { Account } from '../../models/account';
 
 export interface LoginRequest {
   email: string;
@@ -25,6 +23,7 @@ export interface AuthUser {
   email: string;
   username: string;
   name?: string;
+  accountId?: string;
 }
 
 @Injectable({
@@ -34,7 +33,6 @@ export class AuthService {
   private readonly apiUrl = apiConfig.baseUrl + apiConfig.usersEndpoint;
   private readonly TOKEN_KEY = 'auth_token';
   private readonly USER_KEY = 'auth_user';
-  private readonly PRIMARY_ACCOUNT_KEY = 'primary_account';
 
   private currentUserSubject = new BehaviorSubject<AuthUser | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
@@ -42,13 +40,9 @@ export class AuthService {
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
   public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
 
-  private primaryAccountSubject = new BehaviorSubject<Account | null>(null);
-  public primaryAccount$ = this.primaryAccountSubject.asObservable();
-
   constructor(
     private http: HttpClient,
-    private safeStorage: SafeStorageService,
-    private accountService: AccountService
+    private safeStorage: SafeStorageService
   ) {
     this.initializeAuth();
   }
@@ -77,6 +71,7 @@ export class AuthService {
         email: tokenData.email,
         username: tokenData.username,
         name: tokenData.name,
+        accountId: tokenData.accountId,
       };
     } catch (error) {
       console.error('Error decoding token:', error);
@@ -109,16 +104,12 @@ export class AuthService {
         this.isAuthenticatedSubject.next(true);
         // Update stored user data in case it's outdated
         this.safeStorage.setSessionItem(this.USER_KEY, userData);
-        // Load primary account
-        this.loadPrimaryAccount(userData.id);
       } else {
         // Fallback to stored user data
         const storedUser = this.getStoredUser();
         if (storedUser) {
           this.currentUserSubject.next(storedUser);
           this.isAuthenticatedSubject.next(true);
-          // Load primary account
-          this.loadPrimaryAccount(storedUser.id);
         }
       }
     }
@@ -137,14 +128,6 @@ export class AuthService {
       .pipe(
         tap((response) => {
           this.setSession(response);
-        }),
-        switchMap((response) => {
-          // Load primary account after successful login
-          const userData = this.decodeToken(response.result.token);
-          if (userData) {
-            this.loadPrimaryAccount(userData.id);
-          }
-          return [response];
         })
       );
   }
@@ -156,7 +139,6 @@ export class AuthService {
     this.clearSession();
     this.currentUserSubject.next(null);
     this.isAuthenticatedSubject.next(false);
-    this.primaryAccountSubject.next(null);
   }
 
   /**
@@ -174,18 +156,11 @@ export class AuthService {
   }
 
   /**
-   * Get primary account from current user
-   */
-  getPrimaryAccount(): Account | null {
-    return this.primaryAccountSubject.value;
-  }
-
-  /**
-   * Get primary account ID from current user
+   * Get primary account ID from current user token
    */
   getPrimaryAccountId(): string | null {
-    const account = this.getPrimaryAccount();
-    return account ? account.id : null;
+    const currentUser = this.getCurrentUser();
+    return currentUser?.accountId || null;
   }
 
   /**
@@ -221,7 +196,6 @@ export class AuthService {
   private clearSession(): void {
     this.safeStorage.removeSessionItem(this.TOKEN_KEY);
     this.safeStorage.removeSessionItem(this.USER_KEY);
-    this.safeStorage.removeSessionItem(this.PRIMARY_ACCOUNT_KEY);
   }
 
   /**
@@ -244,46 +218,6 @@ export class AuthService {
   refreshToken(): Observable<LoginResponse> {
     // Implementation depends on your backend's refresh token strategy
     throw new Error('Refresh token not implemented');
-  }
-
-  /**
-   * Load primary account for the user
-   */
-  private loadPrimaryAccount(userId: string): void {
-    const storedAccount = this.getStoredPrimaryAccount();
-    if (storedAccount && storedAccount.userId === userId) {
-      this.primaryAccountSubject.next(storedAccount);
-      return;
-    }
-
-    this.accountService.getPrimaryAccountByUserId().subscribe({
-      next: (primaryAccount: any) => {
-        if (primaryAccount) {
-          this.setPrimaryAccount(primaryAccount);
-        } else {
-          console.warn('No primary account found for user');
-        }
-      },
-      error: (error) => {
-        console.error('Error loading primary account:', error);
-        // Optionally set a retry mechanism or notify components about the error
-      },
-    });
-  }
-
-  /**
-   * Set primary account
-   */
-  private setPrimaryAccount(account: Account): void {
-    this.safeStorage.setSessionItem(this.PRIMARY_ACCOUNT_KEY, account);
-    this.primaryAccountSubject.next(account);
-  }
-
-  /**
-   * Get stored primary account
-   */
-  private getStoredPrimaryAccount(): Account | null {
-    return this.safeStorage.getSessionItem<Account>(this.PRIMARY_ACCOUNT_KEY);
   }
 
   /**

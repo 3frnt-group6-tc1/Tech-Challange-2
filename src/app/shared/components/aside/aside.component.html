@@ -19,6 +19,12 @@
       [active]="currentRoute === '/cards'"
     ></app-menu-item>
     <app-menu-item
+      [label]="'Investimentos'"
+      [route]="'/investments'"
+      [iconComponent]="iconInvestment"
+      [active]="currentRoute === '/investments'"
+    ></app-menu-item>
+    <app-menu-item
       [label]="'Outros Serviços'"
       [route]="'/other-services'"
       [iconComponent]="iconList"

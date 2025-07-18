@@ -1,4 +1,15 @@
-import { Component, Input, Output, EventEmitter, ElementRef, ViewChild, AfterViewInit, OnInit, OnDestroy, ChangeDetectorRef  } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  ElementRef,
+  ViewChild,
+  AfterViewInit,
+  OnInit,
+  OnDestroy,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -12,7 +23,7 @@ import { IconExitComponent } from '../../assets/icons/icon-exit.component';
   selector: 'app-menu',
   imports: [CommonModule, ButtonComponent, IconExitComponent],
   templateUrl: './menu.component.html',
-  styleUrl: './menu.component.scss'
+  styleUrl: './menu.component.scss',
 })
 export class MenuComponent implements AfterViewInit, OnInit, OnDestroy {
   @Input() isLoggedIn: boolean = false;
@@ -22,7 +33,7 @@ export class MenuComponent implements AfterViewInit, OnInit, OnDestroy {
   @Input() menuRef: any;
 
   @ViewChild('menuRef') menuRefElement!: ElementRef;
- 
+
   @Output() menuRefReady = new EventEmitter<ElementRef>();
   @Output() closeMenu = new EventEmitter<void>();
 
@@ -34,7 +45,7 @@ export class MenuComponent implements AfterViewInit, OnInit, OnDestroy {
     private cdr: ChangeDetectorRef
   ) {}
 
-    ngOnInit() {
+  ngOnInit() {
     this.routerSub = this.router.events.subscribe((event) => {
       if (event instanceof NavigationEnd) {
         // Força re-render ao mudar rota
@@ -46,7 +57,6 @@ export class MenuComponent implements AfterViewInit, OnInit, OnDestroy {
   ngOnDestroy() {
     this.routerSub?.unsubscribe();
   }
-
 
   ngAfterViewInit() {
     if (this.menuRefElement) {
@@ -70,6 +80,10 @@ export class MenuComponent implements AfterViewInit, OnInit, OnDestroy {
 
   goToCards(): void {
     this.router.navigate(['/cards']);
+  }
+
+  goToInvestments(): void {
+    this.router.navigate(['/investments']);
   }
 
   goToConfiguration(): void {
