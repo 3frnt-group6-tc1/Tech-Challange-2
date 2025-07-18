@@ -109,11 +109,11 @@ export class StatementComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.resetPagination();
 
-    // Wait for primary account to be available before loading transactions
-    this.authService.primaryAccount$
+    // Wait for current user to be available before loading transactions
+    this.authService.currentUser$
       .pipe(takeUntil(this.destroy$))
-      .subscribe((account) => {
-        if (account) {
+      .subscribe((user) => {
+        if (user && user.accountId) {
           this.loadUserTransactions();
         }
       });

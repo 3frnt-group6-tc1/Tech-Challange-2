@@ -44,11 +44,11 @@ export class CardsComponent implements OnInit, OnDestroy {
   });
 
   ngOnInit() {
-    // Wait for primary account to be available before loading cards
-    this.authService.primaryAccount$
+    // Wait for current user to be available before loading cards
+    this.authService.currentUser$
       .pipe(takeUntil(this.destroy$))
-      .subscribe((account) => {
-        if (account) {
+      .subscribe((user) => {
+        if (user && user.accountId) {
           this.loadCards();
         }
       });

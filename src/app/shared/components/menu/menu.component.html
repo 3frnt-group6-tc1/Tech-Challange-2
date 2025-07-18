@@ -84,6 +84,15 @@
   <a
     class="text-cyan-blue-500 dark:text-blue-violet-500 text-sm font-normal w-full max-w-[131px] flex justify-center cursor-pointer border-b-2 border-transparent transition-all hover:border-cyan-blue-900 dark:hover:border-blue-violet-900"
     [ngClass]="{
+      'border-[#004d61] dark:border-blue-violet-500': isActive('/investments')
+    }"
+    (click)="goToInvestments()"
+  >
+    Investimentos
+  </a>
+  <a
+    class="text-cyan-blue-500 dark:text-blue-violet-500 text-sm font-normal w-full max-w-[131px] flex justify-center cursor-pointer border-b-2 border-transparent transition-all hover:border-cyan-blue-900 dark:hover:border-blue-violet-900"
+    [ngClass]="{
       'border-[#004d61] dark:border-blue-violet-500':
         isActive('/configurations')
     }"
@@ -136,6 +145,18 @@
       (click)="goToCards()"
     >
       Meus Cartões
+    </a>
+    <a
+      class="text-cyan-blue-500 dark:text-blue-violet-500 text-2xl font-normal p-2 w-full text-center transition-all rounded-lg cursor-pointer"
+      [ngClass]="{
+        'bg-cyan-blue-500 text-white dark:bg-blue-violet-500 dark:text-white font-bold':
+          isActive('/investments'),
+        'hover:text-white hover:bg-cyan-blue-900 dark:hover:text-white dark:hover:bg-blue-violet-900':
+          !isActive('/investments')
+      }"
+      (click)="goToInvestments()"
+    >
+      Investimentos
     </a>
     <a
       class="text-cyan-blue-500 dark:text-blue-violet-500 text-2xl font-normal p-2 w-full text-center transition-all rounded-lg cursor-pointer"

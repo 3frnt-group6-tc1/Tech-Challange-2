@@ -11,6 +11,7 @@ export const apiConfig = {
   accountsEndpoint: '/accounts',
   transactionsEndpoint: '/accounts/transaction',
   cardsEndpoint: '/cards',
+  investmentsEndpoint: '/investments',
 };
 
 export const systemConfig: {
@@ -28,6 +29,7 @@ export const systemConfig: {
     '/panel',
     '/transactions',
     '/cards',
+    '/investments',
     '/configurations',
     '/other-services',
   ],

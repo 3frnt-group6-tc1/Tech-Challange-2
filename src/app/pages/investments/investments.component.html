@@ -1,0 +1,73 @@
+<app-layout>
+  <section
+    class="h-full w-full bg-gray-100 flex flex-col mt-0 sm:mt-[52px] xl:mt-0 overflow-x-hidden"
+  >
+    <div class="bg-gray-200 dark:bg-blue-violet-50 flex flex-grow p-4">
+      <div class="flex w-full flex-col gap-6 p-2 xs:p-3 sm:p-4 md:p-5 lg:p-6">
+        <!-- Loading State -->
+        <div *ngIf="loading" class="flex justify-center items-center h-64">
+          <div
+            class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"
+          ></div>
+        </div>
+
+        <!-- Error State -->
+        <div
+          *ngIf="error && !loading"
+          class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded"
+        >
+          {{ error }}
+          <button
+            (click)="loadInvestments()"
+            class="ml-2 bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
+          >
+            Tentar novamente
+          </button>
+        </div>
+
+        <!-- Main Content -->
+        <div
+          *ngIf="!loading && !error"
+          class="flex flex-col 2md:flex-row gap-6"
+        >
+          <!-- Dashboard de Investimentos -->
+          <div
+            class="mx-auto bg-white rounded-xl shadow-md overflow-visible w-full xl:max-w-2/3"
+          >
+            <app-investment-dashboard
+              [investments]="investments"
+              [investmentSummary]="investmentSummary"
+              [loading]="loading"
+              [showBalance]="showBalance"
+              (toggleBalance)="toggleBalance()"
+            ></app-investment-dashboard>
+          </div>
+        </div>
+
+        <!-- Cards de Resumo e Estatísticas (abaixo, ocupando largura total) -->
+        <div *ngIf="!loading && !error" class="order-2 2md:order-none w-full">
+          <div class="flex flex-col lg:flex-row gap-6">
+            <!-- Card de Total de Investimentos -->
+            <div class="lg:w-1/2">
+              <app-investment-summary
+                [investments]="investments"
+                [investmentSummary]="investmentSummary"
+                [loading]="loading"
+                [showBalance]="showBalance"
+              ></app-investment-summary>
+            </div>
+
+            <!-- Card de Estatísticas com Gráfico Pizza -->
+            <div class="lg:w-1/2">
+              <app-investment-chart
+                [investments]="investments"
+                [loading]="loading"
+                [showBalance]="showBalance"
+              ></app-investment-chart>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</app-layout>

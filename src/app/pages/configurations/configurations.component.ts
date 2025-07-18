@@ -6,11 +6,13 @@ import {
   FormGroup,
   Validators,
 } from '@angular/forms';
-import { Subject, takeUntil, firstValueFrom } from 'rxjs';
+import { Subject, takeUntil, firstValueFrom, combineLatest } from 'rxjs';
 import { LayoutComponent } from '../../shared/components/layout/layout.component';
 import { AuthService, AuthUser } from '../../shared/services/Auth/auth.service';
 import { UserService } from '../../shared/services/User/user-service';
-import { User } from '../../shared/models/user';
+import { UserSettingsService } from '../../shared/services/UserSettings/user-settings.service';
+import { ThemeService } from '../../shared/services/Theme/theme.service';
+import { User, UserSettings } from '../../shared/models/user';
 
 @Component({
   selector: 'app-configurations',
@@ -23,18 +25,26 @@ export class ConfigurationsComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   userForm!: FormGroup;
+  settingsForm!: FormGroup;
   currentUser: AuthUser | null = null;
+  currentSettings: UserSettings | null = null;
   isLoading = false;
+  isSettingsLoading = false;
   isSuccess = false;
   errorMessage = '';
   successMessage = '';
+  settingsErrorMessage = '';
+  settingsSuccessMessage = '';
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private userService: UserService
+    private userService: UserService,
+    private userSettingsService: UserSettingsService,
+    private themeService: ThemeService
   ) {
     this.initForm();
+    this.initSettingsForm();
   }
 
   ngOnInit(): void {
@@ -44,6 +54,7 @@ export class ConfigurationsComponent implements OnInit, OnDestroy {
         this.currentUser = user;
         if (user) {
           this.loadUserData(user.id);
+          this.loadUserSettings(user.id);
         }
       });
   }
@@ -66,6 +77,18 @@ export class ConfigurationsComponent implements OnInit, OnDestroy {
     );
   }
 
+  private initSettingsForm(): void {
+    this.settingsForm = this.fb.group({
+      notifications: [true],
+      language: ['pt-BR'],
+      currency: ['BRL'],
+      twoFactorAuth: [false],
+      emailAlerts: [true],
+      smsAlerts: [false],
+      theme: ['light'],
+    });
+  }
+
   private passwordMatchValidator(form: FormGroup) {
     const newPassword = form.get('newPassword');
     const confirmPassword = form.get('confirmPassword');
@@ -85,7 +108,6 @@ export class ConfigurationsComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (user) => {
-          console.log('Dados do usuário carregados:', user);
           this.userForm.patchValue({
             name: user.name || user.username || '',
             email: user.email,
@@ -96,6 +118,28 @@ export class ConfigurationsComponent implements OnInit, OnDestroy {
           console.error('Erro ao carregar dados do usuário:', error);
           this.errorMessage = 'Erro ao carregar dados do usuário';
           this.isLoading = false;
+        },
+      });
+  }
+
+  loadUserSettings(userId: string): void {
+    this.isSettingsLoading = true;
+    this.userSettingsService
+      .getUserSettings(userId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (settings) => {
+          this.currentSettings = settings;
+          this.settingsForm.patchValue(settings);
+          this.isSettingsLoading = false;
+        },
+        error: (error) => {
+          console.error('Erro ao carregar configurações do usuário:', error);
+          // Se não encontrar configurações, usar as padrões
+          const defaultSettings = this.userSettingsService.getDefaultSettings();
+          this.currentSettings = defaultSettings;
+          this.settingsForm.patchValue(defaultSettings);
+          this.isSettingsLoading = false;
         },
       });
   }
@@ -245,6 +289,85 @@ export class ConfigurationsComponent implements OnInit, OnDestroy {
     this.successMessage = '';
     if (this.currentUser) {
       this.loadUserData(this.currentUser.id);
+    }
+  }
+
+  async onSubmitSettings(): Promise<void> {
+    if (this.settingsForm.invalid || !this.currentUser) {
+      return;
+    }
+
+    this.isSettingsLoading = true;
+    this.settingsErrorMessage = '';
+    this.settingsSuccessMessage = '';
+
+    const settingsValue = this.settingsForm.value as UserSettings;
+
+    this.userSettingsService
+      .updateUserSettings(this.currentUser.id, settingsValue)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (updatedSettings) => {
+          this.settingsSuccessMessage =
+            'Configurações atualizadas com sucesso!';
+
+          // Sync theme if it changed (check before updating currentSettings)
+          if (updatedSettings.theme !== this.currentSettings?.theme) {
+            this.themeService.setThemeFromUserSettings(updatedSettings.theme);
+          }
+
+          this.currentSettings = updatedSettings;
+
+          this.isSettingsLoading = false;
+
+          // Clear success message after 3 seconds
+          setTimeout(() => {
+            this.settingsSuccessMessage = '';
+          }, 3000);
+        },
+        error: (error) => {
+          console.error('Erro ao atualizar configurações:', error);
+          this.settingsErrorMessage =
+            'Erro ao atualizar configurações. Tente novamente.';
+          this.isSettingsLoading = false;
+        },
+      });
+  }
+
+  onThemeChange(theme: string): void {
+    // Apply theme immediately for better UX
+    this.themeService.setThemeFromUserSettings(theme);
+
+    if (this.currentUser) {
+      // Update user settings in the API
+      this.userSettingsService
+        .updateTheme(this.currentUser.id, theme)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (updatedSettings) => {
+            this.currentSettings = updatedSettings;
+          },
+          error: (error) => {
+            console.error('Erro ao atualizar tema:', error);
+            // Theme was already applied locally, so user sees the change
+            // but we show an error message for the failed sync
+            this.settingsErrorMessage =
+              'Erro ao sincronizar tema. Tema aplicado localmente.';
+            setTimeout(() => {
+              this.settingsErrorMessage = '';
+            }, 3000);
+          },
+        });
+    }
+    // If no user is logged in, theme is saved to localStorage automatically
+  }
+
+  resetSettingsForm(): void {
+    this.settingsForm.reset();
+    this.settingsErrorMessage = '';
+    this.settingsSuccessMessage = '';
+    if (this.currentUser) {
+      this.loadUserSettings(this.currentUser.id);
     }
   }
 }

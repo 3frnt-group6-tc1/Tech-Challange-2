@@ -1,309 +1,597 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ReactiveFormsModule, FormBuilder } from '@angular/forms';
-import { of, throwError, BehaviorSubject } from 'rxjs';
-import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
-import { RouterTestingModule } from '@angular/router/testing';
-import { Component } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { Router, ActivatedRoute } from '@angular/router';
+import { of, throwError, BehaviorSubject, Subject } from 'rxjs';
+
 import { ConfigurationsComponent } from './configurations.component';
 import { AuthService, AuthUser } from '../../shared/services/Auth/auth.service';
 import { UserService } from '../../shared/services/User/user-service';
-import { User } from '../../shared/models/user';
-
-// Mock component for routing
-@Component({ template: '' })
-class MockComponent {}
+import { UserSettingsService } from '../../shared/services/UserSettings/user-settings.service';
+import { ThemeService } from '../../shared/services/Theme/theme.service';
+import { User, UserSettings } from '../../shared/models/user';
 
 describe('ConfigurationsComponent', () => {
   let component: ConfigurationsComponent;
   let fixture: ComponentFixture<ConfigurationsComponent>;
-  let authServiceSpy: jasmine.SpyObj<AuthService>;
-  let userServiceSpy: jasmine.SpyObj<UserService>;
-  let mockCurrentUserSubject: BehaviorSubject<AuthUser | null>;
-  let router: Router;
+  let mockAuthService: jasmine.SpyObj<AuthService>;
+  let mockUserService: jasmine.SpyObj<UserService>;
+  let mockUserSettingsService: jasmine.SpyObj<UserSettingsService>;
+  let mockThemeService: jasmine.SpyObj<ThemeService>;
+  let currentUserSubject: BehaviorSubject<AuthUser | null>;
 
-  const mockUser: AuthUser = {
+  const mockAuthUser: AuthUser = {
     id: '1',
-    email: 'test@example.com',
     username: 'testuser',
     name: 'Test User',
+    email: 'test@example.com',
   };
 
-  const mockUserData: User = {
+  const mockUser: User = {
     id: '1',
-    email: 'test@example.com',
     username: 'testuser',
     name: 'Test User',
+    email: 'test@example.com',
     password: 'password123',
   };
 
+  const mockUserSettings: UserSettings = {
+    notifications: true,
+    language: 'pt-BR',
+    currency: 'BRL',
+    twoFactorAuth: false,
+    emailAlerts: true,
+    smsAlerts: false,
+    theme: 'light',
+  };
+
   beforeEach(async () => {
-    mockCurrentUserSubject = new BehaviorSubject<AuthUser | null>(null);
+    currentUserSubject = new BehaviorSubject<AuthUser | null>(mockAuthUser);
 
-    const authSpy = jasmine.createSpyObj('AuthService', ['updateCurrentUser'], {
-      currentUser$: mockCurrentUserSubject.asObservable(),
-    });
-
-    const userSpy = jasmine.createSpyObj('UserService', [
+    const authServiceSpy = jasmine.createSpyObj(
+      'AuthService',
+      ['updateCurrentUser'],
+      {
+        currentUser$: currentUserSubject.asObservable(),
+      }
+    );
+    const userServiceSpy = jasmine.createSpyObj('UserService', [
       'getById',
-      'getAll',
       'update',
+      'getAll',
+    ]);
+    const userSettingsServiceSpy = jasmine.createSpyObj('UserSettingsService', [
+      'getUserSettings',
+      'updateUserSettings',
+      'getDefaultSettings',
+      'updateTheme',
+    ]);
+    const themeServiceSpy = jasmine.createSpyObj('ThemeService', [
+      'setThemeFromUserSettings',
     ]);
 
+    const routerSpy = jasmine.createSpyObj(
+      'Router',
+      ['navigate', 'createUrlTree', 'serializeUrl'],
+      {
+        url: '/configurations',
+        events: new Subject(),
+      }
+    );
+
     await TestBed.configureTestingModule({
-      imports: [
-        ConfigurationsComponent,
-        ReactiveFormsModule,
-        CommonModule,
-        RouterTestingModule.withRoutes([
-          { path: 'panel', component: MockComponent },
-          { path: 'login', component: MockComponent },
-        ]),
-      ],
+      imports: [ConfigurationsComponent, ReactiveFormsModule],
       providers: [
         FormBuilder,
-        { provide: AuthService, useValue: authSpy },
-        { provide: UserService, useValue: userSpy },
+        { provide: AuthService, useValue: authServiceSpy },
+        { provide: UserService, useValue: userServiceSpy },
+        { provide: UserSettingsService, useValue: userSettingsServiceSpy },
+        { provide: ThemeService, useValue: themeServiceSpy },
+        { provide: Router, useValue: routerSpy },
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: { params: {} },
+            params: of({}),
+            queryParams: of({}),
+          },
+        },
       ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ConfigurationsComponent);
     component = fixture.componentInstance;
-    authServiceSpy = TestBed.inject(AuthService) as jasmine.SpyObj<AuthService>;
-    userServiceSpy = TestBed.inject(UserService) as jasmine.SpyObj<UserService>;
-    router = TestBed.inject(Router);
+    mockAuthService = TestBed.inject(
+      AuthService
+    ) as jasmine.SpyObj<AuthService>;
+    mockUserService = TestBed.inject(
+      UserService
+    ) as jasmine.SpyObj<UserService>;
+    mockUserSettingsService = TestBed.inject(
+      UserSettingsService
+    ) as jasmine.SpyObj<UserSettingsService>;
+    mockThemeService = TestBed.inject(
+      ThemeService
+    ) as jasmine.SpyObj<ThemeService>;
+
+    const mockRouter = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+    mockRouter.createUrlTree.and.returnValue({} as any);
+    mockRouter.serializeUrl.and.returnValue('/mock-url');
+
+    // Setup default spy returns
+    mockUserService.getById.and.returnValue(of(mockUser));
+    mockUserService.update.and.returnValue(of(mockUser));
+    mockUserService.getAll.and.returnValue(of([mockUser]));
+    mockUserSettingsService.getUserSettings.and.returnValue(
+      of(mockUserSettings)
+    );
+    mockUserSettingsService.updateUserSettings.and.returnValue(
+      of(mockUserSettings)
+    );
+    mockUserSettingsService.getDefaultSettings.and.returnValue(
+      mockUserSettings
+    );
+    mockUserSettingsService.updateTheme.and.returnValue(of(mockUserSettings));
+  });
+
+  beforeEach(() => {
+    fixture.detectChanges();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should initialize form with proper validators', () => {
-    expect(component.userForm).toBeDefined();
-    expect(component.userForm.get('name')).toBeDefined();
-    expect(component.userForm.get('email')).toBeDefined();
-    expect(component.userForm.get('currentPassword')).toBeDefined();
-    expect(component.userForm.get('newPassword')).toBeDefined();
-    expect(component.userForm.get('confirmPassword')).toBeDefined();
-  });
-
-  it('should load user data when currentUser is set', () => {
-    userServiceSpy.getById.and.returnValue(of(mockUserData));
-
-    mockCurrentUserSubject.next(mockUser);
-    fixture.detectChanges();
-
-    expect(userServiceSpy.getById).toHaveBeenCalledWith('1');
-    expect(component.userForm.get('name')?.value).toBe('Test User');
-    expect(component.userForm.get('email')?.value).toBe('test@example.com');
-  });
-
-  it('should handle error when loading user data', () => {
-    userServiceSpy.getById.and.returnValue(throwError('Error loading user'));
-
-    mockCurrentUserSubject.next(mockUser);
-    fixture.detectChanges();
-
-    expect(component.errorMessage).toBe('Erro ao carregar dados do usuário');
-    expect(component.isLoading).toBe(false);
-  });
-
-  describe('form validation', () => {
-    beforeEach(() => {
-      mockCurrentUserSubject.next(mockUser);
-      userServiceSpy.getById.and.returnValue(of(mockUserData));
-      fixture.detectChanges();
+  describe('Component Initialization', () => {
+    it('should initialize user form with default validators', () => {
+      // The form should be loaded with current user data, not empty
+      expect(component.userForm.get('name')?.value).toBe('Test User');
+      expect(component.userForm.get('email')?.value).toBe('test@example.com');
+      expect(component.userForm.get('currentPassword')?.value).toBe('');
+      expect(component.userForm.get('newPassword')?.value).toBe('');
+      expect(component.userForm.get('confirmPassword')?.value).toBe('');
     });
 
-    it('should show error for empty name', () => {
-      component.userForm.patchValue({ name: '' });
-      component.userForm.get('name')?.markAsTouched();
-
-      const errorMessage = component.getErrorMessage('name');
-      expect(errorMessage).toBe('Nome é obrigatório');
+    it('should initialize settings form with default values', () => {
+      expect(component.settingsForm.get('notifications')?.value).toBe(true);
+      expect(component.settingsForm.get('language')?.value).toBe('pt-BR');
+      expect(component.settingsForm.get('currency')?.value).toBe('BRL');
+      expect(component.settingsForm.get('twoFactorAuth')?.value).toBe(false);
+      expect(component.settingsForm.get('emailAlerts')?.value).toBe(true);
+      expect(component.settingsForm.get('smsAlerts')?.value).toBe(false);
+      expect(component.settingsForm.get('theme')?.value).toBe('light');
     });
 
-    it('should show error for short name', () => {
-      component.userForm.patchValue({ name: 'a' });
-      component.userForm.get('name')?.markAsTouched();
-
-      const errorMessage = component.getErrorMessage('name');
-      expect(errorMessage).toBe('Nome deve ter pelo menos 2 caracteres');
+    it('should set loading states to false initially', () => {
+      expect(component.isLoading).toBe(false);
+      expect(component.isSettingsLoading).toBe(false);
     });
 
-    it('should show error for empty email', () => {
-      component.userForm.patchValue({ email: '' });
-      component.userForm.get('email')?.markAsTouched();
-
-      const errorMessage = component.getErrorMessage('email');
-      expect(errorMessage).toBe('Email é obrigatório');
+    it('should set success and error messages to empty initially', () => {
+      expect(component.isSuccess).toBe(false);
+      expect(component.errorMessage).toBe('');
+      expect(component.successMessage).toBe('');
+      expect(component.settingsErrorMessage).toBe('');
+      expect(component.settingsSuccessMessage).toBe('');
     });
 
-    it('should show error for invalid email', () => {
-      component.userForm.patchValue({ email: 'invalid-email' });
-      component.userForm.get('email')?.markAsTouched();
+    it('should subscribe to currentUser$ and load data when user is available', () => {
+      spyOn(component, 'loadUserData');
+      spyOn(component, 'loadUserSettings');
 
-      const errorMessage = component.getErrorMessage('email');
-      expect(errorMessage).toBe('Email inválido');
-    });
+      component.ngOnInit();
 
-    it('should show error for short new password', () => {
-      component.userForm.patchValue({ newPassword: '123' });
-      component.userForm.get('newPassword')?.markAsTouched();
-
-      const errorMessage = component.getErrorMessage('newPassword');
-      expect(errorMessage).toBe('Nova senha deve ter pelo menos 6 caracteres');
-    });
-
-    it('should show error when passwords do not match', () => {
-      component.userForm.patchValue({
-        newPassword: 'password123',
-        confirmPassword: 'different123',
-      });
-      component.userForm.get('confirmPassword')?.markAsTouched();
-
-      const errorMessage = component.getErrorMessage('confirmPassword');
-      expect(errorMessage).toBe('As senhas não coincidem');
+      expect(component.currentUser).toEqual(mockAuthUser);
+      expect(component.loadUserData).toHaveBeenCalledWith('1');
+      expect(component.loadUserSettings).toHaveBeenCalledWith('1');
     });
   });
 
-  describe('onSubmit', () => {
-    beforeEach(() => {
-      mockCurrentUserSubject.next(mockUser);
-      userServiceSpy.getById.and.returnValue(of(mockUserData));
-      fixture.detectChanges();
+  describe('Data Loading', () => {
+    it('should load user data successfully', () => {
+      component.loadUserData('1');
+
+      expect(mockUserService.getById).toHaveBeenCalledWith('1');
+      expect(component.userForm.get('name')?.value).toBe('Test User');
+      expect(component.userForm.get('email')?.value).toBe('test@example.com');
+      expect(component.isLoading).toBe(false);
     });
 
-    it('should not submit if form is invalid', async () => {
-      component.userForm.patchValue({
-        name: '',
-        email: 'test@example.com',
-      });
-
-      await component.onSubmit();
-
-      expect(userServiceSpy.update).not.toHaveBeenCalled();
-    });
-
-    it('should update user successfully without password change', async () => {
-      const updatedUser = { ...mockUserData, name: 'Updated Name' };
-      userServiceSpy.getAll.and.returnValue(of([]));
-      userServiceSpy.update.and.returnValue(of(updatedUser));
-
-      component.userForm.patchValue({
-        name: 'Updated Name',
-        email: 'test@example.com',
-      });
-
-      await component.onSubmit();
-
-      expect(userServiceSpy.update).toHaveBeenCalledWith(
-        '1',
-        jasmine.objectContaining({
-          name: 'Updated Name',
-          email: 'test@example.com',
-        })
+    it('should handle user data loading error', () => {
+      mockUserService.getById.and.returnValue(
+        throwError(() => new Error('Load error'))
       );
-      expect(component.successMessage).toBe('Dados atualizados com sucesso!');
-      expect(authServiceSpy.updateCurrentUser).toHaveBeenCalled();
+      spyOn(console, 'error');
+
+      component.loadUserData('1');
+
+      expect(console.error).toHaveBeenCalledWith(
+        'Erro ao carregar dados do usuário:',
+        jasmine.any(Error)
+      );
+      expect(component.errorMessage).toBe('Erro ao carregar dados do usuário');
+      expect(component.isLoading).toBe(false);
     });
 
-    it('should update user successfully with password change', async () => {
-      const updatedUser = { ...mockUserData, name: 'Updated Name' };
-      userServiceSpy.getAll.and.returnValue(of([]));
-      userServiceSpy.update.and.returnValue(of(updatedUser));
+    it('should load user settings successfully', () => {
+      component.loadUserSettings('1');
 
+      expect(mockUserSettingsService.getUserSettings).toHaveBeenCalledWith('1');
+      expect(component.currentSettings).toEqual(mockUserSettings);
+      expect(component.settingsForm.get('notifications')?.value).toBe(true);
+      expect(component.settingsForm.get('language')?.value).toBe('pt-BR');
+      expect(component.isSettingsLoading).toBe(false);
+    });
+
+    it('should use default settings when loading fails', () => {
+      mockUserSettingsService.getUserSettings.and.returnValue(
+        throwError(() => new Error('Settings error'))
+      );
+      spyOn(console, 'error');
+
+      component.loadUserSettings('1');
+
+      expect(console.error).toHaveBeenCalledWith(
+        'Erro ao carregar configurações do usuário:',
+        jasmine.any(Error)
+      );
+      expect(mockUserSettingsService.getDefaultSettings).toHaveBeenCalled();
+      expect(component.currentSettings).toEqual(mockUserSettings);
+      expect(component.isSettingsLoading).toBe(false);
+    });
+  });
+
+  describe('Form Validation', () => {
+    it('should validate required fields in user form', () => {
+      component.userForm.get('name')?.setValue('');
+      component.userForm.get('email')?.setValue('');
+      component.userForm.get('name')?.markAsTouched();
+      component.userForm.get('email')?.markAsTouched();
+
+      expect(component.userForm.get('name')?.hasError('required')).toBe(true);
+      expect(component.userForm.get('email')?.hasError('required')).toBe(true);
+    });
+
+    it('should validate email format', () => {
+      component.userForm.get('email')?.setValue('invalid-email');
+      expect(component.userForm.get('email')?.hasError('email')).toBe(true);
+
+      component.userForm.get('email')?.setValue('valid@email.com');
+      expect(component.userForm.get('email')?.hasError('email')).toBe(false);
+    });
+
+    it('should validate password confirmation', () => {
+      component.userForm.get('newPassword')?.setValue('password123');
+      component.userForm.get('confirmPassword')?.setValue('different');
+
+      expect(component.userForm.hasError('passwordMismatch')).toBe(true);
+
+      component.userForm.get('confirmPassword')?.setValue('password123');
+      expect(component.userForm.hasError('passwordMismatch')).toBe(false);
+    });
+
+    it('should validate minimum length for fields', () => {
+      component.userForm.get('name')?.setValue('A');
+      expect(component.userForm.get('name')?.hasError('minlength')).toBe(true);
+
+      component.userForm.get('newPassword')?.setValue('123');
+      expect(component.userForm.get('newPassword')?.hasError('minlength')).toBe(
+        true
+      );
+    });
+  });
+
+  describe('User Form Submission', () => {
+    beforeEach(() => {
+      component.currentUser = mockAuthUser;
       component.userForm.patchValue({
-        name: 'Updated Name',
-        email: 'test@example.com',
+        name: 'Updated User',
+        email: 'updated@example.com',
         newPassword: 'newpassword123',
         confirmPassword: 'newpassword123',
       });
+    });
 
+    it('should submit user form successfully', async () => {
       await component.onSubmit();
 
-      expect(userServiceSpy.update).toHaveBeenCalledWith(
+      expect(component.isLoading).toBe(false);
+      expect(mockUserService.update).toHaveBeenCalledWith(
         '1',
         jasmine.objectContaining({
-          name: 'Updated Name',
-          email: 'test@example.com',
+          name: 'Updated User',
+          email: 'updated@example.com',
           password: 'newpassword123',
         })
       );
       expect(component.successMessage).toBe('Dados atualizados com sucesso!');
+      expect(component.isSuccess).toBe(true);
+      expect(mockAuthService.updateCurrentUser).toHaveBeenCalled();
     });
 
     it('should handle email already exists error', async () => {
-      const existingUsers = [
-        {
-          id: '2',
-          email: 'test@example.com',
-          username: 'other',
-          name: 'Other',
-          password: 'pass',
-        },
-      ];
-      userServiceSpy.getAll.and.returnValue(of(existingUsers));
-
-      component.userForm.patchValue({
-        name: 'Updated Name',
-        email: 'test@example.com',
-      });
+      const existingUser = {
+        ...mockUser,
+        id: '2',
+        email: 'updated@example.com',
+      };
+      mockUserService.getAll.and.returnValue(of([mockUser, existingUser]));
 
       await component.onSubmit();
 
       expect(component.errorMessage).toBe(
         'Este email já está sendo usado por outro usuário'
       );
-      expect(userServiceSpy.update).not.toHaveBeenCalled();
+      expect(component.isLoading).toBe(false);
+      expect(mockUserService.update).not.toHaveBeenCalled();
     });
 
-    it('should handle update error', async () => {
-      userServiceSpy.getAll.and.returnValue(of([]));
-      userServiceSpy.update.and.returnValue(throwError('Update failed'));
-
-      component.userForm.patchValue({
-        name: 'Updated Name',
-        email: 'test@example.com',
-      });
+    it('should handle user form submission error', async () => {
+      mockUserService.update.and.returnValue(
+        throwError(() => new Error('Update error'))
+      );
 
       await component.onSubmit();
 
+      expect(component.isLoading).toBe(false);
       expect(component.errorMessage).toBe(
         'Erro ao atualizar dados. Tente novamente.'
       );
-      expect(component.isLoading).toBe(false);
+    });
+
+    it('should not submit if user form is invalid', async () => {
+      component.userForm.get('email')?.setValue('invalid-email');
+
+      await component.onSubmit();
+
+      expect(mockUserService.update).not.toHaveBeenCalled();
+    });
+
+    it('should not submit if no current user', async () => {
+      component.currentUser = null;
+
+      await component.onSubmit();
+
+      expect(mockUserService.update).not.toHaveBeenCalled();
+    });
+
+    it('should clear password fields after successful submission', async () => {
+      await component.onSubmit();
+
+      expect(component.userForm.get('currentPassword')?.value).toBe('');
+      expect(component.userForm.get('newPassword')?.value).toBe('');
+      expect(component.userForm.get('confirmPassword')?.value).toBe('');
+    });
+
+    it('should clear success message after timeout', (done) => {
+      component.onSubmit().then(() => {
+        expect(component.successMessage).toBe('Dados atualizados com sucesso!');
+
+        setTimeout(() => {
+          expect(component.successMessage).toBe('');
+          expect(component.isSuccess).toBe(false);
+          done();
+        }, 3100);
+      });
     });
   });
 
-  describe('utility methods', () => {
-    it('should check if field is invalid', () => {
-      component.userForm.get('name')?.markAsTouched();
-      component.userForm.get('name')?.setErrors({ required: true });
-
-      expect(component.isFieldInvalid('name')).toBe(true);
+  describe('Settings Form Submission', () => {
+    beforeEach(() => {
+      component.currentUser = mockAuthUser;
+      component.settingsForm.patchValue({
+        notifications: false,
+        language: 'en-US',
+        currency: 'USD',
+        twoFactorAuth: true,
+        emailAlerts: false,
+        smsAlerts: true,
+        theme: 'dark',
+      });
     });
 
-    it('should reset form', () => {
-      component.errorMessage = 'Error';
-      component.successMessage = 'Success';
-      component.currentUser = mockUser;
-      userServiceSpy.getById.and.returnValue(of(mockUserData));
+    it('should submit settings form successfully', async () => {
+      await component.onSubmitSettings();
+
+      expect(component.isSettingsLoading).toBe(false);
+      expect(mockUserSettingsService.updateUserSettings).toHaveBeenCalledWith(
+        '1',
+        {
+          notifications: false,
+          language: 'en-US',
+          currency: 'USD',
+          twoFactorAuth: true,
+          emailAlerts: false,
+          smsAlerts: true,
+          theme: 'dark',
+        }
+      );
+      expect(component.settingsSuccessMessage).toBe(
+        'Configurações atualizadas com sucesso!'
+      );
+    });
+
+    it('should handle settings form submission error', async () => {
+      mockUserSettingsService.updateUserSettings.and.returnValue(
+        throwError(() => new Error('Settings error'))
+      );
+
+      await component.onSubmitSettings();
+
+      expect(component.isSettingsLoading).toBe(false);
+      expect(component.settingsErrorMessage).toBe(
+        'Erro ao atualizar configurações. Tente novamente.'
+      );
+    });
+
+    it('should not submit if settings form is invalid', async () => {
+      component.settingsForm.get('language')?.setValue('');
+      component.settingsForm.get('language')?.setErrors({ required: true });
+
+      await component.onSubmitSettings();
+
+      expect(mockUserSettingsService.updateUserSettings).not.toHaveBeenCalled();
+    });
+
+    it('should not submit if no current user', async () => {
+      component.currentUser = null;
+
+      await component.onSubmitSettings();
+
+      expect(mockUserSettingsService.updateUserSettings).not.toHaveBeenCalled();
+    });
+
+    it('should sync theme when settings are updated', async () => {
+      const updatedSettings = { ...mockUserSettings, theme: 'dark' };
+      mockUserSettingsService.updateUserSettings.and.returnValue(
+        of(updatedSettings)
+      );
+      component.currentSettings = mockUserSettings; // Set initial theme to 'light'
+
+      // Set the form with the new theme value
+      component.settingsForm.patchValue({ theme: 'dark' });
+
+      await component.onSubmitSettings();
+
+      expect(mockThemeService.setThemeFromUserSettings).toHaveBeenCalledWith(
+        'dark'
+      );
+    });
+
+    it('should clear success message after timeout', (done) => {
+      component.onSubmitSettings().then(() => {
+        expect(component.settingsSuccessMessage).toBe(
+          'Configurações atualizadas com sucesso!'
+        );
+
+        setTimeout(() => {
+          expect(component.settingsSuccessMessage).toBe('');
+          done();
+        }, 3100);
+      });
+    });
+  });
+
+  describe('Theme Management', () => {
+    beforeEach(() => {
+      component.currentUser = mockAuthUser;
+    });
+
+    it('should apply theme immediately and update user settings', () => {
+      component.onThemeChange('dark');
+
+      expect(mockThemeService.setThemeFromUserSettings).toHaveBeenCalledWith(
+        'dark'
+      );
+      expect(mockUserSettingsService.updateTheme).toHaveBeenCalledWith(
+        '1',
+        'dark'
+      );
+    });
+
+    it('should handle theme update error gracefully', () => {
+      mockUserSettingsService.updateTheme.and.returnValue(
+        throwError(() => new Error('Theme error'))
+      );
+      spyOn(console, 'error');
+
+      component.onThemeChange('dark');
+
+      expect(mockThemeService.setThemeFromUserSettings).toHaveBeenCalledWith(
+        'dark'
+      );
+      expect(console.error).toHaveBeenCalledWith(
+        'Erro ao atualizar tema:',
+        jasmine.any(Error)
+      );
+      expect(component.settingsErrorMessage).toBe(
+        'Erro ao sincronizar tema. Tema aplicado localmente.'
+      );
+    });
+
+    it('should apply theme even when no user is logged in', () => {
+      component.currentUser = null;
+
+      component.onThemeChange('dark');
+
+      expect(mockThemeService.setThemeFromUserSettings).toHaveBeenCalledWith(
+        'dark'
+      );
+      expect(mockUserSettingsService.updateTheme).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Error Messages', () => {
+    it('should return correct error messages for form fields', () => {
+      component.userForm.get('name')?.setValue('');
+      component.userForm.get('name')?.markAsTouched();
+
+      expect(component.getErrorMessage('name')).toBe('Nome é obrigatório');
+
+      component.userForm.get('email')?.setValue('invalid');
+      component.userForm.get('email')?.markAsTouched();
+
+      expect(component.getErrorMessage('email')).toBe('Email inválido');
+    });
+
+    it('should return password mismatch error', () => {
+      component.userForm.get('newPassword')?.setValue('password123');
+      component.userForm.get('confirmPassword')?.setValue('different');
+      component.userForm.get('confirmPassword')?.markAsTouched();
+
+      expect(component.getErrorMessage('confirmPassword')).toBe(
+        'As senhas não coincidem'
+      );
+    });
+
+    it('should check if field is invalid correctly', () => {
+      component.userForm.get('name')?.setValue('');
+      component.userForm.get('name')?.markAsTouched();
+
+      expect(component.isFieldInvalid('name')).toBe(true);
+
+      component.userForm.get('name')?.setValue('Valid Name');
+
+      expect(component.isFieldInvalid('name')).toBe(false);
+    });
+  });
+
+  describe('Form Reset', () => {
+    it('should reset user form and clear messages', () => {
+      component.currentUser = mockAuthUser;
+      component.errorMessage = 'Some error';
+      component.successMessage = 'Some success';
+      spyOn(component, 'loadUserData');
 
       component.resetForm();
 
       expect(component.errorMessage).toBe('');
       expect(component.successMessage).toBe('');
+      expect(component.loadUserData).toHaveBeenCalledWith('1');
+    });
+
+    it('should reset settings form and clear messages', () => {
+      component.currentUser = mockAuthUser;
+      component.settingsErrorMessage = 'Some error';
+      component.settingsSuccessMessage = 'Some success';
+      spyOn(component, 'loadUserSettings');
+
+      component.resetSettingsForm();
+
+      expect(component.settingsErrorMessage).toBe('');
+      expect(component.settingsSuccessMessage).toBe('');
+      expect(component.loadUserSettings).toHaveBeenCalledWith('1');
     });
   });
 
-  it('should clean up subscriptions on destroy', () => {
-    spyOn(component['destroy$'], 'next');
-    spyOn(component['destroy$'], 'complete');
+  describe('Component Lifecycle', () => {
+    it('should clean up subscriptions on destroy', () => {
+      spyOn(component['destroy$'], 'next');
+      spyOn(component['destroy$'], 'complete');
 
-    component.ngOnDestroy();
+      component.ngOnDestroy();
 
-    expect(component['destroy$'].next).toHaveBeenCalled();
-    expect(component['destroy$'].complete).toHaveBeenCalled();
+      expect(component['destroy$'].next).toHaveBeenCalled();
+      expect(component['destroy$'].complete).toHaveBeenCalled();
+    });
   });
 });

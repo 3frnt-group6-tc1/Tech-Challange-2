@@ -6,7 +6,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 
 import { CardsComponent } from './cards.component';
 import { CardService } from '../../shared/services/Card/card.service';
-import { AuthService } from '../../shared/services/Auth/auth.service';
+import { AuthService, AuthUser } from '../../shared/services/Auth/auth.service';
 import {
   Card,
   CardResponse,
@@ -19,12 +19,14 @@ describe('CardsComponent', () => {
   let fixture: ComponentFixture<CardsComponent>;
   let cardServiceSpy: jasmine.SpyObj<CardService>;
   let authServiceSpy: jasmine.SpyObj<AuthService>;
-  let mockPrimaryAccountSubject: BehaviorSubject<Account | null>;
+  let mockCurrentUserSubject: BehaviorSubject<AuthUser | null>;
 
-  const mockAccount: Account = {
-    id: '1',
-    userId: 'user1',
-    type: 'checking',
+  const mockAuthUser: AuthUser = {
+    id: 'user1',
+    email: 'test@test.com',
+    username: 'testuser',
+    name: 'Test User',
+    accountId: '1',
   };
 
   const mockCard: Card = {
@@ -46,7 +48,7 @@ describe('CardsComponent', () => {
   };
 
   beforeEach(async () => {
-    mockPrimaryAccountSubject = new BehaviorSubject<Account | null>(null);
+    mockCurrentUserSubject = new BehaviorSubject<AuthUser | null>(null);
 
     const cardSpy = jasmine.createSpyObj('CardService', [
       'getCards',
@@ -59,7 +61,7 @@ describe('CardsComponent', () => {
       'AuthService',
       ['getPrimaryAccountId'],
       {
-        primaryAccount$: mockPrimaryAccountSubject.asObservable(),
+        currentUser$: mockCurrentUserSubject.asObservable(),
       }
     );
 
@@ -112,7 +114,7 @@ describe('CardsComponent', () => {
     authServiceSpy.getPrimaryAccountId.and.returnValue('1');
     cardServiceSpy.getCards.and.returnValue(of(mockCardResponse));
 
-    mockPrimaryAccountSubject.next(mockAccount);
+    mockCurrentUserSubject.next(mockAuthUser);
     fixture.detectChanges();
 
     expect(cardServiceSpy.getCards).toHaveBeenCalledWith('1');
@@ -129,7 +131,7 @@ describe('CardsComponent', () => {
     authServiceSpy.getPrimaryAccountId.and.returnValue('1');
     cardServiceSpy.getCards.and.returnValue(of(singleCardResponse));
 
-    mockPrimaryAccountSubject.next(mockAccount);
+    mockCurrentUserSubject.next(mockAuthUser);
     fixture.detectChanges();
 
     expect(component.cards).toEqual([mockCard]);
@@ -140,7 +142,7 @@ describe('CardsComponent', () => {
     cardServiceSpy.getCards.and.returnValue(throwError('Error loading cards'));
     spyOn(console, 'error');
 
-    mockPrimaryAccountSubject.next(mockAccount);
+    mockCurrentUserSubject.next(mockAuthUser);
     fixture.detectChanges();
 
     expect(component.loading).toBe(false);
