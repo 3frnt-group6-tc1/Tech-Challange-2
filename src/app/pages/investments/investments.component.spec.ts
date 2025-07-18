@@ -1,10 +1,19 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { InvestmentsComponent } from './investments.component';
 import { InvestmentService } from '../../shared/services/Investment/investment.service';
-import { InvestmentTranslationService, TranslatedInvestmentData } from '../../shared/services/Investment/investment-translation.service';
+import {
+  InvestmentTranslationService,
+  TranslatedInvestmentData,
+} from '../../shared/services/Investment/investment-translation.service';
 import { of, throwError } from 'rxjs';
-import { Investment, InvestmentSummary, InvestmentResponse, InvestmentFilters } from '../../shared/models/investment';
+import {
+  Investment,
+  InvestmentSummary,
+  InvestmentResponse,
+  InvestmentFilters,
+} from '../../shared/models/investment';
 
 describe('InvestmentsComponent', () => {
   let component: InvestmentsComponent;
@@ -22,14 +31,14 @@ describe('InvestmentsComponent', () => {
       accountId: {
         _id: 'acc1',
         type: 'Conta Corrente',
-        accountNumber: '12345'
+        accountNumber: '12345',
       },
       __v: 0,
       createdAt: '2023-01-01T00:00:00.000Z',
       updatedAt: '2023-01-01T00:00:00.000Z',
       profit: 250,
       profitPercentage: 5,
-      isMatured: false
+      isMatured: false,
     },
     {
       _id: '2',
@@ -40,15 +49,15 @@ describe('InvestmentsComponent', () => {
       accountId: {
         _id: 'acc1',
         type: 'Conta Corrente',
-        accountNumber: '12345'
+        accountNumber: '12345',
       },
       __v: 0,
       createdAt: '2023-01-01T00:00:00.000Z',
       updatedAt: '2023-01-01T00:00:00.000Z',
       profit: -150,
       profitPercentage: -5,
-      isMatured: false
-    }
+      isMatured: false,
+    },
   ];
 
   const mockInvestmentSummary: InvestmentSummary = {
@@ -57,7 +66,7 @@ describe('InvestmentsComponent', () => {
     totalProfit: 100,
     totalProfitPercentage: 1.27,
     totalInvestments: 2,
-    byCategory: []
+    byCategory: [],
   };
 
   const mockInvestmentResponse: InvestmentResponse = {
@@ -65,40 +74,57 @@ describe('InvestmentsComponent', () => {
     result: {
       investments: mockInvestments,
       summary: mockInvestmentSummary,
-      count: 2
-    }
+      count: 2,
+    },
   };
 
   beforeEach(async () => {
-    const investmentServiceSpy = jasmine.createSpyObj('InvestmentService', ['getInvestments']);
-    const translationServiceSpy = jasmine.createSpyObj('InvestmentTranslationService', ['loadTranslations']);
+    const investmentServiceSpy = jasmine.createSpyObj('InvestmentService', [
+      'getInvestments',
+    ]);
+    const translationServiceSpy = jasmine.createSpyObj(
+      'InvestmentTranslationService',
+      ['loadTranslations']
+    );
     const activatedRouteMock = {
       params: of({}),
-      queryParams: of({})
+      queryParams: of({}),
     };
 
     await TestBed.configureTestingModule({
       imports: [InvestmentsComponent],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
       providers: [
         { provide: InvestmentService, useValue: investmentServiceSpy },
-        { provide: InvestmentTranslationService, useValue: translationServiceSpy },
-        { provide: ActivatedRoute, useValue: activatedRouteMock }
-      ]
+        {
+          provide: InvestmentTranslationService,
+          useValue: translationServiceSpy,
+        },
+        { provide: ActivatedRoute, useValue: activatedRouteMock },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(InvestmentsComponent);
     component = fixture.componentInstance;
-    mockInvestmentService = TestBed.inject(InvestmentService) as jasmine.SpyObj<InvestmentService>;
-    mockTranslationService = TestBed.inject(InvestmentTranslationService) as jasmine.SpyObj<InvestmentTranslationService>;
+    mockInvestmentService = TestBed.inject(
+      InvestmentService
+    ) as jasmine.SpyObj<InvestmentService>;
+    mockTranslationService = TestBed.inject(
+      InvestmentTranslationService
+    ) as jasmine.SpyObj<InvestmentTranslationService>;
 
     // Setup default mocks
     const mockTranslationData: TranslatedInvestmentData = {
       types: new Map(),
       categories: new Map(),
-      riskLevels: new Map()
+      riskLevels: new Map(),
     };
-    mockTranslationService.loadTranslations.and.returnValue(of(mockTranslationData));
-    mockInvestmentService.getInvestments.and.returnValue(of(mockInvestmentResponse));
+    mockTranslationService.loadTranslations.and.returnValue(
+      of(mockTranslationData)
+    );
+    mockInvestmentService.getInvestments.and.returnValue(
+      of(mockInvestmentResponse)
+    );
   });
 
   it('should create', () => {
@@ -140,13 +166,17 @@ describe('InvestmentsComponent', () => {
 
   it('should handle investment service error', () => {
     const errorMessage = 'Service error';
-    mockInvestmentService.getInvestments.and.returnValue(throwError(() => new Error(errorMessage)));
+    mockInvestmentService.getInvestments.and.returnValue(
+      throwError(() => new Error(errorMessage))
+    );
     spyOn(console, 'error');
 
     component.loadInvestments();
 
     expect(console.error).toHaveBeenCalled();
-    expect(component.error).toBe('Erro ao carregar investimentos. Tente novamente.');
+    expect(component.error).toBe(
+      'Erro ao carregar investimentos. Tente novamente.'
+    );
     expect(component.loading).toBeFalse();
   });
 
@@ -154,7 +184,7 @@ describe('InvestmentsComponent', () => {
     const filters: InvestmentFilters = {
       type: 'CDB',
       name: 'CDB Bank A',
-      isMatured: false
+      isMatured: false,
     };
 
     component.loadInvestments(filters);
@@ -165,7 +195,7 @@ describe('InvestmentsComponent', () => {
   it('should handle filter changes', () => {
     const filters: InvestmentFilters = {
       type: 'Ações',
-      name: 'PETR4'
+      name: 'PETR4',
     };
     spyOn(component, 'loadInvestments');
 
@@ -211,10 +241,10 @@ describe('InvestmentsComponent', () => {
           totalProfit: 0,
           totalProfitPercentage: 0,
           totalInvestments: 0,
-          byCategory: []
+          byCategory: [],
         },
-        count: 0
-      }
+        count: 0,
+      },
     };
     mockInvestmentService.getInvestments.and.returnValue(of(emptyResponse));
 
@@ -229,11 +259,16 @@ describe('InvestmentsComponent', () => {
   it('should handle malformed response gracefully', () => {
     const malformedResponse = {
       message: 'Success',
-      result: null
+      result: null,
     } as any;
     mockInvestmentService.getInvestments.and.returnValue(of(malformedResponse));
 
-    expect(() => component.loadInvestments()).not.toThrow();
+    component.loadInvestments();
+
+    expect(component.investments).toEqual([]);
+    expect(component.investmentSummary).toBeNull();
+    expect(component.loading).toBeFalse();
+    expect(component.error).toBeNull();
   });
 
   it('should reset error when starting new load', () => {
@@ -244,23 +279,39 @@ describe('InvestmentsComponent', () => {
     expect(component.error).toBeNull();
   });
 
-  it('should not load investments if translation loading fails', () => {
-    mockTranslationService.loadTranslations.and.returnValue(throwError(() => new Error('Translation error')));
+  it('should handle translation loading error', () => {
+    // Reset the translation service mock to return an error only for this test
+    mockTranslationService.loadTranslations.and.returnValue(
+      throwError(() => new Error('Translation error'))
+    );
     spyOn(component, 'loadInvestments');
+    spyOn(console, 'error');
 
     component.ngOnInit();
 
     expect(component.loadInvestments).not.toHaveBeenCalled();
+    expect(console.error).toHaveBeenCalledWith(
+      'Erro ao carregar traduções:',
+      jasmine.any(Error)
+    );
+    expect(component.error).toBe(
+      'Erro ao carregar traduções. Tente novamente.'
+    );
+    expect(component.loading).toBeFalse();
   });
 
   it('should handle undefined filters in loadInvestments', () => {
     component.loadInvestments(undefined);
 
-    expect(mockInvestmentService.getInvestments).toHaveBeenCalledWith(undefined);
+    expect(mockInvestmentService.getInvestments).toHaveBeenCalledWith(
+      undefined
+    );
   });
 
   it('should maintain loading state during async operations', () => {
-    mockInvestmentService.getInvestments.and.returnValue(of(mockInvestmentResponse));
+    mockInvestmentService.getInvestments.and.returnValue(
+      of(mockInvestmentResponse)
+    );
 
     component.loadInvestments();
 
@@ -273,12 +324,14 @@ describe('InvestmentsComponent', () => {
     const complexFilters: InvestmentFilters = {
       type: 'CDB',
       name: 'Test Investment',
-      isMatured: true
+      isMatured: true,
     };
 
     component.loadInvestments(complexFilters);
 
-    expect(mockInvestmentService.getInvestments).toHaveBeenCalledWith(complexFilters);
+    expect(mockInvestmentService.getInvestments).toHaveBeenCalledWith(
+      complexFilters
+    );
   });
 
   it('should preserve showBalance state through operations', () => {
@@ -304,8 +357,8 @@ describe('InvestmentsComponent', () => {
       result: {
         investments: mockInvestments,
         summary: null,
-        count: 2
-      }
+        count: 2,
+      },
     } as any;
     mockInvestmentService.getInvestments.and.returnValue(of(partialResponse));
 

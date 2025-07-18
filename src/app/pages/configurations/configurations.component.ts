@@ -310,12 +310,13 @@ export class ConfigurationsComponent implements OnInit, OnDestroy {
         next: (updatedSettings) => {
           this.settingsSuccessMessage =
             'Configurações atualizadas com sucesso!';
-          this.currentSettings = updatedSettings;
 
-          // Sync theme if it changed
+          // Sync theme if it changed (check before updating currentSettings)
           if (updatedSettings.theme !== this.currentSettings?.theme) {
             this.themeService.setThemeFromUserSettings(updatedSettings.theme);
           }
+
+          this.currentSettings = updatedSettings;
 
           this.isSettingsLoading = false;
 

@@ -1,6 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { InvestmentSummaryComponent } from './investment-summary.component';
-import { InvestmentTranslationService, TranslatedInvestmentData } from '../../services/Investment/investment-translation.service';
+import {
+  InvestmentTranslationService,
+  TranslatedInvestmentData,
+} from '../../services/Investment/investment-translation.service';
 import { of } from 'rxjs';
 import { Investment, InvestmentSummary } from '../../models/investment';
 
@@ -19,14 +22,14 @@ describe('InvestmentSummaryComponent', () => {
       accountId: {
         _id: 'acc1',
         type: 'Conta Corrente',
-        accountNumber: '12345'
+        accountNumber: '12345',
       },
       __v: 0,
       createdAt: '2023-01-01T00:00:00.000Z',
       updatedAt: '2023-01-01T00:00:00.000Z',
       profit: 250,
       profitPercentage: 5,
-      isMatured: false
+      isMatured: false,
     },
     {
       _id: '2',
@@ -37,14 +40,14 @@ describe('InvestmentSummaryComponent', () => {
       accountId: {
         _id: 'acc1',
         type: 'Conta Corrente',
-        accountNumber: '12345'
+        accountNumber: '12345',
       },
       __v: 0,
       createdAt: '2023-01-01T00:00:00.000Z',
       updatedAt: '2023-01-01T00:00:00.000Z',
       profit: -150,
       profitPercentage: -5,
-      isMatured: false
+      isMatured: false,
     },
     {
       _id: '3',
@@ -55,15 +58,15 @@ describe('InvestmentSummaryComponent', () => {
       accountId: {
         _id: 'acc1',
         type: 'Conta Corrente',
-        accountNumber: '12345'
+        accountNumber: '12345',
       },
       __v: 0,
       createdAt: '2023-01-01T00:00:00.000Z',
       updatedAt: '2023-01-01T00:00:00.000Z',
       profit: 100,
       profitPercentage: 5,
-      isMatured: false
-    }
+      isMatured: false,
+    },
   ];
 
   const mockInvestmentSummary: InvestmentSummary = {
@@ -72,40 +75,49 @@ describe('InvestmentSummaryComponent', () => {
     totalProfit: 200,
     totalProfitPercentage: 2.04,
     totalInvestments: 3,
-    byCategory: []
+    byCategory: [],
   };
 
   beforeEach(async () => {
-    const translationServiceSpy = jasmine.createSpyObj('InvestmentTranslationService', [
-      'loadTranslations',
-      'translateCategorySync'
-    ]);
+    const translationServiceSpy = jasmine.createSpyObj(
+      'InvestmentTranslationService',
+      ['loadTranslations', 'translateCategorySync']
+    );
 
     await TestBed.configureTestingModule({
       imports: [InvestmentSummaryComponent],
       providers: [
-        { provide: InvestmentTranslationService, useValue: translationServiceSpy }
-      ]
+        {
+          provide: InvestmentTranslationService,
+          useValue: translationServiceSpy,
+        },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(InvestmentSummaryComponent);
     component = fixture.componentInstance;
-    mockTranslationService = TestBed.inject(InvestmentTranslationService) as jasmine.SpyObj<InvestmentTranslationService>;
+    mockTranslationService = TestBed.inject(
+      InvestmentTranslationService
+    ) as jasmine.SpyObj<InvestmentTranslationService>;
 
     // Setup default mocks
     const mockTranslationData: TranslatedInvestmentData = {
       types: new Map(),
       categories: new Map(),
-      riskLevels: new Map()
+      riskLevels: new Map(),
     };
-    mockTranslationService.loadTranslations.and.returnValue(of(mockTranslationData));
-    mockTranslationService.translateCategorySync.and.callFake((category: string) => {
-      const translations: { [key: string]: string } = {
-        'Renda Fixa': 'Renda Fixa',
-        'Renda Variável': 'Renda Variável'
-      };
-      return translations[category] || category;
-    });
+    mockTranslationService.loadTranslations.and.returnValue(
+      of(mockTranslationData)
+    );
+    mockTranslationService.translateCategorySync.and.callFake(
+      (category: string) => {
+        const translations: { [key: string]: string } = {
+          'Renda Fixa': 'Renda Fixa',
+          'Renda Variável': 'Renda Variável',
+        };
+        return translations[category] || category;
+      }
+    );
   });
 
   it('should create', () => {
@@ -136,8 +148,8 @@ describe('InvestmentSummaryComponent', () => {
         currentValue: mockInvestments,
         previousValue: [],
         firstChange: false,
-        isFirstChange: () => false
-      }
+        isFirstChange: () => false,
+      },
     });
 
     expect(component.displaySummary.totalValue).toBe(10000);
@@ -153,8 +165,8 @@ describe('InvestmentSummaryComponent', () => {
         currentValue: mockInvestmentSummary,
         previousValue: null,
         firstChange: false,
-        isFirstChange: () => false
-      }
+        isFirstChange: () => false,
+      },
     });
 
     expect(component.displaySummary.totalValue).toBe(10000);
@@ -164,17 +176,21 @@ describe('InvestmentSummaryComponent', () => {
   it('should prioritize API summary over calculated summary', () => {
     component.investments = mockInvestments;
     component.investmentSummary = mockInvestmentSummary;
-    
+
     component['updateDisplaySummary']();
 
-    expect(component.displaySummary.totalValue).toBe(mockInvestmentSummary.totalValue);
-    expect(component.displaySummary.totalProfit).toBe(mockInvestmentSummary.totalProfit);
+    expect(component.displaySummary.totalValue).toBe(
+      mockInvestmentSummary.totalValue
+    );
+    expect(component.displaySummary.totalProfit).toBe(
+      mockInvestmentSummary.totalProfit
+    );
   });
 
   it('should calculate summary from investments when no API summary', () => {
     component.investments = mockInvestments;
     component.investmentSummary = null;
-    
+
     component['updateDisplaySummary']();
 
     expect(component.displaySummary.totalValue).toBe(10000);
@@ -184,7 +200,7 @@ describe('InvestmentSummaryComponent', () => {
   it('should reset summary when no data available', () => {
     component.investments = [];
     component.investmentSummary = null;
-    
+
     component['updateDisplaySummary']();
 
     expect(component.displaySummary.totalValue).toBe(0);
@@ -194,29 +210,42 @@ describe('InvestmentSummaryComponent', () => {
   });
 
   it('should generate categories from investments', () => {
-    const categories = component['generateCategoriesFromInvestments'](mockInvestments, 10000);
+    const categories = component['generateCategoriesFromInvestments'](
+      mockInvestments,
+      10000
+    );
 
     expect(categories.length).toBe(2);
-    
-    const rendaFixa = categories.find(cat => cat.name === 'Renda Fixa');
-    const rendaVariavel = categories.find(cat => cat.name === 'Renda Variável');
+
+    const rendaFixa = categories.find((cat) => cat.name === 'Renda Fixa');
+    const rendaVariavel = categories.find(
+      (cat) => cat.name === 'Renda Variável'
+    );
 
     expect(rendaFixa?.value).toBe(7000); // CDB (5000) + Tesouro (2000)
     expect(rendaVariavel?.value).toBe(3000); // Ações (3000)
   });
 
   it('should calculate percentages correctly for categories', () => {
-    const categories = component['generateCategoriesFromInvestments'](mockInvestments, 10000);
+    const categories = component['generateCategoriesFromInvestments'](
+      mockInvestments,
+      10000
+    );
 
-    const rendaFixa = categories.find(cat => cat.name === 'Renda Fixa');
-    const rendaVariavel = categories.find(cat => cat.name === 'Renda Variável');
+    const rendaFixa = categories.find((cat) => cat.name === 'Renda Fixa');
+    const rendaVariavel = categories.find(
+      (cat) => cat.name === 'Renda Variável'
+    );
 
     expect(rendaFixa?.percentage).toBe(70);
     expect(rendaVariavel?.percentage).toBe(30);
   });
 
   it('should assign colors to categories', () => {
-    const categories = component['generateCategoriesFromInvestments'](mockInvestments, 10000);
+    const categories = component['generateCategoriesFromInvestments'](
+      mockInvestments,
+      10000
+    );
 
     categories.forEach((category, index) => {
       expect(category.color).toBeDefined();
@@ -225,10 +254,15 @@ describe('InvestmentSummaryComponent', () => {
   });
 
   it('should sort categories by value descending', () => {
-    const categories = component['generateCategoriesFromInvestments'](mockInvestments, 10000);
+    const categories = component['generateCategoriesFromInvestments'](
+      mockInvestments,
+      10000
+    );
 
     for (let i = 0; i < categories.length - 1; i++) {
-      expect(categories[i].value).toBeGreaterThanOrEqual(categories[i + 1].value);
+      expect(categories[i].value).toBeGreaterThanOrEqual(
+        categories[i + 1].value
+      );
     }
   });
 
@@ -238,7 +272,10 @@ describe('InvestmentSummaryComponent', () => {
   });
 
   it('should handle investments with zero total value', () => {
-    const categories = component['generateCategoriesFromInvestments'](mockInvestments, 0);
+    const categories = component['generateCategoriesFromInvestments'](
+      mockInvestments,
+      0
+    );
     expect(categories).toEqual([]);
   });
 
@@ -246,7 +283,7 @@ describe('InvestmentSummaryComponent', () => {
     const invalidInvestments = [
       { ...mockInvestments[0], value: 0 },
       { ...mockInvestments[1], value: undefined as any },
-      mockInvestments[2]
+      mockInvestments[2],
     ];
 
     component.investments = invalidInvestments;
@@ -257,7 +294,7 @@ describe('InvestmentSummaryComponent', () => {
   });
 
   it('should format currency correctly', () => {
-    const formatted = component.formatCurrency(1500.50);
+    const formatted = component.formatCurrency(1500.5);
     expect(formatted).toContain('R$');
     expect(formatted).toContain('1.500,50');
   });
@@ -311,7 +348,10 @@ describe('InvestmentSummaryComponent', () => {
   });
 
   it('should handle zero total value for profit percentage calculation', () => {
-    const zeroValueInvestments = mockInvestments.map(inv => ({ ...inv, value: 0 }));
+    const zeroValueInvestments = mockInvestments.map((inv) => ({
+      ...inv,
+      value: 0,
+    }));
     component.investments = zeroValueInvestments;
     component['updateSummaryFromInvestments'](zeroValueInvestments);
 
@@ -325,8 +365,8 @@ describe('InvestmentSummaryComponent', () => {
         currentValue: true,
         previousValue: false,
         firstChange: false,
-        isFirstChange: () => false
-      }
+        isFirstChange: () => false,
+      },
     });
 
     expect(component.isLoading).toBeTrue();
@@ -344,39 +384,50 @@ describe('InvestmentSummaryComponent', () => {
 
   it('should handle translation service returning empty string', () => {
     mockTranslationService.translateCategorySync.and.returnValue('');
-    
-    const categories = component['generateCategoriesFromInvestments'](mockInvestments, 10000);
-    
+
+    const categories = component['generateCategoriesFromInvestments'](
+      mockInvestments,
+      10000
+    );
+
     expect(categories.length).toBeGreaterThan(0);
-    expect(categories.some(cat => cat.name === 'Outros')).toBeTrue();
+    expect(categories.some((cat) => cat.name === 'Outros')).toBeTrue();
   });
 
   it('should handle undefined category translation', () => {
     mockTranslationService.translateCategorySync.and.returnValue('Outros');
-    
-    const categories = component['generateCategoriesFromInvestments'](mockInvestments, 10000);
-    
+
+    const categories = component['generateCategoriesFromInvestments'](
+      mockInvestments,
+      10000
+    );
+
     expect(categories.length).toBeGreaterThan(0);
-    expect(categories.some(cat => cat.name === 'Outros')).toBeTrue();
+    expect(categories.some((cat) => cat.name === 'Outros')).toBeTrue();
   });
 
   it('should round percentages to 2 decimal places', () => {
     const testInvestments = [
       { ...mockInvestments[0], value: 3333 },
-      { ...mockInvestments[1], value: 6667 }
+      { ...mockInvestments[1], value: 6667 },
     ];
-    
-    const categories = component['generateCategoriesFromInvestments'](testInvestments, 10000);
-    
-    categories.forEach(category => {
-      expect(category.percentage).toBe(Math.round(category.percentage * 100) / 100);
+
+    const categories = component['generateCategoriesFromInvestments'](
+      testInvestments,
+      10000
+    );
+
+    categories.forEach((category) => {
+      expect(category.percentage).toBe(
+        Math.round(category.percentage * 100) / 100
+      );
     });
   });
 
   it('should handle null investments array gracefully', () => {
     component.investments = null as any;
     component.investmentSummary = null;
-    
+
     expect(() => component['updateDisplaySummary']()).not.toThrow();
     expect(component.displaySummary.totalValue).toBe(0);
   });

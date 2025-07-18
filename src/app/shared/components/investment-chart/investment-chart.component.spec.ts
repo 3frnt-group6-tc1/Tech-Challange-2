@@ -1,6 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { InvestmentChartComponent } from './investment-chart.component';
-import { InvestmentTranslationService, TranslatedInvestmentData } from '../../services/Investment/investment-translation.service';
+import {
+  InvestmentTranslationService,
+  TranslatedInvestmentData,
+} from '../../services/Investment/investment-translation.service';
 import { of, Subject } from 'rxjs';
 import { Investment } from '../../models/investment';
 
@@ -19,14 +22,14 @@ describe('InvestmentChartComponent', () => {
       accountId: {
         _id: 'acc1',
         type: 'Conta Corrente',
-        accountNumber: '12345'
+        accountNumber: '12345',
       },
       __v: 0,
       createdAt: '2023-01-01T00:00:00.000Z',
       updatedAt: '2023-01-01T00:00:00.000Z',
       profit: 250,
       profitPercentage: 5,
-      isMatured: false
+      isMatured: false,
     },
     {
       _id: '2',
@@ -37,14 +40,14 @@ describe('InvestmentChartComponent', () => {
       accountId: {
         _id: 'acc1',
         type: 'Conta Corrente',
-        accountNumber: '12345'
+        accountNumber: '12345',
       },
       __v: 0,
       createdAt: '2023-01-01T00:00:00.000Z',
       updatedAt: '2023-01-01T00:00:00.000Z',
       profit: -150,
       profitPercentage: -5,
-      isMatured: false
+      isMatured: false,
     },
     {
       _id: '3',
@@ -55,46 +58,53 @@ describe('InvestmentChartComponent', () => {
       accountId: {
         _id: 'acc1',
         type: 'Conta Corrente',
-        accountNumber: '12345'
+        accountNumber: '12345',
       },
       __v: 0,
       createdAt: '2023-01-01T00:00:00.000Z',
       updatedAt: '2023-01-01T00:00:00.000Z',
       profit: 100,
       profitPercentage: 5,
-      isMatured: false
-    }
+      isMatured: false,
+    },
   ];
 
   beforeEach(async () => {
-    const translationServiceSpy = jasmine.createSpyObj('InvestmentTranslationService', [
-      'loadTranslations',
-      'translateTypeSync'
-    ]);
+    const translationServiceSpy = jasmine.createSpyObj(
+      'InvestmentTranslationService',
+      ['loadTranslations', 'translateTypeSync']
+    );
 
     await TestBed.configureTestingModule({
       imports: [InvestmentChartComponent],
       providers: [
-        { provide: InvestmentTranslationService, useValue: translationServiceSpy }
-      ]
+        {
+          provide: InvestmentTranslationService,
+          useValue: translationServiceSpy,
+        },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(InvestmentChartComponent);
     component = fixture.componentInstance;
-    mockTranslationService = TestBed.inject(InvestmentTranslationService) as jasmine.SpyObj<InvestmentTranslationService>;
+    mockTranslationService = TestBed.inject(
+      InvestmentTranslationService
+    ) as jasmine.SpyObj<InvestmentTranslationService>;
 
     // Setup default mocks
     const mockTranslationData: TranslatedInvestmentData = {
       types: new Map(),
       categories: new Map(),
-      riskLevels: new Map()
+      riskLevels: new Map(),
     };
-    mockTranslationService.loadTranslations.and.returnValue(of(mockTranslationData));
+    mockTranslationService.loadTranslations.and.returnValue(
+      of(mockTranslationData)
+    );
     mockTranslationService.translateTypeSync.and.callFake((type: string) => {
       const translations: { [key: string]: string } = {
-        'CDB': 'Certificado de Depósito Bancário',
-        'Ações': 'Ações',
-        'Tesouro Direto': 'Tesouro Direto'
+        CDB: 'Certificado de Depósito Bancário',
+        Ações: 'Ações',
+        'Tesouro Direto': 'Tesouro Direto',
       };
       return translations[type] || type;
     });
@@ -125,8 +135,8 @@ describe('InvestmentChartComponent', () => {
         currentValue: mockInvestments,
         previousValue: [],
         firstChange: false,
-        isFirstChange: () => false
-      }
+        isFirstChange: () => false,
+      },
     });
 
     expect(component.totalValue).toBe(10000);
@@ -140,8 +150,8 @@ describe('InvestmentChartComponent', () => {
         currentValue: true,
         previousValue: false,
         firstChange: false,
-        isFirstChange: () => false
-      }
+        isFirstChange: () => false,
+      },
     });
 
     expect(component.isLoading).toBeTrue();
@@ -159,10 +169,16 @@ describe('InvestmentChartComponent', () => {
     component['updateChartData'](mockInvestments);
 
     expect(component.categories.length).toBe(3);
-    
-    const cdbCategory = component.categories.find(cat => cat.name === 'Certificado de Depósito Bancário');
-    const acaoCategory = component.categories.find(cat => cat.name === 'Ações');
-    const tesouroCategory = component.categories.find(cat => cat.name === 'Tesouro Direto');
+
+    const cdbCategory = component.categories.find(
+      (cat) => cat.name === 'Certificado de Depósito Bancário'
+    );
+    const acaoCategory = component.categories.find(
+      (cat) => cat.name === 'Ações'
+    );
+    const tesouroCategory = component.categories.find(
+      (cat) => cat.name === 'Tesouro Direto'
+    );
 
     expect(cdbCategory?.value).toBe(5000);
     expect(acaoCategory?.value).toBe(3000);
@@ -173,9 +189,15 @@ describe('InvestmentChartComponent', () => {
     component.investments = mockInvestments;
     component['updateChartData'](mockInvestments);
 
-    const cdbCategory = component.categories.find(cat => cat.name === 'Certificado de Depósito Bancário');
-    const acaoCategory = component.categories.find(cat => cat.name === 'Ações');
-    const tesouroCategory = component.categories.find(cat => cat.name === 'Tesouro Direto');
+    const cdbCategory = component.categories.find(
+      (cat) => cat.name === 'Certificado de Depósito Bancário'
+    );
+    const acaoCategory = component.categories.find(
+      (cat) => cat.name === 'Ações'
+    );
+    const tesouroCategory = component.categories.find(
+      (cat) => cat.name === 'Tesouro Direto'
+    );
 
     expect(cdbCategory?.percentage).toBe(50);
     expect(acaoCategory?.percentage).toBe(30);
@@ -186,7 +208,7 @@ describe('InvestmentChartComponent', () => {
     component.investments = mockInvestments;
     component['updateChartData'](mockInvestments);
 
-    component.categories.forEach(category => {
+    component.categories.forEach((category) => {
       expect(category.color).toBeDefined();
       expect(category.color).toMatch(/^#[0-9A-F]{6}$/i);
     });
@@ -201,7 +223,7 @@ describe('InvestmentChartComponent', () => {
   });
 
   it('should format currency correctly', () => {
-    const formatted = component.formatCurrency(1500.50);
+    const formatted = component.formatCurrency(1500.5);
     expect(formatted).toContain('R$');
     expect(formatted).toContain('1.500,50');
   });
@@ -224,7 +246,7 @@ describe('InvestmentChartComponent', () => {
     const segmentData = component.getSegmentData();
 
     expect(segmentData.length).toBe(3);
-    segmentData.forEach(segment => {
+    segmentData.forEach((segment) => {
       expect(segment.path).toBeDefined();
       expect(segment.name).toBeDefined();
       expect(segment.value).toBeGreaterThan(0);
@@ -236,7 +258,7 @@ describe('InvestmentChartComponent', () => {
   it('should handle investments with same type', () => {
     const sameTypeInvestments: Investment[] = [
       { ...mockInvestments[0], _id: '1', value: 1000 },
-      { ...mockInvestments[0], _id: '2', value: 2000 }
+      { ...mockInvestments[0], _id: '2', value: 2000 },
     ];
 
     component.investments = sameTypeInvestments;
@@ -259,7 +281,7 @@ describe('InvestmentChartComponent', () => {
 
   it('should handle translation service errors gracefully', () => {
     mockTranslationService.translateTypeSync.and.returnValue('Outros');
-    
+
     component.investments = [mockInvestments[0]];
     component['updateChartData']([mockInvestments[0]]);
 
@@ -280,7 +302,7 @@ describe('InvestmentChartComponent', () => {
     component['updateChartData'](singleInvestment);
 
     const segmentData = component.getSegmentData();
-    
+
     expect(segmentData.length).toBe(1);
     expect(segmentData[0].percentage).toBe(100);
     expect(segmentData[0].path).toBeDefined();

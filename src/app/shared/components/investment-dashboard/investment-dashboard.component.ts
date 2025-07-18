@@ -101,7 +101,7 @@ export class InvestmentDashboardComponent
   private updateInvestmentBalance(): void {
     if (this.investmentSummary) {
       this.totalInvestmentValue = this.investmentSummary.totalValue;
-    } else if (this.investments.length > 0) {
+    } else if (this.investments && this.investments.length > 0) {
       this.totalInvestmentValue = this.investments.reduce(
         (total, inv) => total + inv.value,
         0

@@ -45,8 +45,15 @@ export class InvestmentsComponent implements OnInit, OnDestroy {
     this.translationService
       .loadTranslations()
       .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
-        this.loadInvestments();
+      .subscribe({
+        next: () => {
+          this.loadInvestments();
+        },
+        error: (error) => {
+          console.error('Erro ao carregar traduções:', error);
+          this.error = 'Erro ao carregar traduções. Tente novamente.';
+          this.loading = false;
+        },
       });
   }
 
@@ -64,8 +71,13 @@ export class InvestmentsComponent implements OnInit, OnDestroy {
 
     this.investmentService.getInvestments(filters).subscribe({
       next: (response) => {
-        this.investments = response.result.investments;
-        this.investmentSummary = response.result.summary;
+        if (response?.result) {
+          this.investments = response.result.investments || [];
+          this.investmentSummary = response.result.summary;
+        } else {
+          this.investments = [];
+          this.investmentSummary = null;
+        }
         this.loading = false;
       },
       error: (error) => {

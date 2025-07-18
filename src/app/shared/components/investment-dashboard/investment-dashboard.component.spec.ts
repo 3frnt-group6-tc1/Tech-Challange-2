@@ -17,13 +17,13 @@ describe('InvestmentDashboardComponent', () => {
     id: 'u1',
     username: 'testuser',
     name: 'Test User',
-    email: 'test@example.com'
+    email: 'test@example.com',
   };
 
   const mockAccount: Account = {
     id: 'acc1',
     userId: 'u1',
-    type: 'Investimentos'
+    type: 'Investimentos',
   };
 
   const mockAccountSummary: AccountSummary = {
@@ -31,8 +31,8 @@ describe('InvestmentDashboardComponent', () => {
     result: {
       account: [mockAccount],
       transactions: [],
-      cards: []
-    }
+      cards: [],
+    },
   };
 
   const mockInvestments: Investment[] = [
@@ -45,14 +45,14 @@ describe('InvestmentDashboardComponent', () => {
       accountId: {
         _id: 'acc1',
         type: 'Conta Corrente',
-        accountNumber: '12345'
+        accountNumber: '12345',
       },
       __v: 0,
       createdAt: '2023-01-01T00:00:00.000Z',
       updatedAt: '2023-01-01T00:00:00.000Z',
       profit: 250,
       profitPercentage: 5,
-      isMatured: false
+      isMatured: false,
     },
     {
       _id: '2',
@@ -63,15 +63,15 @@ describe('InvestmentDashboardComponent', () => {
       accountId: {
         _id: 'acc1',
         type: 'Conta Corrente',
-        accountNumber: '12345'
+        accountNumber: '12345',
       },
       __v: 0,
       createdAt: '2023-01-01T00:00:00.000Z',
       updatedAt: '2023-01-01T00:00:00.000Z',
       profit: -150,
       profitPercentage: -5,
-      isMatured: false
-    }
+      isMatured: false,
+    },
   ];
 
   const mockInvestmentSummary: InvestmentSummary = {
@@ -80,25 +80,33 @@ describe('InvestmentDashboardComponent', () => {
     totalProfit: 100,
     totalProfitPercentage: 1.27,
     totalInvestments: 2,
-    byCategory: []
+    byCategory: [],
   };
 
   beforeEach(async () => {
-    const accountServiceSpy = jasmine.createSpyObj('AccountService', ['getByUserId']);
-    const authServiceSpy = jasmine.createSpyObj('AuthService', ['getCurrentUser']);
+    const accountServiceSpy = jasmine.createSpyObj('AccountService', [
+      'getByUserId',
+    ]);
+    const authServiceSpy = jasmine.createSpyObj('AuthService', [
+      'getCurrentUser',
+    ]);
 
     await TestBed.configureTestingModule({
       imports: [InvestmentDashboardComponent],
       providers: [
         { provide: AccountService, useValue: accountServiceSpy },
-        { provide: AuthService, useValue: authServiceSpy }
-      ]
+        { provide: AuthService, useValue: authServiceSpy },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(InvestmentDashboardComponent);
     component = fixture.componentInstance;
-    mockAccountService = TestBed.inject(AccountService) as jasmine.SpyObj<AccountService>;
-    mockAuthService = TestBed.inject(AuthService) as jasmine.SpyObj<AuthService>;
+    mockAccountService = TestBed.inject(
+      AccountService
+    ) as jasmine.SpyObj<AccountService>;
+    mockAuthService = TestBed.inject(
+      AuthService
+    ) as jasmine.SpyObj<AuthService>;
 
     // Setup default mocks
     mockAuthService.getCurrentUser.and.returnValue(mockUser);
@@ -146,13 +154,17 @@ describe('InvestmentDashboardComponent', () => {
 
   it('should handle account service error', () => {
     const errorMessage = 'Account service error';
-    mockAccountService.getByUserId.and.returnValue(throwError(() => new Error(errorMessage)));
+    mockAccountService.getByUserId.and.returnValue(
+      throwError(() => new Error(errorMessage))
+    );
     spyOn(console, 'error');
 
     component.ngOnInit();
 
     expect(console.error).toHaveBeenCalled();
-    expect(component.errorMessage).toBe('Erro ao carregar informações da conta');
+    expect(component.errorMessage).toBe(
+      'Erro ao carregar informações da conta'
+    );
     expect(component.isLoading).toBeFalse();
   });
 
@@ -170,8 +182,8 @@ describe('InvestmentDashboardComponent', () => {
         currentValue: mockInvestmentSummary,
         previousValue: null,
         firstChange: false,
-        isFirstChange: () => false
-      }
+        isFirstChange: () => false,
+      },
     });
 
     expect(component.totalInvestmentValue).toBe(8000);
@@ -185,8 +197,8 @@ describe('InvestmentDashboardComponent', () => {
         currentValue: mockInvestments,
         previousValue: [],
         firstChange: false,
-        isFirstChange: () => false
-      }
+        isFirstChange: () => false,
+      },
     });
 
     expect(component.totalInvestmentValue).toBe(8000);
@@ -195,36 +207,38 @@ describe('InvestmentDashboardComponent', () => {
   it('should prioritize summary over investments for balance calculation', () => {
     component.investments = mockInvestments;
     component.investmentSummary = mockInvestmentSummary;
-    
+
     component.ngOnChanges({
       investments: {
         currentValue: mockInvestments,
         previousValue: [],
         firstChange: false,
-        isFirstChange: () => false
+        isFirstChange: () => false,
       },
       investmentSummary: {
         currentValue: mockInvestmentSummary,
         previousValue: null,
         firstChange: false,
-        isFirstChange: () => false
-      }
+        isFirstChange: () => false,
+      },
     });
 
-    expect(component.totalInvestmentValue).toBe(mockInvestmentSummary.totalValue);
+    expect(component.totalInvestmentValue).toBe(
+      mockInvestmentSummary.totalValue
+    );
   });
 
   it('should handle empty investments', () => {
     component.investments = [];
     component.investmentSummary = null;
-    
+
     component.ngOnChanges({
       investments: {
         currentValue: [],
         previousValue: mockInvestments,
         firstChange: false,
-        isFirstChange: () => false
-      }
+        isFirstChange: () => false,
+      },
     });
 
     expect(component.totalInvestmentValue).toBe(0);
@@ -238,8 +252,8 @@ describe('InvestmentDashboardComponent', () => {
         currentValue: true,
         previousValue: false,
         firstChange: false,
-        isFirstChange: () => false
-      }
+        isFirstChange: () => false,
+      },
     });
 
     expect(component.isLoading).toBeTrue();
@@ -254,7 +268,7 @@ describe('InvestmentDashboardComponent', () => {
   });
 
   it('should format currency correctly', () => {
-    const formatted = component['formatCurrency'](1500.50);
+    const formatted = component['formatCurrency'](1500.5);
     expect(formatted).toContain('R$');
     expect(formatted).toContain('1.500,50');
   });
@@ -304,8 +318,8 @@ describe('InvestmentDashboardComponent', () => {
       result: {
         account: [],
         transactions: [],
-        cards: []
-      }
+        cards: [],
+      },
     };
     mockAccountService.getByUserId.and.returnValue(of(emptyAccountSummary));
 
@@ -328,7 +342,7 @@ describe('InvestmentDashboardComponent', () => {
   it('should handle malformed account summary response', () => {
     const malformedResponse = {
       message: 'Success',
-      result: null
+      result: null,
     } as any;
     mockAccountService.getByUserId.and.returnValue(of(malformedResponse));
 
@@ -337,24 +351,26 @@ describe('InvestmentDashboardComponent', () => {
 
   it('should handle undefined investments gracefully', () => {
     component.investments = undefined as any;
-    
-    expect(() => component.ngOnChanges({
-      investments: {
-        currentValue: undefined as any,
-        previousValue: [],
-        firstChange: false,
-        isFirstChange: () => false
-      }
-    })).not.toThrow();
+
+    expect(() =>
+      component.ngOnChanges({
+        investments: {
+          currentValue: undefined as any,
+          previousValue: [],
+          firstChange: false,
+          isFirstChange: () => false,
+        },
+      })
+    ).not.toThrow();
     expect(component.totalInvestmentValue).toBe(0);
   });
 
   it('should handle zero balance correctly', () => {
     component.investmentSummary = {
       ...mockInvestmentSummary,
-      totalValue: 0
+      totalValue: 0,
     };
-    
+
     component['updateInvestmentBalance']();
 
     expect(component.totalInvestmentValue).toBe(0);
