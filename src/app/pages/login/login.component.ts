@@ -6,11 +6,27 @@ import {
   AuthService,
   LoginRequest,
 } from '../../shared/services/Auth/auth.service';
+import { TextComponent } from '../../shared/components/text/text.component';
+import { ButtonComponent } from '../../shared/components/button/button.component';
+import { IconEyeComponent } from '../../shared/assets/icons/icon-eye.component';
+import { IconLogoComponent } from '../../shared/assets/icons/icon-logo.component';
+import { IconErrorComponent } from '../../shared/assets/icons/icon-error.component';
+import { IconLoadingComponent } from '../../shared/assets/icons/icon-loading.component';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    TextComponent,
+    ButtonComponent,
+    IconEyeComponent,
+    IconLogoComponent,
+    IconErrorComponent,
+    IconLoadingComponent,
+  ],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })

@@ -1,5 +1,3 @@
-// Estilos base sem animações e transições
-
 // Formulário de Contato
 #contato {
   input,
@@ -17,33 +15,6 @@
   button {
     &:disabled {
       opacity: 0.6;
-    }
-  }
-}
-
-// Responsividade
-@media (max-width: 768px) {
-  #outros-servicos {
-    .grid-cols-4 {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-  }
-
-  #contato {
-    .lg\\:grid-cols-2 {
-      grid-template-columns: 1fr;
-    }
-
-    form {
-      padding: 1.5rem;
-    }
-  }
-}
-
-@media (max-width: 640px) {
-  #outros-servicos {
-    .grid-cols-4 {
-      grid-template-columns: 1fr;
     }
   }
 }

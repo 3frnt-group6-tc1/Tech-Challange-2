@@ -15,11 +15,12 @@ import { AccountService } from '../../services/Account/account.service';
 import { AuthService, AuthUser } from '../../services/Auth/auth.service';
 import { Account, AccountSummary } from '../../models/account';
 import { Investment, InvestmentSummary } from '../../models/investment';
+import { IconEyeComponent } from "../../assets/icons/icon-eye.component";
 
 @Component({
   selector: 'app-investment-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, IconEyeComponent],
   templateUrl: './investment-dashboard.component.html',
   styleUrls: ['./investment-dashboard.component.scss'],
 })

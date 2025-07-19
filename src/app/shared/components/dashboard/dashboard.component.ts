@@ -15,11 +15,12 @@ import { Card } from '../../models/card';
 import { TransactionData } from '../../models/transaction-data';
 import { TransactionEventService } from '../../services/TransactionEvent/transaction-event.service';
 import { TransactionChartComponent } from '../../components/transaction-chart/transaction-chart.component';
+import { IconEyeComponent } from "../../assets/icons/icon-eye.component";
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, TransactionChartComponent],
+  imports: [CommonModule, TransactionChartComponent, IconEyeComponent],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
 })

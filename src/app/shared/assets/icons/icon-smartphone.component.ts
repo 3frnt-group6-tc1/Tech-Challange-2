@@ -2,12 +2,12 @@ import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-icon-dollar',
+  selector: 'app-icon-smartphone',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './icon-dollar.component.html',
-  styleUrl: './icon-dollar.component.scss',
+  templateUrl: './icon-smartphone.component.html',
+  styleUrl: './icon-smartphone.component.scss',
 })
-export class IconDollarComponent {
+export class IconSmartphoneComponent {
   @Input() class = '';
 }

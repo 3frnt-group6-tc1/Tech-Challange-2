@@ -18,4 +18,6 @@ export class ButtonComponent {
   @Input() disabled: boolean = false;
   @Input() label: string = 'Button';
   @Input() iconPosition: 'left' | 'right' = 'left';
+  @Input() type: 'button' | 'submit' | 'reset' = 'button';
+  @Input() class: string = '';
 }
