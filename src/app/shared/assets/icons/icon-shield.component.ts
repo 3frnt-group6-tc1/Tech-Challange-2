@@ -2,12 +2,12 @@ import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-icon-dollar',
+  selector: 'app-icon-shield',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './icon-dollar.component.html',
-  styleUrl: './icon-dollar.component.scss',
+  templateUrl: './icon-shield.component.html',
+  styleUrl: './icon-shield.component.scss',
 })
-export class IconDollarComponent {
+export class IconShieldComponent {
   @Input() class = '';
 }

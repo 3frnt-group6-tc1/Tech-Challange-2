@@ -6,11 +6,29 @@ import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../shared/services/Auth/auth.service';
 import { UserService } from '../../shared/services/User/user-service';
 import { User } from '../../shared/models/user';
+import { TextComponent } from '../../shared/components/text/text.component';
+import { ButtonComponent } from '../../shared/components/button/button.component';
+import { IconEyeComponent } from '../../shared/assets/icons/icon-eye.component';
+import { IconLogoComponent } from '../../shared/assets/icons/icon-logo.component';
+import { IconErrorComponent } from '../../shared/assets/icons/icon-error.component';
+import { IconSuccessComponent } from '../../shared/assets/icons/icon-success.component';
+import { IconLoadingComponent } from '../../shared/assets/icons/icon-loading.component';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    TextComponent,
+    ButtonComponent,
+    IconLogoComponent,
+    IconEyeComponent,
+    IconErrorComponent,
+    IconSuccessComponent,
+    IconLoadingComponent,
+  ],
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.scss'],
 })

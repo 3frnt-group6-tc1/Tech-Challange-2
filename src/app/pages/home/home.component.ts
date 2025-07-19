@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import {
   ReactiveFormsModule,
   FormBuilder,
@@ -13,14 +14,10 @@ import { IconGiftComponent } from '../../shared/assets/icons/icon-gift.component
 import { IconOnComponent } from '../../shared/assets/icons/icon-on.component';
 import { IconStarComponent } from '../../shared/assets/icons/icon-star.component';
 import { IconNotebookComponent } from '../../shared/assets/icons/icon-notebook.component';
-
-interface ServiceItem {
-  id: string;
-  title: string;
-  description: string;
-  icon: string;
-  isComingSoon?: boolean;
-}
+import { IconDollarComponent } from '../../shared/assets/icons/icon-dollar.component';
+import { IconZapComponent } from '../../shared/assets/icons/icon-zap.component';
+import { IconSmartphoneComponent } from '../../shared/assets/icons/icon-smartphone.component';
+import { IconShieldComponent } from '../../shared/assets/icons/icon-shield.component';
 
 interface ContatoForm {
   nome: string;
@@ -68,42 +65,46 @@ export class HomeComponent implements OnInit {
     },
   ];
 
-  outrosServicos: ServiceItem[] = [
+  outrosServicos = [
     {
       id: 'loans',
       title: 'Empréstimos',
       description: 'Solicite empréstimos com as melhores taxas do mercado',
-      icon: 'dollar',
+      icon: IconDollarComponent,
       isComingSoon: true,
     },
     {
       id: 'pix',
       title: 'PIX',
       description: 'Transferências instantâneas 24h por dia',
-      icon: 'zap',
+      icon: IconZapComponent,
       isComingSoon: true,
     },
     {
       id: 'insurance',
       title: 'Seguros',
       description: 'Proteja o que é importante para você',
-      icon: 'shield',
+      icon: IconShieldComponent,
       isComingSoon: true,
     },
     {
       id: 'mobile-credit',
       title: 'Crédito de Celular',
       description: 'Recarregue seu celular de forma rápida e segura',
-      icon: 'smartphone',
+      icon: IconSmartphoneComponent,
       isComingSoon: true,
     },
   ];
 
-  inputs = {
+  vantagensInputs = {
     class: 'text-white dark:text-gray-200 w-24 h-24',
   };
 
-  constructor(private fb: FormBuilder) {
+  servicosInputs = {
+    class: 'w-8 h-8 text-white dark:text-cyan-blue-300',
+  };
+
+  constructor(private fb: FormBuilder, private router: Router) {
     this.initForm();
   }
 
@@ -126,10 +127,6 @@ export class HomeComponent implements OnInit {
         ],
       ],
     });
-  }
-
-  getIconPath(iconName: string): string {
-    return `/assets/icons/${iconName}.svg`;
   }
 
   isFieldInvalid(fieldName: string): boolean {
@@ -211,5 +208,19 @@ export class HomeComponent implements OnInit {
       const control = this.contatoForm.get(key);
       control?.markAsTouched();
     });
+  }
+
+  goToRegister(): void {
+    this.router.navigate(['/register']);
+  }
+
+  scrollToSection(sectionId: string): void {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    }
   }
 }
