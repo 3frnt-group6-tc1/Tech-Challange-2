@@ -30,88 +30,140 @@
     *ngIf="showAllTransactions"
     class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4 pt-4"
   >
-    <input
-      type="date"
-      class="border rounded p-2 text-sm w-full"
-      placeholder="Data inicial (YYYY-MM-DD)"
-      [(ngModel)]="filters.startDate"
-      name="startDate"
-      (ngModelChange)="onFiltersChange()"
-    />
+    <div class="mb-4">
+      <div class="relative inline-block w-full">
+        <div
+          class="w-full bg-gray-100 border border-cyan-blue-500 text-cyan-blue-500 font-lato font-medium rounded-md p-4 flex items-center"
+        >
+          <input
+            type="date"
+            class="bg-transparent w-full outline-none text-cyan-blue-500 placeholder-cyan-blue-500 placeholder-opacity-70"
+            placeholder="Data inicial (YYYY-MM-DD)"
+            [(ngModel)]="filters.startDate"
+            name="startDate"
+            (ngModelChange)="onFiltersChange()"
+          />
+        </div>
+      </div>
+    </div>
 
-    <input
-      type="date"
-      class="border rounded p-2 text-sm w-full"
-      placeholder="Data final (YYYY-MM-DD)"
-      [(ngModel)]="filters.endDate"
-      name="endDate"
-      (ngModelChange)="onFiltersChange()"
-    />
+    <div class="mb-4">
+      <div class="relative inline-block w-full">
+        <div
+          class="w-full bg-gray-100 border border-cyan-blue-500 text-cyan-blue-500 font-lato font-medium rounded-md p-4 flex items-center"
+        >
+          <input
+            type="date"
+            class="bg-transparent w-full outline-none text-cyan-blue-500 placeholder-cyan-blue-500 placeholder-opacity-70"
+            placeholder="Data final (YYYY-MM-DD)"
+            [(ngModel)]="filters.endDate"
+            name="endDate"
+            (ngModelChange)="onFiltersChange()"
+          />
+        </div>
+      </div>
+    </div>
 
-    <select
-      class="border rounded p-2 text-sm w-full"
-      name="category"
+    <app-input
+      class="w-full"
+      [options]="transactionTypeOptions"
+      placeholder="Tipo"
+      size="G"
       [(ngModel)]="filters.type"
-      name="type"
+      name="transactionTypeFilter" [(ngModel)]="filters.type"
       (ngModelChange)="onFiltersChange()"
-    >
-      <option value="">Tipo</option>
-      <option
-        *ngFor="let label of transactionTypeKeys"
-        [value]="transactionLabels[label]"
-      >
-        {{ label }}
-      </option>
-    </select>
+    ></app-input>
 
-    <input
-      type="number"
-      class="border rounded p-2 text-sm w-full"
-      placeholder="Valor mínimo"
-      [(ngModel)]="filters.minValue"
-      name="minValue"
-      (ngModelChange)="onFiltersChange()"
-      step="0.01"
-      min="0"
-    />
+    <div class="mb-4">
+      <div class="relative inline-block w-full">
+        <div
+          class="w-full bg-gray-100 border border-cyan-blue-500 text-cyan-blue-500 font-lato font-medium rounded-md p-4 flex items-center"
+        >
+          <input
+            type="number"
+            placeholder="Valor mínimo"
+            class="bg-transparent w-full outline-none text-cyan-blue-500 placeholder-cyan-blue-500 placeholder-opacity-70"
+            [(ngModel)]="filters.minValue"
+            name="minValue"
+            inputmode="numeric"
+            (ngModelChange)="onFiltersChange()"
+            step="0.01"
+            min="0"
+          />
+        </div>
+      </div>
+    </div>
 
-    <input
-      type="number"
-      class="border rounded p-2 text-sm w-full"
-      placeholder="Valor máximo"
-      [(ngModel)]="filters.maxValue"
-      name="maxValue"
-      (ngModelChange)="onFiltersChange()"
-      step="0.01"
-      min="0"
-    />
+    <div class="mb-4">
+      <div class="relative inline-block w-full">
+        <div
+          class="w-full bg-gray-100 border border-cyan-blue-500 text-cyan-blue-500 font-lato font-medium rounded-md p-4 flex items-center"
+        >
+          <input
+            type="number"
+            placeholder="Valor máximo"
+            class="bg-transparent w-full outline-none text-cyan-blue-500 placeholder-cyan-blue-500 placeholder-opacity-70"
+            [(ngModel)]="filters.maxValue"
+            name="maxValue"
+            inputmode="numeric"
+            (ngModelChange)="onFiltersChange()"
+            step="0.01"
+            min="0"
+          />
+        </div>
+      </div>
+    </div>
 
-    <input
-      type="text"
-      class="border rounded p-2 text-sm w-full"
-      placeholder="De (origem)"
-      [(ngModel)]="filters.from"
-      name="from"
-      (ngModelChange)="onFiltersChange()"
-    />
+    <div class="mb-4">
+      <div class="relative inline-block w-full">
+        <div
+          class="w-full bg-gray-100 border border-cyan-blue-500 text-cyan-blue-500 font-lato font-medium rounded-md p-4 flex items-center"
+        >
+          <input
+            type="text"
+            placeholder="De (origem)"
+            class="bg-transparent w-full outline-none text-cyan-blue-500 placeholder-cyan-blue-500 placeholder-opacity-70"
+            [(ngModel)]="filters.from"
+            name="from"
+            (ngModelChange)="onFiltersChange()"
+          />
+        </div>
+      </div>
+    </div>
 
-    <input
-      type="text"
-      class="border rounded p-2 text-sm w-full"
-      placeholder="Para (destino)"
-      [(ngModel)]="filters.to"
-      name="to"
-      (ngModelChange)="onFiltersChange()"
-    />
+    <div class="mb-4">
+      <div class="relative inline-block w-full">
+        <div
+          class="w-full bg-gray-100 border border-cyan-blue-500 text-cyan-blue-500 font-lato font-medium rounded-md p-4 flex items-center"
+        >
+          <input
+            type="text"
+            placeholder="Para (destino)"
+            class="bg-transparent w-full outline-none text-cyan-blue-500 placeholder-cyan-blue-500 placeholder-opacity-70"
+            [(ngModel)]="filters.to"
+            name="to"
+            (ngModelChange)="onFiltersChange()"
+          />
+        </div>
+      </div>
+    </div>
 
-    <input
-      type="text"
-      class="border rounded p-2 text-sm w-full"
-      placeholder="Descrição"
-      [(ngModel)]="filters.description"
-      name="description"
-      (ngModelChange)="onFiltersChange()"
-    />
+    <div class="mb-4">
+      <div class="relative inline-block w-full">
+        <div
+          class="w-full bg-gray-100 border border-cyan-blue-500 text-cyan-blue-500 font-lato font-medium rounded-md p-4 flex items-center"
+        >
+          <input
+            type="text"
+            placeholder="Descrição"
+            class="bg-transparent w-full outline-none text-cyan-blue-500 placeholder-cyan-blue-500 placeholder-opacity-70"
+            [(ngModel)]="filters.description"
+            name="description"
+            (ngModelChange)="onFiltersChange()"
+          />
+        </div>
+      </div>
+    </div>
   </form>
 
   <div *ngIf="isLoading" class="text-center py-4">

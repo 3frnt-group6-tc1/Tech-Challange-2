@@ -29,8 +29,8 @@
             [options]="transactionOptions"
             placeholder="Selecione o tipo de transação"
             size="G"
-            (selectionChange)="onTransactionTypeChange($event)"
-          >
+            name="transactionType" [(ngModel)]="form.type"
+            (ngModelChange)="onTransactionTypeChange(form.type)" >
           </app-input>
         </div>
 
