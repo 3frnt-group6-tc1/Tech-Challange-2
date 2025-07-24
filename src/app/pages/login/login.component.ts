@@ -2,16 +2,15 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import {
-  AuthService,
-  LoginRequest,
-} from '../../shared/services/Auth/auth.service';
+import { LoginRequest } from '../../shared/services/Auth/auth.service';
+import { AuthFacade } from '../../auth/auth.facade';
 import { TextComponent } from '../../shared/components/text/text.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { IconEyeComponent } from '../../shared/assets/icons/icon-eye.component';
 import { IconLogoComponent } from '../../shared/assets/icons/icon-logo.component';
 import { IconErrorComponent } from '../../shared/assets/icons/icon-error.component';
 import { IconLoadingComponent } from '../../shared/assets/icons/icon-loading.component';
+import { take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-login',
@@ -40,13 +39,15 @@ export class LoginComponent implements OnInit {
   errorMessage = '';
   showPassword = false;
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(private authFacade: AuthFacade, private router: Router) {}
 
   ngOnInit(): void {
     // If already authenticated, redirect to panel
-    if (this.authService.isAuthenticated()) {
-      this.router.navigate(['/panel']);
-    }
+    this.authFacade.isAuthenticated$.pipe(take(1)).subscribe((isAuth: boolean) => {
+      if (isAuth) {
+        this.router.navigate(['/panel']);
+      }
+    });
   }
 
   /**
@@ -65,15 +66,18 @@ export class LoginComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = '';
 
-    this.authService.login(this.credentials).subscribe({
-      next: (response) => {
-        this.isLoading = false;
+    this.authFacade.login(this.credentials);
+
+    // React to auth state changes
+    this.authFacade.isAuthenticated$.pipe(take(1)).subscribe((isAuth: boolean) => {
+      this.isLoading = false;
+      if (isAuth) {
         this.router.navigate(['/panel']);
-      },
-      error: (error) => {
-        this.isLoading = false;
-        this.handleLoginError(error);
-      },
+      } else {
+        this.authFacade.error$.pipe(take(1)).subscribe((error: any) => {
+          this.handleLoginError(error);
+        });
+      }
     });
   }
 
