@@ -9,9 +9,11 @@ import { routes } from './app.routes';
 import { authInterceptor } from './shared/interceptors/auth.interceptor';
 import { AUTH_FEATURE_KEY, authReducer } from './auth/state/auth.reducer';
 import { AuthEffects } from './auth/state/auth.effects';
+import { BALANCE_FEATURE_KEY, balanceReducer } from './store/balance/balance.reducer';
+import { BalanceEffects } from './store/balance/balance.effects';
 
 export const apiConfig = {
-  baseUrl: 'http://tech-challenge-2-alb-1096144064.us-east-1.elb.amazonaws.com',
+  baseUrl: 'http://localhost:3000',
   usersEndpoint: '/users',
   accountsEndpoint: '/accounts',
   transactionsEndpoint: '/accounts/transaction',
@@ -46,8 +48,11 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])),
     // NgRx store setup
-    provideStore({ [AUTH_FEATURE_KEY]: authReducer }),
-    provideEffects([AuthEffects]),
+    provideStore({ 
+      [AUTH_FEATURE_KEY]: authReducer,
+      [BALANCE_FEATURE_KEY]: balanceReducer 
+    }),
+    provideEffects([AuthEffects, BalanceEffects]),
     provideStoreDevtools({ maxAge: 25 }),
   ],
 };

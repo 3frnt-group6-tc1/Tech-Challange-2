@@ -1,10 +1,18 @@
-<div class="p-4 sm:p-6 w-full max-w-full">
-  <div *ngIf="isLoading" class="flex flex-col items-center justify-center p-8">
+<div class="p-4 sm:p-6 w-full max-w-full" *ngIf="balanceInfo$ | async as info">
+  <div *ngIf="info.isLoading" class="flex flex-col items-center justify-center p-8">
+    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-4"></div>
     <p class="text-gray-600">Carregando informações...</p>
   </div>
 
-  <div *ngIf="!isLoading">
-    <!-- Layout para telas maiores (Desktop) -->
+  <div *ngIf="info.error" class="p-4 bg-red-50 border border-red-200 text-red-700 rounded-md mx-4 mb-4">
+    <div class="flex items-center">
+      <span class="text-red-500 mr-2">⚠️</span>
+      <span>{{ info.error }}</span>
+    </div>
+  </div>
+
+  <div *ngIf="!info.isLoading">
+
     <div
       class="hidden sm:flex flex-col sm:flex-row justify-between items-start gap-6 w-full"
     >
@@ -21,46 +29,60 @@
           <p class="font-medium text-gray-700 mr-3 text-xl sm:text-2xl">
             Saldo
           </p>
-          <button (click)="toggleBalance()" class="focus:outline-none">
+          <button 
+            (click)="toggleBalance()" 
+            class="focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 rounded p-1 transition-all duration-200 hover:bg-gray-100"
+            [attr.aria-label]="info.showBalance ? 'Ocultar saldo' : 'Mostrar saldo'"
+            title="{{ info.showBalance ? 'Ocultar saldo' : 'Mostrar saldo' }}">
             <app-icon-eye
-              class="h-5 w-5 text-black hover:text-gray-700"
-              [class.opacity-50]="showBalance"
+              class="h-5 w-5 text-black hover:text-gray-700 transition-opacity duration-200"
+              [class.opacity-50]="info.showBalance"
             ></app-icon-eye>
           </button>
         </div>
-        <p class="text-gray-500 mt-1 text-xs sm:text-sm">{{ accountType }}</p>
-        <p
-          class="text-gray-900 mt-2 sm:mt-3 text-xl sm:text-2xl font-bold"
-          *ngIf="showBalance"
-        >
-          {{ balance }}
-        </p>
-        <p
-          class="text-gray-500 mt-2 sm:mt-3 text-xl sm:text-2xl font-bold"
-          *ngIf="!showBalance"
-        >
-          ****
-        </p>
+        <p class="text-gray-500 mt-1 text-xs sm:text-sm">{{ info.accountType }}</p>
+        <div class="mt-2 sm:mt-3">
+          <p *ngIf="info.isLoading" class="text-gray-400 text-xl sm:text-2xl font-bold animate-pulse">
+            Carregando...
+          </p>
+          <p
+            class="text-gray-900 text-xl sm:text-2xl font-bold transition-all duration-300 ease-in-out"
+            *ngIf="!info.isLoading && info.showBalance"
+          >
+            {{ info.balance }}
+          </p>
+          <p
+            class="text-gray-500 text-xl sm:text-2xl font-bold transition-all duration-300 ease-in-out"
+            *ngIf="!info.isLoading && !info.showBalance"
+          >
+            ••••••••
+          </p>
+        </div>
       </div>
     </div>
 
-    <!-- Layout para telas pequenas (Mobile) -->
+
     <div class="flex flex-col sm:hidden items-center text-center w-full">
       <div class="flex flex-col mb-4">
         <h1 class="text-xl text-gray-900 font-bold">Olá, {{ userName }}!</h1>
         <p class="text-gray-500 text-xs">{{ currentDate }}</p>
       </div>
 
-      <!-- Separador entre saudação e saldo (apenas mobile) -->
+
       <div class="w-full border-t-2 border-gray-200 mb-4"></div>
 
       <div class="flex flex-col">
         <div class="flex items-center justify-center">
           <p class="font-medium text-gray-700 text-lg">Saldo</p>
-          <button (click)="toggleBalance()" class="focus:outline-none ml-2">
+          <button 
+            (click)="toggleBalance()" 
+            class="focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 rounded p-1 ml-2 transition-all duration-200 hover:bg-gray-100"
+            [attr.aria-label]="info.showBalance ? 'Ocultar saldo' : 'Mostrar saldo'"
+            title="{{ info.showBalance ? 'Ocultar saldo' : 'Mostrar saldo' }}">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              class="h-5 w-5 text-gray-700"
+              class="h-5 w-5 text-gray-700 transition-opacity duration-200"
+              [class.opacity-50]="info.showBalance"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -80,31 +102,44 @@
             </svg>
           </button>
         </div>
-        <p class="text-gray-500 mt-1 text-xs">{{ accountType }}</p>
-        <p class="text-gray-900 text-lg font-bold" *ngIf="showBalance">
-          {{ balance }}
-        </p>
-        <p class="text-gray-500 text-lg font-bold" *ngIf="!showBalance">****</p>
+        <p class="text-gray-500 mt-1 text-xs">{{ info.accountType }}</p>
+        <div>
+          <p *ngIf="info.isLoading" class="text-gray-400 text-lg font-bold animate-pulse">
+            Carregando...
+          </p>
+          <p 
+            class="text-gray-900 text-lg font-bold transition-all duration-300 ease-in-out" 
+            *ngIf="!info.isLoading && info.showBalance">
+            {{ info.balance }}
+          </p>
+          <p 
+            class="text-gray-500 text-lg font-bold transition-all duration-300 ease-in-out" 
+            *ngIf="!info.isLoading && !info.showBalance">
+            ••••••••
+          </p>
+        </div>
       </div>
     </div>
+
+
   </div>
 </div>
 
-<!-- Separador principal entre cabeçalho e gráfico -->
+
 <div class="px-6">
   <div class="border-t-2 border-gray-200"></div>
 </div>
 
-<!-- Título do gráfico -->
-<div class="px-6 pt-6 pb-6" *ngIf="!isLoading">
+
+<div class="px-6 pt-6 pb-6" *ngIf="!(balanceInfo$ | async)?.isLoading">
   <h2 class="text-gray-900 text-base font-bold text-center sm:text-left">
     Transações de {{ currentMonthName }}
   </h2>
 </div>
 
-<!-- Gráfico de transações -->
+
 <app-transaction-chart
-  *ngIf="!isLoading"
+  *ngIf="!(balanceInfo$ | async)?.isLoading"
   [transactionData]="transactionData"
   [totalEntries]="totalEntries"
   [totalExits]="totalExits"

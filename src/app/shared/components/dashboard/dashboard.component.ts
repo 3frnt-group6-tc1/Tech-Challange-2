@@ -1,7 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Subject } from 'rxjs';
+import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { Store } from '@ngrx/store';
 import { AccountService } from '../../services/Account/account.service';
 import { AuthService, AuthUser } from '../../services/Auth/auth.service';
 import {
@@ -17,6 +18,9 @@ import { TransactionEventService } from '../../services/TransactionEvent/transac
 import { TransactionChartComponent } from '../../components/transaction-chart/transaction-chart.component';
 import { IconEyeComponent } from "../../assets/icons/icon-eye.component";
 
+import * as BalanceActions from '../../../store/balance/balance.actions';
+import { selectBalanceInfo } from '../../../store/balance/balance.selectors';
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -29,14 +33,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
   currentUser: AuthUser | null = null;
   currentDate: string = '';
   currentMonthName: string = '';
-  balance: string = '';
-  accountType: string = 'Conta Corrente';
   totalEntries: string = '';
   totalExits: string = '';
   transactionTypeLabels = TRANSACTION_TYPE_LABELS;
 
-  showBalance: boolean = true;
-  isLoading: boolean = true;
+  balanceInfo$!: Observable<ReturnType<typeof selectBalanceInfo>>;
 
   // Dados da conta
   accounts: Account[] = [];
@@ -52,13 +53,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
   constructor(
     private authService: AuthService,
     private accountService: AccountService,
-    private transactionEventService: TransactionEventService
-  ) {}
+    private transactionEventService: TransactionEventService,
+    private store: Store
+   ) {
+    this.balanceInfo$ = this.store.select(selectBalanceInfo);
+  }
 
   ngOnInit(): void {
     this.setCurrentDate();
     this.subscribeToAuthUser();
     this.subscribeToTransactionEvents();
+    this.store.dispatch(BalanceActions.loadBalance());
   }
 
   ngOnDestroy(): void {
@@ -70,9 +75,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.transactionEventService.transactionCreated$
       .pipe(takeUntil(this.destroy$))
       .subscribe((transaction) => {
-        this.transactions = [...this.transactions, transaction];
+        this.transactions.push(transaction);
         this.filterCurrentMonthTransactions();
         this.updateDashboardData();
+        this.store.dispatch(BalanceActions.loadBalance());
       });
 
     this.transactionEventService.transactionUpdated$
@@ -83,6 +89,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         );
         this.filterCurrentMonthTransactions();
         this.updateDashboardData();
+        this.store.dispatch(BalanceActions.loadBalance());
       });
 
     this.transactionEventService.transactionDeleted$
@@ -97,6 +104,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
           );
           this.filterCurrentMonthTransactions();
           this.updateDashboardData();
+          this.store.dispatch(BalanceActions.loadBalance());
         }
       });
   }
@@ -163,16 +171,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.transactions = response.result.transactions;
         this.cards = response.result.cards;
 
-        // Define a conta principal (primeira conta)
         this.currentAccount = this.accounts[0];
-        this.accountType = this.currentAccount.type;
-
         this.filterCurrentMonthTransactions();
         this.successTransaction();
-        this.isLoading = false;
       },
       error: (error) => {
-        this.isLoading = false;
         this.errorMessage = 'Erro ao buscar dados da conta.';
         console.error('Error fetching account data:', error);
       },
@@ -214,7 +217,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     this.totalEntries = this.formatBalance(totalEntries);
     this.totalExits = this.formatBalance(totalExits);
-    this.balance = this.formatBalance(totalEntries - totalExits);
 
     const weeklyData: { [key: string]: { entries: number; exits: number } } = {
       '1': { entries: 0, exits: 0 },
@@ -261,6 +263,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   toggleBalance(): void {
-    this.showBalance = !this.showBalance;
+    this.store.dispatch(BalanceActions.toggleBalanceVisibility());
   }
 }

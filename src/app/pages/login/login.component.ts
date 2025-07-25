@@ -10,7 +10,7 @@ import { IconEyeComponent } from '../../shared/assets/icons/icon-eye.component';
 import { IconLogoComponent } from '../../shared/assets/icons/icon-logo.component';
 import { IconErrorComponent } from '../../shared/assets/icons/icon-error.component';
 import { IconLoadingComponent } from '../../shared/assets/icons/icon-loading.component';
-import { take } from 'rxjs/operators';
+import { take, filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-login',
@@ -74,7 +74,7 @@ export class LoginComponent implements OnInit {
       if (isAuth) {
         this.router.navigate(['/panel']);
       } else {
-        this.authFacade.error$.pipe(take(1)).subscribe((error: any) => {
+        this.authFacade.error$.pipe(filter(Boolean), take(1)).subscribe((error: any) => {
           this.handleLoginError(error);
         });
       }
