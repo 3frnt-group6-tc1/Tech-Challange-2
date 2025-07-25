@@ -13,7 +13,7 @@ import { BALANCE_FEATURE_KEY, balanceReducer } from './store/balance/balance.red
 import { BalanceEffects } from './store/balance/balance.effects';
 
 export const apiConfig = {
-  baseUrl: 'http://localhost:3000',
+  baseUrl: 'http://tech-challenge-2-alb-1096144064.us-east-1.elb.amazonaws.com',
   usersEndpoint: '/users',
   accountsEndpoint: '/accounts',
   transactionsEndpoint: '/accounts/transaction',
