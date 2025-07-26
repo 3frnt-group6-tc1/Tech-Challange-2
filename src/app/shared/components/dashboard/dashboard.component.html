@@ -95,22 +95,62 @@
   <div class="border-t-2 border-gray-200"></div>
 </div>
 
-<!-- Título do gráfico -->
+<!-- Título do gráfico com toggle -->
 <div class="px-6 pt-6 pb-6" *ngIf="!isLoading">
-  <h2 class="text-gray-900 text-base font-bold text-center sm:text-left">
-    Transações de {{ currentMonthName }}
-  </h2>
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+    <h2
+      class="text-gray-900 text-base font-bold text-center sm:text-left mb-4 sm:mb-0"
+    >
+      Transações de {{ currentMonthName }}
+    </h2>
+
+    <div class="flex items-center justify-center sm:justify-end space-x-2">
+      <button
+        (click)="setChartType('bar')"
+        class="px-4 py-2 border rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none"
+        [ngClass]="{
+          'bg-cyan-blue-500 dark:bg-blue-violet-500 text-white border-cyan-blue-500 dark:border-blue-violet-500':
+            chartType === 'bar',
+          'bg-white text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50':
+            chartType !== 'bar'
+        }"
+      >
+        Barras
+      </button>
+      <button
+        (click)="setChartType('pie')"
+        class="px-4 py-2 border rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none"
+        [ngClass]="{
+          'bg-cyan-blue-500 dark:bg-blue-violet-500 text-white border-cyan-blue-500 dark:border-blue-violet-500':
+            chartType === 'pie',
+          'bg-white text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50':
+            chartType !== 'pie'
+        }"
+      >
+        Pizza
+      </button>
+    </div>
+  </div>
 </div>
 
-<!-- Gráfico de transações -->
+<!-- Gráfico de transações - Bar Chart -->
 <app-transaction-chart
-  *ngIf="!isLoading"
+  *ngIf="!isLoading && chartType === 'bar'"
   [transactionData]="transactionData"
   [totalEntries]="totalEntries"
   [totalExits]="totalExits"
   class="block px-6 pt-2 pb-12"
 >
 </app-transaction-chart>
+
+<!-- Gráfico de transações - Pie Chart -->
+<app-pie-chart
+  *ngIf="!isLoading && chartType === 'pie'"
+  [totalEntries]="totalEntriesNumber"
+  [totalExits]="totalExitsNumber"
+  class="block px-6 pt-2 pb-12"
+>
+</app-pie-chart>
 
 <div
   *ngIf="errorMessage"
