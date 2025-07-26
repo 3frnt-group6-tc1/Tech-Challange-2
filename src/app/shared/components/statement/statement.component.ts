@@ -44,8 +44,7 @@ import { InputComponent } from "../input/input.component";
     EditModalComponent,
     BrlPipe,
     FormsModule,
-    IconClipComponent,
-    InputComponent
+    IconClipComponent
 ],
   templateUrl: './statement.component.html',
   styleUrls: ['./statement.component.scss'],
@@ -80,21 +79,19 @@ export class StatementComponent implements OnInit, OnDestroy {
     startDate: string;
     endDate: string;
     type: TransactionType | '';
-    minValue: string;
-    maxValue: string;
-    from: string;
-    to: string;
     description: string;
   } = {
     startDate: '',
     endDate: '',
     type: '' as TransactionType,
-    minValue: '',
-    maxValue: '',
-    from: '',
-    to: '',
     description: '',
   };
+
+  sortBy: string = 'date';
+  sortDirection: 'asc' | 'desc' = 'desc';
+
+  showTransactionTypeFilter = false;
+  selectedTransactionTypeFilter: TransactionType | '' = '';
 
   transactionTypeOptions = this.transactionTypeKeys.map(label => ({
     display: label,
@@ -215,6 +212,7 @@ export class StatementComponent implements OnInit, OnDestroy {
 
   onFiltersChange(): void {
     this.resetPagination();
+    this.filteredTransactions = [];
     this.loadUserTransactions();
   }
 
@@ -242,6 +240,7 @@ export class StatementComponent implements OnInit, OnDestroy {
       next: (accountStatement: AccountStatement) => {
         const transactions = accountStatement?.result?.transactions;
         this.filteredTransactions = transactions.filter((t) => t.id);
+        this.sortTransactions();
         this.totalTransactions = this.filteredTransactions.length;
         this.allTransactionsLoaded =
           this.filteredTransactions.length < this.itemsPerPage;
@@ -255,6 +254,44 @@ export class StatementComponent implements OnInit, OnDestroy {
     });
   }
 
+  sortTransactions(): void {
+    if (!this.sortBy) return;
+
+    this.filteredTransactions.sort((a, b) => {
+      const aValue = (a as any)[this.sortBy];
+      const bValue = (b as any)[this.sortBy];
+
+      let comparison = 0;
+      if (aValue > bValue) {
+        comparison = 1;
+      } else if (aValue < bValue) {
+        comparison = -1;
+      }
+
+      return this.sortDirection === 'desc' ? comparison * -1 : comparison;
+    });
+  }
+
+  toggleSort(column: string): void {
+    if (this.sortBy === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortBy = column;
+      this.sortDirection = 'asc';
+    }
+    this.sortTransactions();
+  }
+
+  toggleTransactionTypeFilter(): void {
+    this.showTransactionTypeFilter = !this.showTransactionTypeFilter;
+  }
+
+  onTransactionTypeFilterSelect(type: TransactionType | ''): void {
+    this.selectedTransactionTypeFilter = type;
+    this.filters.type = type;
+    this.showTransactionTypeFilter = false;
+    this.onFiltersChange();
+  }
 
 private prepareFilterParams(): any {
   let formattedStartDate: string | undefined;
@@ -271,10 +308,6 @@ private prepareFilterParams(): any {
     startDate: formattedStartDate,
     endDate: formattedEndDate,
     type: this.filters.type || undefined,
-    minValue: this.filters.minValue || undefined,
-    maxValue: this.filters.maxValue || undefined,
-    from: this.filters.from || undefined,
-    to: this.filters.to || undefined,
     description: this.filters.description || undefined,
     page: this.currentPage,
     limit: this.itemsPerPage,
@@ -440,5 +473,18 @@ private prepareFilterParams(): any {
     this.filters.type = typeValue;
     console.log('onTransactionTypeChange - Tipo de transação alterado para:', typeValue); // Log 18
     this.onFiltersChange();
+  }
+
+  clearAllFilters(): void {
+    this.filters = {
+      startDate: '',
+      endDate: '',
+      type: '' as TransactionType,
+      description: '',
+    };
+    this.selectedTransactionTypeFilter = '';
+    this.showTransactionTypeFilter = false;
+    this.resetPagination();
+    this.loadUserTransactions();
   }
 }
