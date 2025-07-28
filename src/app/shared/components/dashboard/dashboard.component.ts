@@ -15,12 +15,13 @@ import { Card } from '../../models/card';
 import { TransactionData } from '../../models/transaction-data';
 import { TransactionEventService } from '../../services/TransactionEvent/transaction-event.service';
 import { TransactionChartComponent } from '../../components/transaction-chart/transaction-chart.component';
+import { PieChartComponent } from '../pie-chart/pie-chart.component';
 import { IconEyeComponent } from "../../assets/icons/icon-eye.component";
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, TransactionChartComponent, IconEyeComponent],
+  imports: [CommonModule, TransactionChartComponent, PieChartComponent, IconEyeComponent],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
 })
@@ -33,6 +34,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   accountType: string = 'Conta Corrente';
   totalEntries: string = '';
   totalExits: string = '';
+  totalEntriesNumber: number = 0;
+  totalExitsNumber: number = 0;
   transactionTypeLabels = TRANSACTION_TYPE_LABELS;
 
   showBalance: boolean = true;
@@ -48,6 +51,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   currentMonthTransactions: Transaction[] = [];
   errorMessage: string = '';
   private destroy$ = new Subject<void>();
+
+  chartType: 'bar' | 'pie' = 'bar';
 
   constructor(
     private authService: AuthService,
@@ -212,6 +217,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
       }
     });
 
+    this.totalEntriesNumber = totalEntries;
+    this.totalExitsNumber = totalExits;
     this.totalEntries = this.formatBalance(totalEntries);
     this.totalExits = this.formatBalance(totalExits);
     this.balance = this.formatBalance(totalEntries - totalExits);
@@ -262,5 +269,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   toggleBalance(): void {
     this.showBalance = !this.showBalance;
+  }
+
+  setChartType(type: 'bar' | 'pie'): void {
+    this.chartType = type;
   }
 }

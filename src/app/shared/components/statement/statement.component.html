@@ -30,88 +30,57 @@
     *ngIf="showAllTransactions"
     class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4 pt-4"
   >
-    <input
-      type="date"
-      class="border rounded p-2 text-sm w-full"
-      placeholder="Data inicial (YYYY-MM-DD)"
-      [(ngModel)]="filters.startDate"
-      name="startDate"
-      (ngModelChange)="onFiltersChange()"
-    />
+    <div class="mb-4">
+      <div class="relative inline-block w-full">
+        <div
+          class="w-full bg-gray-100 border border-cyan-blue-500 text-cyan-blue-500 font-lato font-medium rounded-md p-4 flex items-center"
+        >
+          <input
+            type="date"
+            class="bg-transparent w-full outline-none text-cyan-blue-500 placeholder-cyan-blue-500 placeholder-opacity-70"
+            placeholder="Data inicial (YYYY-MM-DD)"
+            [(ngModel)]="filters.startDate"
+            name="startDate"
+            (ngModelChange)="onFiltersChange()"
+          />
+        </div>
+      </div>
+    </div>
 
-    <input
-      type="date"
-      class="border rounded p-2 text-sm w-full"
-      placeholder="Data final (YYYY-MM-DD)"
-      [(ngModel)]="filters.endDate"
-      name="endDate"
-      (ngModelChange)="onFiltersChange()"
-    />
+    <div class="mb-4">
+      <div class="relative inline-block w-full">
+        <div
+          class="w-full bg-gray-100 border border-cyan-blue-500 text-cyan-blue-500 font-lato font-medium rounded-md p-4 flex items-center"
+        >
+          <input
+            type="date"
+            class="bg-transparent w-full outline-none text-cyan-blue-500 placeholder-cyan-blue-500 placeholder-opacity-70"
+            placeholder="Data final (YYYY-MM-DD)"
+            [(ngModel)]="filters.endDate"
+            name="endDate"
+            (ngModelChange)="onFiltersChange()"
+          />
+        </div>
+      </div>
+    </div>
 
-    <select
-      class="border rounded p-2 text-sm w-full"
-      name="category"
-      [(ngModel)]="filters.type"
-      name="type"
-      (ngModelChange)="onFiltersChange()"
-    >
-      <option value="">Tipo</option>
-      <option
-        *ngFor="let label of transactionTypeKeys"
-        [value]="transactionLabels[label]"
-      >
-        {{ label }}
-      </option>
-    </select>
+    <div class="mb-4">
+      <div class="relative inline-block w-full">
+        <div
+          class="w-full bg-gray-100 border border-cyan-blue-500 text-cyan-blue-500 font-lato font-medium rounded-md p-4 flex items-center"
+        >
+          <input
+            type="text"
+            placeholder="Descrição"
+            class="bg-transparent w-full outline-none text-cyan-blue-500 placeholder-cyan-blue-500 placeholder-opacity-70"
+            [(ngModel)]="filters.description"
+            name="description"
+            (ngModelChange)="onFiltersChange()"
+          />
+        </div>
+      </div>
+    </div>
 
-    <input
-      type="number"
-      class="border rounded p-2 text-sm w-full"
-      placeholder="Valor mínimo"
-      [(ngModel)]="filters.minValue"
-      name="minValue"
-      (ngModelChange)="onFiltersChange()"
-      step="0.01"
-      min="0"
-    />
-
-    <input
-      type="number"
-      class="border rounded p-2 text-sm w-full"
-      placeholder="Valor máximo"
-      [(ngModel)]="filters.maxValue"
-      name="maxValue"
-      (ngModelChange)="onFiltersChange()"
-      step="0.01"
-      min="0"
-    />
-
-    <input
-      type="text"
-      class="border rounded p-2 text-sm w-full"
-      placeholder="De (origem)"
-      [(ngModel)]="filters.from"
-      name="from"
-      (ngModelChange)="onFiltersChange()"
-    />
-
-    <input
-      type="text"
-      class="border rounded p-2 text-sm w-full"
-      placeholder="Para (destino)"
-      [(ngModel)]="filters.to"
-      name="to"
-      (ngModelChange)="onFiltersChange()"
-    />
-
-    <input
-      type="text"
-      class="border rounded p-2 text-sm w-full"
-      placeholder="Descrição"
-      [(ngModel)]="filters.description"
-      name="description"
-      (ngModelChange)="onFiltersChange()"
-    />
   </form>
 
   <div *ngIf="isLoading" class="text-center py-4">
@@ -131,8 +100,28 @@
         <thead *ngIf="showAllTransactions" class="bg-gray-50">
           <tr class="border-b-2">
             <ng-container *ngIf="!swapColumns">
-              <th class="py-3 px-2 text-left text-gray-700 font-medium">
+              <th class="py-3 px-2 text-left text-gray-700 font-medium cursor-pointer relative" (click)="toggleTransactionTypeFilter()">
                 Tipo
+                <span *ngIf="showTransactionTypeFilter">&#9650;</span>
+                <span *ngIf="!showTransactionTypeFilter">&#9660;</span>
+
+                <div *ngIf="showTransactionTypeFilter" class="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-10 min-w-[150px]">
+                  <div class="py-1">
+                    <button
+                      class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      (click)="onTransactionTypeFilterSelect('')"
+                    >
+                      Todos os Tipos
+                    </button>
+                    <button
+                      *ngFor="let option of transactionTypeOptions"
+                      class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      (click)="onTransactionTypeFilterSelect(option.value)"
+                    >
+                      {{ option.display }}
+                    </button>
+                  </div>
+                </div>
               </th>
               <th class="py-3 px-2 text-left text-gray-700 font-medium">
                 Categoria
@@ -147,8 +136,28 @@
 
             <ng-container *ngIf="swapColumns">
               <th class="py-3 px-2 text-center text-gray-700 font-medium">#</th>
-              <th class="py-3 px-2 text-left text-gray-700 font-medium">
+              <th class="py-3 px-2 text-left text-gray-700 font-medium cursor-pointer relative" (click)="toggleTransactionTypeFilter()">
                 Tipo
+                <span *ngIf="showTransactionTypeFilter">&#9650;</span>
+                <span *ngIf="!showTransactionTypeFilter">&#9660;</span>
+
+                <div *ngIf="showTransactionTypeFilter" class="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-10 min-w-[150px]">
+                  <div class="py-1">
+                    <button
+                      class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      (click)="onTransactionTypeFilterSelect('')"
+                    >
+                      Todos os Tipos
+                    </button>
+                    <button
+                      *ngFor="let option of transactionTypeOptions"
+                      class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      (click)="onTransactionTypeFilterSelect(option.value)"
+                    >
+                      {{ option.display }}
+                    </button>
+                  </div>
+                </div>
               </th>
               <th class="py-3 px-2 text-left text-gray-700 font-medium">
                 Categoria
@@ -161,7 +170,13 @@
               </th>
             </ng-container>
 
-            <th class="py-3 px-2 text-left text-gray-700 font-medium">Valor</th>
+            <th class="py-3 px-2 text-left text-gray-700 font-medium cursor-pointer" (click)="toggleSort('amount')">
+              Valor
+              <span *ngIf="sortBy === 'amount' || sortBy === 'date'">
+                <span *ngIf="sortDirection === 'asc'">&#9650;</span>
+                <span *ngIf="sortDirection === 'desc'">&#9660;</span>
+              </span>
+            </th>
             <th
               class="py-3 px-2 text-left text-gray-700 font-medium hidden xs:table-cell"
             >
@@ -368,13 +383,16 @@
     </div>
   </div>
 
-  <div
-    *ngIf="!isLoading && recentTransactions.length === 0"
-    class="text-center py-4"
+<div *ngIf="!isLoading && filteredTransactions.length === 0" class="text-center py-8">
+  <p class="text-gray-500 mb-4">Nenhuma transação encontrada com os filtros aplicados.</p>
+  <button
+    (click)="clearAllFilters()"
+    class="bg-cyan-blue-500 dark:bg-blue-violet-500 text-white px-4 py-2 rounded-lg hover:bg-cyan-blue-600 dark:hover:bg-blue-violet-600 transition-colors font-medium"
+    *ngIf="filters.startDate || filters.endDate || filters.type || filters.description"
   >
-    <app-text color="text-gray-600">Nenhuma transação encontrada</app-text>
-  </div>
-
+    Limpar filtros
+  </button>
+</div>
   <!-- Botão "Carregar mais" para paginação -->
   <div
     *ngIf="

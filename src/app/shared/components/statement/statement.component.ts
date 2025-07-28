@@ -27,6 +27,7 @@ import { FormsModule } from '@angular/forms';
 import { IconClipComponent } from '../../assets/icons/icon-clip.component';
 import { AccountService } from '../../services/Account/account.service';
 import { AccountStatement } from '../../models/account';
+import { InputComponent } from "../input/input.component";
 
 @Component({
   selector: 'app-statement',
@@ -43,8 +44,8 @@ import { AccountStatement } from '../../models/account';
     EditModalComponent,
     BrlPipe,
     FormsModule,
-    IconClipComponent,
-  ],
+    IconClipComponent
+],
   templateUrl: './statement.component.html',
   styleUrls: ['./statement.component.scss'],
 })
@@ -74,16 +75,28 @@ export class StatementComponent implements OnInit, OnDestroy {
   transactionToEdit: Transaction | null = null;
   loadingAttachment = false;
 
-  filters = {
+  filters: {
+    startDate: string;
+    endDate: string;
+    type: TransactionType | '';
+    description: string;
+  } = {
     startDate: '',
     endDate: '',
-    type: '', // deposito, saque, transferencia
-    minValue: '',
-    maxValue: '',
-    from: '',
-    to: '',
+    type: '' as TransactionType,
     description: '',
   };
+
+  sortBy: string = 'date';
+  sortDirection: 'asc' | 'desc' = 'desc';
+
+  showTransactionTypeFilter = false;
+  selectedTransactionTypeFilter: TransactionType | '' = '';
+
+  transactionTypeOptions = this.transactionTypeKeys.map(label => ({
+    display: label,
+    value: this.transactionLabels[label]
+  }));
 
   get transactionTypeKeys(): string[] {
     return Object.keys(this.transactionLabels);
@@ -109,7 +122,6 @@ export class StatementComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.resetPagination();
 
-    // Wait for current user to be available before loading transactions
     this.authService.currentUser$
       .pipe(takeUntil(this.destroy$))
       .subscribe((user) => {
@@ -165,19 +177,7 @@ export class StatementComponent implements OnInit, OnDestroy {
     this.isLoadingMore = true;
     const accountId = this.authService.getPrimaryAccountId();
 
-    const filterParams = {
-      startDate: this.filters.startDate || undefined,
-      endDate: this.filters.endDate || undefined,
-      type: this.filters.type || undefined,
-      minValue: this.filters.minValue || undefined,
-      maxValue: this.filters.maxValue || undefined,
-      from: this.filters.from || undefined,
-      to: this.filters.to || undefined,
-      description: this.filters.description || undefined,
-      page: this.currentPage + 1,
-      limit: this.itemsPerPage,
-    };
-
+    const filterParams = this.prepareFilterParams();
     this.accountService.getStatement(accountId ?? '', filterParams).subscribe({
       next: (accountStatement: AccountStatement) => {
         const newTransactions = accountStatement?.result?.transactions
@@ -212,6 +212,7 @@ export class StatementComponent implements OnInit, OnDestroy {
 
   onFiltersChange(): void {
     this.resetPagination();
+    this.filteredTransactions = [];
     this.loadUserTransactions();
   }
 
@@ -233,23 +234,13 @@ export class StatementComponent implements OnInit, OnDestroy {
 
     this.isLoading = true;
 
-    const filterParams = {
-      startDate: this.filters.startDate || undefined,
-      endDate: this.filters.endDate || undefined,
-      type: this.filters.type || undefined,
-      minValue: this.filters.minValue || undefined,
-      maxValue: this.filters.maxValue || undefined,
-      from: this.filters.from || undefined,
-      to: this.filters.to || undefined,
-      description: this.filters.description || undefined,
-      page: 1,
-      limit: this.itemsPerPage,
-    };
+    const filterParams = this.prepareFilterParams();
 
     this.accountService.getStatement(accountId ?? '', filterParams).subscribe({
       next: (accountStatement: AccountStatement) => {
         const transactions = accountStatement?.result?.transactions;
         this.filteredTransactions = transactions.filter((t) => t.id);
+        this.sortTransactions();
         this.totalTransactions = this.filteredTransactions.length;
         this.allTransactionsLoaded =
           this.filteredTransactions.length < this.itemsPerPage;
@@ -262,6 +253,67 @@ export class StatementComponent implements OnInit, OnDestroy {
       },
     });
   }
+
+  sortTransactions(): void {
+    if (!this.sortBy) return;
+
+    this.filteredTransactions.sort((a, b) => {
+      const aValue = (a as any)[this.sortBy];
+      const bValue = (b as any)[this.sortBy];
+
+      let comparison = 0;
+      if (aValue > bValue) {
+        comparison = 1;
+      } else if (aValue < bValue) {
+        comparison = -1;
+      }
+
+      return this.sortDirection === 'desc' ? comparison * -1 : comparison;
+    });
+  }
+
+  toggleSort(column: string): void {
+    if (this.sortBy === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortBy = column;
+      this.sortDirection = 'asc';
+    }
+    this.sortTransactions();
+  }
+
+  toggleTransactionTypeFilter(): void {
+    this.showTransactionTypeFilter = !this.showTransactionTypeFilter;
+  }
+
+  onTransactionTypeFilterSelect(type: TransactionType | ''): void {
+    this.selectedTransactionTypeFilter = type;
+    this.filters.type = type;
+    this.showTransactionTypeFilter = false;
+    this.onFiltersChange();
+  }
+
+private prepareFilterParams(): any {
+  let formattedStartDate: string | undefined;
+  if (this.filters.startDate) {
+    formattedStartDate = new Date(this.filters.startDate + 'T00:00:00').toISOString();
+  }
+
+  let formattedEndDate: string | undefined;
+  if (this.filters.endDate) {
+    formattedEndDate = new Date(this.filters.endDate + 'T23:59:59.999').toISOString();
+  }
+
+  return {
+    startDate: formattedStartDate,
+    endDate: formattedEndDate,
+    type: this.filters.type || undefined,
+    description: this.filters.description || undefined,
+    page: this.currentPage,
+    limit: this.itemsPerPage,
+  };
+}
+
 
   isDeposit(transaction: Transaction): boolean {
     return isCredit(transaction.type);
@@ -341,7 +393,6 @@ export class StatementComponent implements OnInit, OnDestroy {
         description: updatedTransaction.description,
       };
 
-      // Get account ID for the transaction update
       const accountId = this.authService.getPrimaryAccountId();
       if (!accountId) {
         console.error('Account ID not found');
@@ -416,5 +467,24 @@ export class StatementComponent implements OnInit, OnDestroy {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  }
+
+  onTransactionTypeChange(typeValue: TransactionType): void {
+    this.filters.type = typeValue;
+    console.log('onTransactionTypeChange - Tipo de transação alterado para:', typeValue); // Log 18
+    this.onFiltersChange();
+  }
+
+  clearAllFilters(): void {
+    this.filters = {
+      startDate: '',
+      endDate: '',
+      type: '' as TransactionType,
+      description: '',
+    };
+    this.selectedTransactionTypeFilter = '';
+    this.showTransactionTypeFilter = false;
+    this.resetPagination();
+    this.loadUserTransactions();
   }
 }

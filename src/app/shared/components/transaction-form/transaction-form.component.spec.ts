@@ -114,11 +114,15 @@ describe('TransactionFormComponent', () => {
     ]);
   });
 
-  it('should have correct category suggestions', () => {
-    expect(component.categorySuggestions).toContain('Alimentação');
-    expect(component.categorySuggestions).toContain('Transporte');
-    expect(component.categorySuggestions).toContain('Lazer');
-    expect(component.categorySuggestions.length).toBe(10);
+  it('should have correct transaction options', () => {
+    expect(component.transactionOptions).toEqual([
+      { display: 'Receita (Câmbio de Moeda)', value: TransactionType.Exchange },
+      { display: 'Despesa (DOC/TED)', value: TransactionType.Transfer },
+      {
+        display: 'Empréstimo (Empréstimo e Financiamento)',
+        value: TransactionType.Loan,
+      },
+    ]);
   });
 
   describe('onTransactionTypeChange', () => {
@@ -164,28 +168,30 @@ describe('TransactionFormComponent', () => {
   });
 
   describe('onDescriptionChange', () => {
-    it('should update form description and filter suggestions', () => {
-      const event = {
-        target: { value: 'ali' },
-      } as any;
-
+    it('should update form description and filter suggestions for Exchange', () => {
+      component.form.type = TransactionType.Exchange;
+      const event = { target: { value: 'Câmbio' } } as any;
       component.onDescriptionChange(event);
-
-      expect(component.form.description).toBe('ali');
-      expect(component.filteredCategorySuggestions).toContain('Alimentação');
+      expect(component.form.description).toBe('Câmbio');
+      expect(component.filteredDescriptionSuggestions).toContain(
+        'Câmbio: Compra de USD para viagem'
+      );
       expect(component.showSuggestions).toBe(true);
     });
 
-    it('should limit suggestions to 5', () => {
-      const event = {
-        target: { value: 'a' },
-      } as any;
-
+    it('should update form description and filter suggestions for other types', () => {
+      component.form.type = TransactionType.Transfer;
+      const event = { target: { value: 'ali' } } as any;
       component.onDescriptionChange(event);
+      expect(component.form.description).toBe('ali');
+      expect(component.filteredDescriptionSuggestions).toContain('DOC: Pagamento de mensalidade escolar');
+      expect(component.showSuggestions).toBe(true);
+    });
 
-      expect(component.filteredCategorySuggestions.length).toBeLessThanOrEqual(
-        5
-      );
+    it('should hide suggestions when input is empty', () => {
+      const event = { target: { value: '' } } as any;
+      component.onDescriptionChange(event);
+      expect(component.showSuggestions).toBe(false);
     });
   });
 
@@ -194,7 +200,7 @@ describe('TransactionFormComponent', () => {
       component.selectCategorySuggestion('Alimentação');
 
       expect(component.form.description).toBe('Alimentação');
-      expect(component.filteredCategorySuggestions).toEqual([]);
+      expect(component.filteredDescriptionSuggestions).toEqual([]);
       expect(component.showSuggestions).toBe(false);
     });
   });

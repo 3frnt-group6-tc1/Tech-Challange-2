@@ -38,19 +38,49 @@ export class TransactionFormComponent implements OnInit {
     },
   ];
 
-  categorySuggestions: string[] = [
-    'Alimentação',
-    'Transporte',
-    'Lazer',
-    'Educação',
-    'Saúde',
-    'Investimentos',
-    'Moradia',
-    'Viagem',
-    'Compras',
-    'Salário',
-  ];
-  filteredCategorySuggestions: string[] = [];
+  private descriptionSuggestionsMap: { [key in TransactionType]: string[] } = {
+    [TransactionType.Exchange]: [
+      'Câmbio: Compra de USD para viagem',
+      'Câmbio: Venda de EUR de retorno',
+      'Câmbio: Remessa internacional para investimento (USD)',
+      'Câmbio: Recebimento de pagamento PJ do exterior (GBP)',
+      'Câmbio: Conversão BRL para EUR para despesas',
+      'Câmbio: Resgate de USD de conta global',
+      'Câmbio: Compra de EUR para mensalidade curso',
+      'Câmbio: Venda de JPY',
+      'Câmbio: Recebimento de pensão do exterior',
+      'Câmbio: Transferência entre contas (BRL para USD)',
+      'Câmbio: Pagamento de serviço internacional (streaming)',
+    ],
+    [TransactionType.Loan]: [
+      'Empréstimo: Recebimento de crédito pessoal',
+      'Financiamento: Parcela mensal de imóvel',
+      'Empréstimo: Amortização de dívida de carro',
+      'Financiamento: Recebimento de crédito estudantil',
+      'Empréstimo: Pagamento de juros de cheque especial',
+      'Financiamento: Parcela de reforma residencial',
+      'Empréstimo: Quitação antecipada de empréstimo',
+      'Financiamento: Entrada de veículo novo',
+      'Empréstimo: Pagamento de parcela consignado',
+      'Financiamento: Parcela de maquinário (PJ)',
+      'Empréstimo: Juros sobre financiamento agrícola',
+    ],
+    [TransactionType.Transfer]: [
+      'TED: Transferência para pagamento de aluguel',
+      'DOC: Pagamento de conta de luz',
+      'TED: Envio para familiar (mesmo banco)',
+      'DOC: Pagamento de fornecedor (serviços)',
+      'TED: Transferência para corretora (aporte em fundos)',
+      'TED: Recebimento de reembolso de amigo',
+      'DOC: Pagamento de internet mensal',
+      'TED: Transferência entre contas próprias (diferentes bancos)',
+      'TED: Reembolso de despesas de viagem',
+      'DOC: Pagamento de mensalidade escolar',
+      'TED: Compra online (transferência direta para vendedor)',
+    ],
+  };
+
+  filteredDescriptionSuggestions: string[] = [];
   showSuggestions = false;
 
   form: Transaction = this.createEmptyForm();
@@ -85,10 +115,13 @@ export class TransactionFormComponent implements OnInit {
     private authService: AuthService
   ) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.onDescriptionChange({ target: { value: this.form.description } } as unknown as Event);
+  }
 
   onTransactionTypeChange(value: TransactionType): void {
     this.form.type = value;
+    this.onDescriptionChange({ target: { value: this.form.description } } as unknown as Event);
   }
 
   onAmountChange(event: Event): void {
@@ -112,16 +145,20 @@ export class TransactionFormComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     this.form.description = input.value;
 
-    const value = input.value.toLowerCase();
-    this.filteredCategorySuggestions = this.categorySuggestions
-      .filter((c) => c.toLowerCase().includes(value))
-      .slice(0, 5);
-    this.showSuggestions = true;
+    const inputValue = input.value.toLowerCase();
+    const currentTransactionType = this.form.type;
+
+    const relevantSuggestions = this.descriptionSuggestionsMap[currentTransactionType] || [];
+
+    this.filteredDescriptionSuggestions = relevantSuggestions
+      .filter((suggestion) => suggestion.toLowerCase().includes(inputValue))
+      .slice(0, 7);
+    this.showSuggestions = inputValue.length > 0 && this.filteredDescriptionSuggestions.length > 0;
   }
 
   selectCategorySuggestion(suggestion: string): void {
     this.form.description = suggestion;
-    this.filteredCategorySuggestions = [];
+    this.filteredDescriptionSuggestions = []; // Limpa as sugestões após a seleção
     this.showSuggestions = false;
   }
 
@@ -257,6 +294,7 @@ export class TransactionFormComponent implements OnInit {
     this.valorTransacao = '';
     this.selectedFiles = [];
     this.uploadedFiles = [];
+    this.onTransactionTypeChange(this.form.type);
     setTimeout(() => {
       if (this.submitStatus.success) this.submitStatus.message = '';
     }, 3000);
@@ -297,9 +335,6 @@ export class TransactionFormComponent implements OnInit {
     }
   }
 
-  /**
-   * Get signed URL for viewing/downloading an uploaded file
-   */
   getFileViewUrl(fileKey: string): void {
     this.s3UploadService.getSignedUrlForDownload(fileKey).subscribe({
       next: (response) => {
@@ -311,9 +346,6 @@ export class TransactionFormComponent implements OnInit {
     });
   }
 
-  /**
-   * Get file size in readable format
-   */
   getFileSize(file: File): string {
     const bytes = file.size;
     if (bytes === 0) return '0 Bytes';
@@ -323,9 +355,6 @@ export class TransactionFormComponent implements OnInit {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }
 
-  /**
-   * Check if file is an image for preview
-   */
   isImageFile(file: File): boolean {
     return file.type.startsWith('image/');
   }
