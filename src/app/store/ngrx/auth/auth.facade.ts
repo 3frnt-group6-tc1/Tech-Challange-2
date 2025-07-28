@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
+import { Observable } from 'rxjs';
 import {
   selectIsAuthenticated,
   selectUser,
@@ -7,14 +8,14 @@ import {
   selectAuthError,
 } from './state/auth.selectors';
 import * as AuthActions from './state/auth.actions';
-import { LoginRequest } from '../shared/services/Auth/auth.service';
+import { LoginRequest, AuthUser } from '../../../shared/services/Auth/auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthFacade {
-  isAuthenticated$: any;
-  user$: any;
-  loading$: any;
-  error$: any;
+  isAuthenticated$: Observable<boolean>;
+  user$: Observable<AuthUser | null>;
+  loading$: Observable<boolean>;
+  error$: Observable<any>;
 
   constructor(private store: Store) {
     this.isAuthenticated$ = this.store.select(selectIsAuthenticated);

@@ -1,5 +1,5 @@
 import { createAction, props } from '@ngrx/store';
-import { LoginRequest, AuthUser } from '../../shared/services/Auth/auth.service';
+import { LoginRequest, AuthUser } from '../../../../shared/services/Auth/auth.service';
 
 export const login = createAction(
   '[Auth] Login',

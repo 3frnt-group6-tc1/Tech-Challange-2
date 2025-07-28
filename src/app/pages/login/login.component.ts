@@ -1,16 +1,17 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { LoginRequest } from '../../shared/services/Auth/auth.service';
-import { AuthFacade } from '../../auth/auth.facade';
+import { AuthFacade } from '../../store/ngrx/auth/auth.facade';
 import { TextComponent } from '../../shared/components/text/text.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { IconEyeComponent } from '../../shared/assets/icons/icon-eye.component';
 import { IconLogoComponent } from '../../shared/assets/icons/icon-logo.component';
 import { IconErrorComponent } from '../../shared/assets/icons/icon-error.component';
 import { IconLoadingComponent } from '../../shared/assets/icons/icon-loading.component';
-import { take, filter } from 'rxjs/operators';
+import { take, filter, takeUntil, combineLatest } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 
 @Component({
   selector: 'app-login',
@@ -29,7 +30,7 @@ import { take, filter } from 'rxjs/operators';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent implements OnInit, OnDestroy {
   credentials: LoginRequest = {
     email: '',
     password: '',
@@ -38,6 +39,7 @@ export class LoginComponent implements OnInit {
   isLoading = false;
   errorMessage = '';
   showPassword = false;
+  private destroy$ = new Subject<void>();
 
   constructor(private authFacade: AuthFacade, private router: Router) {}
 
@@ -48,6 +50,32 @@ export class LoginComponent implements OnInit {
         this.router.navigate(['/panel']);
       }
     });
+
+    this.authFacade.loading$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe((loading: boolean) => {
+      this.isLoading = loading;
+    });
+
+    this.authFacade.error$.pipe(
+      takeUntil(this.destroy$),
+      filter((error: any) => !!error)
+    ).subscribe((error: any) => {
+      this.handleLoginError(error);
+    });
+
+    // Observar sucesso de autenticação
+    this.authFacade.isAuthenticated$.pipe(
+      takeUntil(this.destroy$),
+      filter((isAuth: boolean) => isAuth && !this.isLoading)
+    ).subscribe(() => {
+      this.router.navigate(['/panel']);
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   /**
@@ -63,22 +91,8 @@ export class LoginComponent implements OnInit {
    * Perform login
    */
   private login(): void {
-    this.isLoading = true;
     this.errorMessage = '';
-
     this.authFacade.login(this.credentials);
-
-    // React to auth state changes
-    this.authFacade.isAuthenticated$.pipe(take(1)).subscribe((isAuth: boolean) => {
-      this.isLoading = false;
-      if (isAuth) {
-        this.router.navigate(['/panel']);
-      } else {
-        this.authFacade.error$.pipe(filter(Boolean), take(1)).subscribe((error: any) => {
-          this.handleLoginError(error);
-        });
-      }
-    });
   }
 
   /**

@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
-import { AccountService } from '../../shared/services/Account/account.service';
-import { isCredit, isDebit, Transaction } from '../../shared/models/transaction';
+import { AccountService } from '../../../shared/services/Account/account.service';
+import { isCredit, isDebit, Transaction } from '../../../shared/models/transaction';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { of } from 'rxjs';
 import { map, catchError, switchMap } from 'rxjs/operators';
@@ -16,8 +16,8 @@ export class BalanceEffects {
       ofType(BalanceActions.loadBalance),
       switchMap(() =>
         this.accountService.getByUserId().pipe(
-          map(({ result }) => {
-            const transactions: Transaction[] = result.transactions ?? [];
+          map((response: { result: { transactions: Transaction[]; account: any[] } }) => {
+            const transactions: Transaction[] = response.result.transactions ?? [];
             let balance = 0;
             transactions.forEach((t) => {
               if (isCredit(t.type)) {
@@ -26,7 +26,7 @@ export class BalanceEffects {
                 balance -= t.amount;
               }
             });
-            const accountType = result.account[0]?.type ?? 'Conta';
+            const accountType = response.result.account[0]?.type ?? 'Conta';
             return BalanceActions.loadBalanceSuccess({ balance, accountType });
           }),
           catchError(() =>

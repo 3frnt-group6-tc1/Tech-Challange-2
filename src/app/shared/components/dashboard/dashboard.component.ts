@@ -18,8 +18,8 @@ import { TransactionEventService } from '../../services/TransactionEvent/transac
 import { TransactionChartComponent } from '../../components/transaction-chart/transaction-chart.component';
 import { IconEyeComponent } from "../../assets/icons/icon-eye.component";
 
-import * as BalanceActions from '../../../store/balance/balance.actions';
-import { selectBalanceInfo } from '../../../store/balance/balance.selectors';
+import * as BalanceActions from '../../../store/ngrx/balance/balance.actions';
+import { selectBalanceInfo } from '../../../store/ngrx/balance/balance.selectors';
 
 @Component({
   selector: 'app-dashboard',

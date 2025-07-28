@@ -7,10 +7,10 @@ import { provideStoreDevtools } from '@ngrx/store-devtools';
 
 import { routes } from './app.routes';
 import { authInterceptor } from './shared/interceptors/auth.interceptor';
-import { AUTH_FEATURE_KEY, authReducer } from './auth/state/auth.reducer';
-import { AuthEffects } from './auth/state/auth.effects';
-import { BALANCE_FEATURE_KEY, balanceReducer } from './store/balance/balance.reducer';
-import { BalanceEffects } from './store/balance/balance.effects';
+import { AUTH_FEATURE_KEY, authReducer } from './store/ngrx/auth/state/auth.reducer';
+import { AuthEffects } from './store/ngrx/auth/state/auth.effects';
+import { BALANCE_FEATURE_KEY, balanceReducer } from './store/ngrx/balance/balance.reducer';
+import { BalanceEffects } from './store/ngrx/balance/balance.effects';
 
 export const apiConfig = {
   baseUrl: 'http://tech-challenge-2-alb-1096144064.us-east-1.elb.amazonaws.com',
