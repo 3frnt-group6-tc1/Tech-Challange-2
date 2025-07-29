@@ -109,6 +109,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
         this.handleAnchorOnInit(initialFragment);
       }, 1000);
     }
+    setTimeout(() => {
+      this.sendThemeToMicroFrontend();
+    }, 1000);
   }
 
   ngOnDestroy(): void {
@@ -164,6 +167,20 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   toggleDarkMode() {
     this.themeService.toggleDarkMode();
+    this.sendThemeToMicroFrontend();
+  }
+
+  private sendThemeToMicroFrontend(): void {
+    const iframe = document.getElementById(
+      'micro-frontend-container'
+    ) as HTMLIFrameElement;
+
+    if (iframe && iframe.contentWindow) {
+      // Usar método getCurrentTheme() se disponível, senão fallback para checagem de classe
+      const theme = this.themeService.getCurrentTheme();
+      iframe.contentWindow.postMessage({ type: 'theme', theme }, '*');
+      console.log('Sending theme to micro frontend:', { type: 'theme', theme });
+    }
   }
 
   checkScreen(): void {
