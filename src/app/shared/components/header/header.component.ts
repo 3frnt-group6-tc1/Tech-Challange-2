@@ -1,3 +1,4 @@
+// ...existing code...
 import {
   Component,
   ElementRef,
@@ -87,10 +88,27 @@ export class HeaderComponent implements OnInit, OnDestroy {
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
         this.updateLoginState(event.urlAfterRedirects);
+        // Handle anchor navigation on every NavigationEnd
+        const urlTree = this.router.parseUrl(event.urlAfterRedirects);
+        const fragment = urlTree.fragment;
+        if (fragment) {
+          setTimeout(() => {
+            this.handleAnchorOnInit(fragment);
+          }, 1000);
+        }
       });
 
     this.subscribeToAuthUser();
     this.updateLoginState(this.router.url);
+
+    // Se houver fragmento na URL na inicialização, emitir evento para o iframe
+    const initialUrlTree = this.router.parseUrl(this.router.url);
+    const initialFragment = initialUrlTree.fragment;
+    if (initialFragment) {
+      setTimeout(() => {
+        this.handleAnchorOnInit(initialFragment);
+      }, 1000);
+    }
   }
 
   ngOnDestroy(): void {
@@ -235,5 +253,26 @@ export class HeaderComponent implements OnInit, OnDestroy {
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
+  }
+
+  onAnchorClick(event: Event, anchor: string) {
+    event.preventDefault();
+    this.handleAnchorOnInit(anchor);
+  }
+
+  private handleAnchorOnInit(anchor: string) {
+    if (this.router.url !== '/' && !this.router.url.startsWith('/#')) {
+      this.router.navigate(['/'], { fragment: anchor });
+      return;
+    }
+    const iframe = document.getElementById(
+      'micro-frontend-container'
+    ) as HTMLIFrameElement;
+    if (iframe && iframe.contentWindow) {
+      iframe.contentWindow.postMessage(
+        { type: 'scrollToAnchor', anchor: anchor },
+        '*'
+      );
+    }
   }
 }

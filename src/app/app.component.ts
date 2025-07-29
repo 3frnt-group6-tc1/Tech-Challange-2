@@ -7,17 +7,13 @@ import { ThemeService } from './shared/services/Theme/theme.service'; // ajuste 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [
-    RouterOutlet,
-    HeaderComponent,
-    FooterComponent
-],
+  imports: [RouterOutlet, HeaderComponent, FooterComponent],
   template: `
     <app-header></app-header>
     <router-outlet></router-outlet>
     <app-footer></app-footer>
   `,
-  styleUrl: './app.component.css'
+  styleUrl: './app.component.css',
 })
 export class AppComponent {
   title = 'TechChallenge - FIAP';

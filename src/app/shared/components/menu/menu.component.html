@@ -10,28 +10,28 @@
     <a
       href="#sobre"
       class="text-cyan-blue-500 dark:text-gray-200 text-[18px] font-semibold"
-      (click)="closeMenu.emit()"
+      (click)="onAnchorClick($event, 'sobre')"
     >
       Sobre
     </a>
     <a
       href="#vantagens"
       class="text-cyan-blue-500 dark:text-gray-200 text-[18px] font-semibold"
-      (click)="closeMenu.emit()"
+      (click)="onAnchorClick($event, 'vantagens')"
     >
       Vantagens
     </a>
     <a
       href="#servicos"
       class="text-cyan-blue-500 dark:text-gray-200 text-[18px] font-semibold"
-      (click)="closeMenu.emit()"
+      (click)="onAnchorClick($event, 'servicos')"
     >
       Serviços
     </a>
     <a
       href="#contato"
       class="text-cyan-blue-500 dark:text-gray-200 text-[18px] font-semibold"
-      (click)="closeMenu.emit()"
+      (click)="onAnchorClick($event, 'contato')"
     >
       Contato
     </a>
