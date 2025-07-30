@@ -88,30 +88,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
         this.updateLoginState(event.urlAfterRedirects);
-        // Handle anchor navigation on every NavigationEnd
-        const urlTree = this.router.parseUrl(event.urlAfterRedirects);
-        const fragment = urlTree.fragment;
-        if (fragment) {
-          setTimeout(() => {
-            this.handleAnchorOnInit(fragment);
-          }, 1000);
-        }
       });
 
     this.subscribeToAuthUser();
     this.updateLoginState(this.router.url);
-
-    // Se houver fragmento na URL na inicialização, emitir evento para o iframe
-    const initialUrlTree = this.router.parseUrl(this.router.url);
-    const initialFragment = initialUrlTree.fragment;
-    if (initialFragment) {
-      setTimeout(() => {
-        this.handleAnchorOnInit(initialFragment);
-      }, 1000);
-    }
-    setTimeout(() => {
-      this.sendThemeToMicroFrontend();
-    }, 1000);
   }
 
   ngOnDestroy(): void {
@@ -171,16 +151,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   private sendThemeToMicroFrontend(): void {
-    const iframe = document.getElementById(
-      'micro-frontend-container'
-    ) as HTMLIFrameElement;
-
-    if (iframe && iframe.contentWindow) {
-      // Usar método getCurrentTheme() se disponível, senão fallback para checagem de classe
-      const theme = this.themeService.getCurrentTheme();
-      iframe.contentWindow.postMessage({ type: 'theme', theme }, '*');
-      console.log('Sending theme to micro frontend:', { type: 'theme', theme });
-    }
+    // Usar método getCurrentTheme() se disponível, senão fallback para checagem de classe
+    const theme = this.themeService.getCurrentTheme();
+    window.parent.postMessage({ type: 'theme', theme }, '*');
   }
 
   checkScreen(): void {
@@ -259,7 +232,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     if (this.authService.isAuthenticated()) {
       this.router.navigate(['/panel']);
     } else {
-      this.router.navigate(['/login']);
+      window.location.href = '/login';
     }
   }
 
@@ -269,27 +242,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   logout(): void {
     this.authService.logout();
-    this.router.navigate(['/login']);
-  }
-
-  onAnchorClick(event: Event, anchor: string) {
-    event.preventDefault();
-    this.handleAnchorOnInit(anchor);
-  }
-
-  private handleAnchorOnInit(anchor: string) {
-    if (this.router.url !== '/' && !this.router.url.startsWith('/#')) {
-      this.router.navigate(['/'], { fragment: anchor });
-      return;
-    }
-    const iframe = document.getElementById(
-      'micro-frontend-container'
-    ) as HTMLIFrameElement;
-    if (iframe && iframe.contentWindow) {
-      iframe.contentWindow.postMessage(
-        { type: 'scrollToAnchor', anchor: anchor },
-        '*'
-      );
-    }
+    // Pass logout=true to the login URL so the MF can clean its storage
+    window.location.href = '/login?logout=true';
   }
 }

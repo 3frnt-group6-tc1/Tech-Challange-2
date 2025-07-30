@@ -173,7 +173,7 @@ export class AuthService {
   /**
    * Set authentication session
    */
-  private setSession(authResult: LoginResponse): void {
+  public setSession(authResult: LoginResponse): void {
     sessionStorage.setItem(this.TOKEN_KEY, authResult.result.token);
 
     // Extract user data from token

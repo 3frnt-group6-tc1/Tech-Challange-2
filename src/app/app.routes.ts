@@ -1,26 +1,6 @@
 import { Routes } from '@angular/router';
-import { authGuard, loginGuard } from './shared/guards/auth.guard';
-import { MicroFrontendContainerComponent } from './shared/components/mf-container/micro-frontend-container.component';
-
+import { authGuard } from './shared/guards/auth.guard';
 export const routes: Routes = [
-  {
-    path: '',
-    loadComponent: () => Promise.resolve(MicroFrontendContainerComponent),
-  },
-  {
-    path: 'login',
-    loadComponent: () =>
-      import('./pages/login/login.component').then((m) => m.LoginComponent),
-    canActivate: [loginGuard],
-  },
-  {
-    path: 'register',
-    loadComponent: () =>
-      import('./pages/register/register.component').then(
-        (m) => m.RegisterComponent
-      ),
-    canActivate: [loginGuard],
-  },
   {
     path: 'panel',
     loadComponent: () =>
