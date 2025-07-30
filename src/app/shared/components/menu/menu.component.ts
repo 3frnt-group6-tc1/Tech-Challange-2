@@ -30,6 +30,7 @@ export class MenuComponent implements AfterViewInit, OnInit, OnDestroy {
   @Input() mobile: boolean = false;
   @Input() tablet: boolean = false;
   @Input() menuOpen: boolean = false;
+
   @Input() menuRef: any;
 
   @ViewChild('menuRef') menuRefElement!: ElementRef;
@@ -50,8 +51,27 @@ export class MenuComponent implements AfterViewInit, OnInit, OnDestroy {
       if (event instanceof NavigationEnd) {
         // Força re-render ao mudar rota
         this.cdr.markForCheck();
+        // Handle anchor navigation on every NavigationEnd
+        const urlTree = this.router.parseUrl(
+          event.urlAfterRedirects ?? event.url
+        );
+        const fragment = urlTree.fragment;
+        if (fragment) {
+          setTimeout(() => {
+            this.handleAnchorOnInit(fragment);
+          }, 1000);
+        }
       }
     });
+
+    // Se houver fragmento na URL na inicialização, emitir evento para o iframe
+    const initialUrlTree = this.router.parseUrl(this.router.url);
+    const initialFragment = initialUrlTree.fragment;
+    if (initialFragment) {
+      setTimeout(() => {
+        this.handleAnchorOnInit(initialFragment);
+      }, 1000);
+    }
   }
 
   ngOnDestroy() {
@@ -103,5 +123,26 @@ export class MenuComponent implements AfterViewInit, OnInit, OnDestroy {
 
   get themeButton(): string {
     return this.themeService.isDarkMode() ? 'ghost-white' : 'outline-cyan-blue';
+  }
+
+  onAnchorClick(event: Event, anchor: string) {
+    event.preventDefault();
+    this.handleAnchorOnInit(anchor);
+  }
+
+  private handleAnchorOnInit(anchor: string) {
+    if (this.router.url !== '/' && !this.router.url.startsWith('/#')) {
+      this.router.navigate(['/'], { fragment: anchor });
+      return;
+    }
+    const iframe = document.getElementById(
+      'micro-frontend-container'
+    ) as HTMLIFrameElement;
+    if (iframe && iframe.contentWindow) {
+      iframe.contentWindow.postMessage(
+        { type: 'scrollToAnchor', anchor: anchor },
+        '*'
+      );
+    }
   }
 }

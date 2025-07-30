@@ -1,12 +1,11 @@
 import { Routes } from '@angular/router';
-import { HomeComponent } from './pages/home/home.component';
 import { authGuard, loginGuard } from './shared/guards/auth.guard';
+import { MicroFrontendContainerComponent } from './shared/components/mf-container/micro-frontend-container.component';
 
 export const routes: Routes = [
   {
     path: '',
-    loadComponent: () =>
-      import('./pages/home/home.component').then((m) => m.HomeComponent),
+    loadComponent: () => Promise.resolve(MicroFrontendContainerComponent),
   },
   {
     path: 'login',
