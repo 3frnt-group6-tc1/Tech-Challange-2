@@ -9,7 +9,8 @@ import {
 import { CommonModule } from '@angular/common';
 import { ButtonComponent } from '../button/button.component';
 import { FormsModule } from '@angular/forms';
-import { Transaction } from '../../models/transaction';
+import { Transaction, TransactionType } from '../../models/transaction';
+import { TransactionSuggestionsService } from '../../services/transaction-suggestions.service';
 
 @Component({
   selector: 'app-edit-modal',
@@ -28,12 +29,17 @@ export class EditModalComponent implements OnChanges {
   }>();
   @Output() cancel = new EventEmitter<void>();
 
+  filteredDescriptionSuggestions: string[] = [];
+  showSuggestions = false;
+
   amount: number = 0;
   description: string = '';
   amountFormatted: string = '';
 
   descriptionTouched = false;
   amountTouched = false;
+
+  constructor(private transactionSuggestionsService: TransactionSuggestionsService) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (this.transaction) {
@@ -110,5 +116,40 @@ export class EditModalComponent implements OnChanges {
     this.amountFormatted = `${integer},${cents}`;
     this.amount = Number(integer.replace(/\./g, '') + '.' + cents);
     this.amountTouched = true;
+  }
+
+  onDescriptionChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.description = input.value;
+    this.descriptionTouched = true;
+
+    const inputValue = input.value;
+    const currentTransactionType = this.transaction?.type;
+
+    if (currentTransactionType) {
+      this.filteredDescriptionSuggestions = this.transactionSuggestionsService
+        .getFilteredSuggestions(currentTransactionType, inputValue);
+      this.showSuggestions = inputValue.length > 0 && this.filteredDescriptionSuggestions.length > 0;
+    }
+  }
+
+  selectCategorySuggestion(suggestion: string): void {
+    this.description = suggestion;
+    this.filteredDescriptionSuggestions = [];
+    this.showSuggestions = false;
+    this.descriptionTouched = true;
+  }
+
+  hideSuggestionsDelayed(): void {
+    setTimeout(() => {
+      this.showSuggestions = false;
+    }, 200);
+  }
+
+  allowOnlyLetters(event: KeyboardEvent): void {
+    const regex = /^[a-zA-ZÀ-ÿ\s]*$/;
+    if (!regex.test(event.key)) {
+      event.preventDefault();
+    }
   }
 }

@@ -6,6 +6,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TransactionService } from '../../services/Transaction/transaction-service';
 import { S3UploadService } from '../../services/S3/s3-upload.service';
+import { TransactionSuggestionsService } from '../../services/transaction-suggestions.service';
 import {
   Transaction,
   TRANSACTION_TYPE_LABELS,
@@ -37,48 +38,6 @@ export class TransactionFormComponent implements OnInit {
       value: TransactionType.Loan,
     },
   ];
-
-  private descriptionSuggestionsMap: { [key in TransactionType]: string[] } = {
-    [TransactionType.Exchange]: [
-      'Câmbio: Compra de USD para viagem',
-      'Câmbio: Venda de EUR de retorno',
-      'Câmbio: Remessa internacional para investimento (USD)',
-      'Câmbio: Recebimento de pagamento PJ do exterior (GBP)',
-      'Câmbio: Conversão BRL para EUR para despesas',
-      'Câmbio: Resgate de USD de conta global',
-      'Câmbio: Compra de EUR para mensalidade curso',
-      'Câmbio: Venda de JPY',
-      'Câmbio: Recebimento de pensão do exterior',
-      'Câmbio: Transferência entre contas (BRL para USD)',
-      'Câmbio: Pagamento de serviço internacional (streaming)',
-    ],
-    [TransactionType.Loan]: [
-      'Empréstimo: Recebimento de crédito pessoal',
-      'Financiamento: Parcela mensal de imóvel',
-      'Empréstimo: Amortização de dívida de carro',
-      'Financiamento: Recebimento de crédito estudantil',
-      'Empréstimo: Pagamento de juros de cheque especial',
-      'Financiamento: Parcela de reforma residencial',
-      'Empréstimo: Quitação antecipada de empréstimo',
-      'Financiamento: Entrada de veículo novo',
-      'Empréstimo: Pagamento de parcela consignado',
-      'Financiamento: Parcela de maquinário (PJ)',
-      'Empréstimo: Juros sobre financiamento agrícola',
-    ],
-    [TransactionType.Transfer]: [
-      'TED: Transferência para pagamento de aluguel',
-      'DOC: Pagamento de conta de luz',
-      'TED: Envio para familiar (mesmo banco)',
-      'DOC: Pagamento de fornecedor (serviços)',
-      'TED: Transferência para corretora (aporte em fundos)',
-      'TED: Recebimento de reembolso de amigo',
-      'DOC: Pagamento de internet mensal',
-      'TED: Transferência entre contas próprias (diferentes bancos)',
-      'TED: Reembolso de despesas de viagem',
-      'DOC: Pagamento de mensalidade escolar',
-      'TED: Compra online (transferência direta para vendedor)',
-    ],
-  };
 
   filteredDescriptionSuggestions: string[] = [];
   showSuggestions = false;
@@ -112,7 +71,8 @@ export class TransactionFormComponent implements OnInit {
   constructor(
     private transactionService: TransactionService,
     private s3UploadService: S3UploadService,
-    private authService: AuthService
+    private authService: AuthService,
+    private transactionSuggestionsService: TransactionSuggestionsService
   ) {}
 
   ngOnInit() {
@@ -145,14 +105,11 @@ export class TransactionFormComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     this.form.description = input.value;
 
-    const inputValue = input.value.toLowerCase();
+    const inputValue = input.value;
     const currentTransactionType = this.form.type;
 
-    const relevantSuggestions = this.descriptionSuggestionsMap[currentTransactionType] || [];
-
-    this.filteredDescriptionSuggestions = relevantSuggestions
-      .filter((suggestion) => suggestion.toLowerCase().includes(inputValue))
-      .slice(0, 7);
+    this.filteredDescriptionSuggestions = this.transactionSuggestionsService
+      .getFilteredSuggestions(currentTransactionType, inputValue);
     this.showSuggestions = inputValue.length > 0 && this.filteredDescriptionSuggestions.length > 0;
   }
 
