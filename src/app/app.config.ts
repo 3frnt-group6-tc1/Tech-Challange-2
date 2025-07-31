@@ -7,13 +7,17 @@ import { authInterceptor } from './shared/interceptors/auth.interceptor';
 
 export const apiConfig = {
   // baseUrl: 'http://tech-challenge-2-alb-1096144064.us-east-1.elb.amazonaws.com',
-  baseUrl: 'http://localhost:3001',
-  // baseUrl: 'http://localhost:3000',
+  baseUrl: 'http://localhost:3000',
+  siteUrl: 'http://localhost:4300',
   usersEndpoint: '/users',
   accountsEndpoint: '/accounts',
   transactionsEndpoint: '/accounts/transaction',
   cardsEndpoint: '/cards',
   investmentsEndpoint: '/investments',
+};
+
+export const mfConfig = {
+  siteUrl: 'http://localhost:4300',
 };
 
 export const systemConfig: {

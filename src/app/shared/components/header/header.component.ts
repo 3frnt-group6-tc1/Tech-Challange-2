@@ -1,3 +1,4 @@
+// ...existing code...
 import {
   Component,
   ElementRef,
@@ -146,6 +147,13 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   toggleDarkMode() {
     this.themeService.toggleDarkMode();
+    this.sendThemeToMicroFrontend();
+  }
+
+  private sendThemeToMicroFrontend(): void {
+    // Usar método getCurrentTheme() se disponível, senão fallback para checagem de classe
+    const theme = this.themeService.getCurrentTheme();
+    window.parent.postMessage({ type: 'theme', theme }, '*');
   }
 
   checkScreen(): void {
@@ -224,7 +232,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     if (this.authService.isAuthenticated()) {
       this.router.navigate(['/panel']);
     } else {
-      this.router.navigate(['/login']);
+      window.location.href = '/login';
     }
   }
 
@@ -234,6 +242,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   logout(): void {
     this.authService.logout();
-    this.router.navigate(['/login']);
+    // Pass logout=true to the login URL so the MF can clean its storage
+    window.location.href = '/login?logout=true';
   }
 }

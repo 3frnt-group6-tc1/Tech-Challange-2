@@ -202,19 +202,16 @@ describe('MenuComponent', () => {
 
   describe('input properties', () => {
     it('should have default values for input properties', () => {
-      expect(component.isLoggedIn).toBe(false);
       expect(component.mobile).toBe(false);
       expect(component.tablet).toBe(false);
       expect(component.menuOpen).toBe(false);
     });
 
     it('should accept input property values', () => {
-      component.isLoggedIn = true;
       component.mobile = true;
       component.tablet = true;
       component.menuOpen = true;
 
-      expect(component.isLoggedIn).toBe(true);
       expect(component.mobile).toBe(true);
       expect(component.tablet).toBe(true);
       expect(component.menuOpen).toBe(true);
@@ -224,7 +221,6 @@ describe('MenuComponent', () => {
   describe('template rendering', () => {
     beforeEach(() => {
       // Set up component state to ensure template renders content
-      component.isLoggedIn = true;
       component.tablet = true;
       fixture.detectChanges();
     });
@@ -265,7 +261,6 @@ describe('MenuComponent', () => {
   describe('accessibility', () => {
     beforeEach(() => {
       // Set up logged in tablet state to render nav element
-      component.isLoggedIn = true;
       component.tablet = true;
       fixture.detectChanges();
     });
@@ -308,7 +303,6 @@ describe('MenuComponent', () => {
     });
 
     it('should render mobile menu when logged in, mobile and menu is open', () => {
-      component.isLoggedIn = true;
       component.mobile = true;
       component.menuOpen = true;
       fixture.detectChanges();
@@ -319,7 +313,6 @@ describe('MenuComponent', () => {
     });
 
     it('should render tablet navigation when logged in and on tablet', () => {
-      component.isLoggedIn = true;
       component.tablet = true;
       fixture.detectChanges();
 
@@ -329,7 +322,6 @@ describe('MenuComponent', () => {
     });
 
     it('should render guest mobile menu when not logged in, mobile and menu is open', () => {
-      component.isLoggedIn = false;
       component.mobile = true;
       component.menuOpen = true;
       fixture.detectChanges();

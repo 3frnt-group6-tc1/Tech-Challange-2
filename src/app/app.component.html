@@ -1,0 +1,13 @@
+<ng-container *ngIf="iframeSrc; else normalRoutes">
+  <iframe
+    [src]="iframeSrc"
+    id="micro-frontend-container"
+    width="100%"
+    height="100%"
+    style="border: none; display: block; min-height: 100vh"
+  ></iframe>
+</ng-container>
+
+<ng-template #normalRoutes>
+  <router-outlet></router-outlet>
+</ng-template>

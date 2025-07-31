@@ -1,30 +1,32 @@
-<div id="notfound">
-  <div class="notfound">
-    <div class="notfound-404">
-      <h1>404</h1>
-    </div>
-    <div class="notfound-content">
-      <h2>Ops! Esta Página Não Foi Encontrada</h2>
-      <p>
-        Desculpe, mas a página que você está procurando não existe, foi
-        removida, teve o nome alterado ou está temporariamente indisponível
-      </p>
-    </div>
-    <div class="notfound-buttons">
-      <app-button
-        (click)="goHome()"
-        [label]="'Página Inicial'"
-        [theme]="'primary'"
-        [size]="'G'"
-      >
-      </app-button>
-      <app-button
-        (click)="goBack()"
-        [label]="'Voltar'"
-        [theme]="'secondary'"
-        [size]="'G'"
-      >
-      </app-button>
+<app-layout>
+  <div id="notfound">
+    <div class="notfound">
+      <div class="notfound-404">
+        <h1>404</h1>
+      </div>
+      <div class="notfound-content">
+        <h2>Ops! Esta Página Não Foi Encontrada</h2>
+        <p>
+          Desculpe, mas a página que você está procurando não existe, foi
+          removida, teve o nome alterado ou está temporariamente indisponível
+        </p>
+      </div>
+      <div class="notfound-buttons">
+        <app-button
+          (click)="goHome()"
+          [label]="'Página Inicial'"
+          [theme]="'primary'"
+          [size]="'G'"
+        >
+        </app-button>
+        <app-button
+          (click)="goBack()"
+          [label]="'Voltar'"
+          [theme]="'secondary'"
+          [size]="'G'"
+        >
+        </app-button>
+      </div>
     </div>
   </div>
-</div>
+</app-layout>

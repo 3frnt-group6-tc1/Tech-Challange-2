@@ -5,95 +5,7 @@
     class="flex items-center justify-between container"
     [ngClass]="{ 'h-24': !isLoggedIn, 'h-[70px]': isLoggedIn }"
   >
-    <!-- Usuário não logado (LandingPage) -->
-    @if(!isLoggedIn) { @if(!mobile && !tablet) {
-    <ul class="flex items-center gap-10">
-      <li>
-        <a href="/">
-          <app-icon-logo class="text-white m-auto"></app-icon-logo>
-        </a>
-      </li>
-
-      <li>
-        <a
-          href="#sobre"
-          class="text-white hover:text-orange-500 dark:hover:text-gray-250 font-lato text-[18px] font-semibold transition-all"
-        >
-          Sobre
-        </a>
-      </li>
-      <li>
-        <a
-          href="#vantagens"
-          class="text-white hover:text-orange-500 dark:hover:text-gray-250 font-lato text-[18px] font-semibold transition-all"
-        >
-          Vantagens
-        </a>
-      </li>
-      <li>
-        <a
-          href="#servicos"
-          class="text-white hover:text-orange-500 dark:hover:text-gray-250 font-lato text-[18px] font-semibold transition-all"
-        >
-          Serviços
-        </a>
-      </li>
-      <li>
-        <a
-          href="#contato"
-          class="text-white hover:text-orange-500 dark:hover:text-gray-250 font-lato text-[18px] font-semibold transition-all"
-        >
-          Contato
-        </a>
-      </li>
-    </ul>
-    <div class="flex items-center gap-6">
-      <app-button
-        theme="secondary"
-        label="Abrir minha conta"
-        size="P"
-        (click)="goToRegister()"
-      ></app-button>
-
-      <app-button
-        theme="ghost-white"
-        label="Já tenho conta"
-        size="P"
-        (click)="goToPanel()"
-      >
-        <app-icon-exit
-          icon-right
-          class="text-white dark:text-gray-200 hover:dark:text-gray-250"
-        />
-      </app-button>
-
-      <app-button
-        (click)="toggleDarkMode()"
-        size="P"
-        label=""
-        [theme]="'primary'"
-      >
-        <app-icon-darkmode
-          icon-left
-          class="text-white dark:text-gray-200"
-        ></app-icon-darkmode>
-      </app-button>
-    </div>
-    } @else {
-    <div class="flex justify-between items-center w-full">
-      <a href="/">
-        <app-icon-logo class="text-white m-auto"></app-icon-logo>
-      </a>
-      <div class="flex gap-6">
-        <app-button (click)="toggleDarkMode()" size="P" label="">
-          <app-icon-darkmode icon-left class="text-white"></app-icon-darkmode>
-        </app-button>
-        <app-button size="P" label="" (click)="toggleMenu()">
-          <app-icon-hamburger icon-left class="text-white"></app-icon-hamburger>
-        </app-button>
-      </div>
-    </div>
-    } } @else { @if(!mobile && !tablet) {
+    @if(!mobile && !tablet) {
     <a href="/">
       <app-icon-logo class="text-white m-auto"></app-icon-logo>
     </a>
@@ -146,11 +58,10 @@
     <app-button size="P" label="" (click)="toggleMenu()">
       <app-icon-hamburger icon-left class="text-white"></app-icon-hamburger>
     </app-button>
-    } }
+    }
   </div>
 
   <app-menu
-    [isLoggedIn]="isLoggedIn"
     [mobile]="mobile"
     [tablet]="tablet"
     [menuOpen]="menuOpen"

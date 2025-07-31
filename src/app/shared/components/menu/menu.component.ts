@@ -26,10 +26,10 @@ import { IconExitComponent } from '../../assets/icons/icon-exit.component';
   styleUrl: './menu.component.scss',
 })
 export class MenuComponent implements AfterViewInit, OnInit, OnDestroy {
-  @Input() isLoggedIn: boolean = false;
   @Input() mobile: boolean = false;
   @Input() tablet: boolean = false;
   @Input() menuOpen: boolean = false;
+
   @Input() menuRef: any;
 
   @ViewChild('menuRef') menuRefElement!: ElementRef;
