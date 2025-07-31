@@ -7,7 +7,7 @@
           cx="50"
           cy="50"
           r="45"
-          fill="#f3f4f6"
+          class="fill-gray-100 dark:fill-gray-700"
           stroke="#e5e7eb"
           stroke-width="1"
         ></circle>
@@ -15,7 +15,7 @@
         <path
           *ngIf="totalTransactions > 0 && entriesPercentage > 0"
           [attr.d]="entriesPath"
-          fill="#004D61"
+          class="fill-cyan-blue-500 dark:fill-blue-violet-500"
           stroke="#ffffff"
           stroke-width="1"
         ></path>
@@ -23,7 +23,7 @@
         <path
           *ngIf="totalTransactions > 0 && exitsPercentage > 0"
           [attr.d]="exitsPath"
-          fill="#FF5031"
+          class="fill-orange-500 dark:fill-yellow-500"
           stroke="#ffffff"
           stroke-width="1"
         ></path>
@@ -43,10 +43,10 @@
     <div class="hidden sm:flex flex-col justify-center space-y-4 pl-8">
       <div class="flex flex-col items-start">
         <div class="flex items-center space-x-2 mb-1">
-          <div class="w-4 h-4 bg-blue-900" style="background-color: #004D61"></div>
-          <span class="text-xs">Entradas</span>
+          <div class="w-4 h-4 bg-cyan-blue-500 dark:bg-blue-violet-500"></div>
+          <span class="text-xs text-gray-700">Entradas</span>
         </div>
-        <span class="text-sm font-semibold" *ngIf="totalEntries > 0">
+        <span class="text-sm font-semibold text-gray-900" *ngIf="totalEntries > 0">
           {{ formatCurrency(totalEntries) }}
         </span>
         <span class="text-lg font-bold text-gray-500" *ngIf="totalEntries === 0">
@@ -56,10 +56,10 @@
 
       <div class="flex flex-col items-start">
         <div class="flex items-center space-x-2 mb-1">
-          <div class="w-4 h-4 bg-red-500" style="background-color: #FF5031"></div>
-          <span class="text-xs">Saídas</span>
+          <div class="w-4 h-4 bg-orange-500 dark:bg-yellow-500"></div>
+          <span class="text-xs text-gray-700">Saídas</span>
         </div>
-        <span class="text-sm font-semibold" *ngIf="totalExits > 0">
+        <span class="text-sm font-semibold text-gray-900" *ngIf="totalExits > 0">
           {{ formatCurrency(totalExits) }}
         </span>
         <span class="text-lg font-bold text-gray-500" *ngIf="totalExits === 0">
@@ -71,12 +71,12 @@
 </div>
 
 <div class="flex sm:hidden justify-center space-x-8 mt-6">
-  <div class="flex flex-col items-centtext-sm font-semibolder">
+  <div class="flex flex-col items-center">
     <div class="flex items-center space-x-2 mb-1">
-      <div class="w-4 h-4" style="background-color: #004D61"></div>
-      <span class="text-xs">Entradas</span>
+      <div class="w-4 h-4 bg-cyan-blue-500 dark:bg-blue-violet-500"></div>
+      <span class="text-xs text-gray-700">Entradas</span>
     </div>
-    <span class="text-sm font-semibold" *ngIf="totalEntries > 0">
+    <span class="text-sm font-semibold text-gray-900" *ngIf="totalEntries > 0">
       {{ formatCurrency(totalEntries) }}
     </span>
     <span class="text-lg font-bold text-gray-500" *ngIf="totalEntries === 0">
@@ -86,10 +86,10 @@
 
   <div class="flex flex-col items-center">
     <div class="flex items-center space-x-2 mb-1">
-      <div class="w-4 h-4" style="background-color: #FF5031"></div>
-      <span class="text-xs">Saídas</span>
+      <div class="w-4 h-4 bg-orange-500 dark:bg-yellow-500"></div>
+      <span class="text-xs text-gray-700">Saídas</span>
     </div>
-    <span class="text-sm font-semibold" *ngIf="totalExits > 0">
+    <span class="text-sm font-semibold text-gray-900" *ngIf="totalExits > 0">
       {{ formatCurrency(totalExits) }}
     </span>
     <span class="text-lg font-bold text-gray-500" *ngIf="totalExits === 0">
