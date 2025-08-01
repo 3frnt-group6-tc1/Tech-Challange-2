@@ -1,4 +1,4 @@
-import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig, provideZoneChangeDetection, importProvidersFrom } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideStore } from '@ngrx/store';
@@ -9,6 +9,7 @@ import { routes } from './app.routes';
 import { authInterceptor } from './shared/interceptors/auth.interceptor';
 import { balanceReducer } from './store/balance/balance.reducer';
 import { BalanceEffects } from './store/balance/balance.effects';
+import { AccountService } from './shared/services/Account/account.service';
 
 export const apiConfig = {
   // baseUrl: 'http://tech-challenge-2-alb-1096144064.us-east-1.elb.amazonaws.com',
@@ -54,6 +55,7 @@ export const appConfig: ApplicationConfig = {
       balance: balanceReducer
     }),
     provideEffects([BalanceEffects]),
+    AccountService,
     provideStoreDevtools({
       maxAge: 25,
       logOnly: false,
