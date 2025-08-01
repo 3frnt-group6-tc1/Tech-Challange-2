@@ -98,6 +98,20 @@ http://localhost:6006
 - Para alterar o usuário ativo no sistema, é necessário modificar manualmente o valor da propriedade `userId` no arquivo `src/app/app.config.ts`. Basta substituir o valor atual pelo identificador desejado (por exemplo, 'u1', 'u2', etc.).
 - Futuramente, funcionalidades de autenticação e gerenciamento de usuários poderão ser implementadas para maior segurança e personalização.
 
+## Testes Unitários
+
+1. **Executar todos os testesk:**
+
+```bash
+ng test
+```
+
+2. **Executar testes específicos:**
+
+```bash
+ng test --include="**/not-found.component.spec.ts"
+```
+
 ---
 
 ## 🧑‍💻 Equipe de Desenvolvimento

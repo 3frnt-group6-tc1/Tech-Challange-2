@@ -49,11 +49,12 @@ describe('ConfigurationsComponent', () => {
 
     const authServiceSpy = jasmine.createSpyObj(
       'AuthService',
-      ['updateCurrentUser'],
+      ['updateCurrentUser', 'isAuthenticated'],
       {
         currentUser$: currentUserSubject.asObservable(),
       }
     );
+    authServiceSpy.isAuthenticated.and.returnValue(true);
     const userServiceSpy = jasmine.createSpyObj('UserService', [
       'getById',
       'update',

@@ -22,6 +22,11 @@ export interface Transaction {
   anexo?: string;
 }
 
+export interface TransactionResponse {
+  message: string;
+  result: Transaction;
+}
+
 export function isCredit(type: TransactionType): boolean {
   return CREDIT_TYPES.includes(type);
 }
