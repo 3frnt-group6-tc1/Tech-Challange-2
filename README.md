@@ -1,6 +1,6 @@
 # Sistema de Gestão Financeira
 
-Projeto desenvolvido como parte do **Tech Challenge - Fase 01** do curso pós Front-end Engineering, com foco na aplicação prática de conceitos de desenvolvimento web, design system e boas práticas de programação.
+Projeto desenvolvido como parte do **Tech Challenge - Fase 02** do curso pós Front-end Engineering, com foco na aplicação prática de conceitos de desenvolvimento web, design system e boas práticas de programação.
 
 ---
 
