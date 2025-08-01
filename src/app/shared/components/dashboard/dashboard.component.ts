@@ -16,12 +16,21 @@ import { TransactionData } from '../../models/transaction-data';
 import { TransactionEventService } from '../../services/TransactionEvent/transaction-event.service';
 import { TransactionChartComponent } from '../../components/transaction-chart/transaction-chart.component';
 import { PieChartComponent } from '../pie-chart/pie-chart.component';
-import { IconEyeComponent } from "../../assets/icons/icon-eye.component";
+import { IconEyeComponent } from '../../assets/icons/icon-eye.component';
+import { IconBarChartComponent } from '../../assets/icons/icon-bar-chart.component';
+import { IconPieChartComponent } from '../../assets/icons/icon-pie-chart.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, TransactionChartComponent, PieChartComponent, IconEyeComponent],
+  imports: [
+    CommonModule,
+    TransactionChartComponent,
+    PieChartComponent,
+    IconEyeComponent,
+    IconBarChartComponent,
+    IconPieChartComponent,
+  ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
 })

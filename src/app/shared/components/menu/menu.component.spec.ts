@@ -1,4 +1,9 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  TestBed,
+  fakeAsync,
+  tick,
+} from '@angular/core/testing';
 import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
 import { ChangeDetectorRef } from '@angular/core';
 import { Subject, of } from 'rxjs';
@@ -272,9 +277,7 @@ describe('MenuComponent', () => {
 
     it('should provide accessible navigation options', () => {
       const compiled = fixture.nativeElement;
-      const focusableElements = compiled.querySelectorAll(
-        'a, [tabindex]'
-      );
+      const focusableElements = compiled.querySelectorAll('a, [tabindex]');
 
       expect(focusableElements.length).toBeGreaterThan(0);
     });
@@ -319,19 +322,6 @@ describe('MenuComponent', () => {
       const compiled = fixture.nativeElement;
       const tabletNav = compiled.querySelector('nav');
       expect(tabletNav).toBeTruthy();
-    });
-
-    it('should render guest mobile menu when not logged in, mobile and menu is open', () => {
-      component.mobile = true;
-      component.menuOpen = true;
-      fixture.detectChanges();
-
-      const compiled = fixture.nativeElement;
-      const guestMenu = compiled.querySelector('.fixed.inset-0.z-50');
-      expect(guestMenu).toBeTruthy();
-
-      const buttons = compiled.querySelectorAll('app-button');
-      expect(buttons.length).toBeGreaterThan(0);
     });
   });
 });

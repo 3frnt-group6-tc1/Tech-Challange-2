@@ -59,11 +59,12 @@ describe('CardsComponent', () => {
 
     const authSpy = jasmine.createSpyObj(
       'AuthService',
-      ['getPrimaryAccountId'],
+      ['getPrimaryAccountId', 'isAuthenticated'],
       {
         currentUser$: mockCurrentUserSubject.asObservable(),
       }
     );
+    authSpy.isAuthenticated.and.returnValue(true);
 
     await TestBed.configureTestingModule({
       imports: [
