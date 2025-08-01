@@ -24,20 +24,20 @@
           <button (click)="toggleBalance()" class="focus:outline-none">
             <app-icon-eye
               class="h-5 w-5 text-black hover:text-gray-700"
-              [class.opacity-50]="showBalance"
+              [class.opacity-50]="(showBalance$ | async)"
             ></app-icon-eye>
           </button>
         </div>
-        <p class="text-gray-500 mt-1 text-xs sm:text-sm">{{ accountType }}</p>
+        <p class="text-gray-500 mt-1 text-xs sm:text-sm">{{ accountType$ | async }}</p>
         <p
           class="text-gray-900 mt-2 sm:mt-3 text-xl sm:text-2xl font-bold"
-          *ngIf="showBalance"
+          *ngIf="showBalance$ | async"
         >
-          {{ balance }}
+          {{ balance$ | async }}
         </p>
         <p
           class="text-gray-500 mt-2 sm:mt-3 text-xl sm:text-2xl font-bold"
-          *ngIf="!showBalance"
+          *ngIf="!(showBalance$ | async)"
         >
           ****
         </p>
@@ -80,11 +80,11 @@
             </svg>
           </button>
         </div>
-        <p class="text-gray-500 mt-1 text-xs">{{ accountType }}</p>
-        <p class="text-gray-900 text-lg font-bold" *ngIf="showBalance">
-          {{ balance }}
+        <p class="text-gray-500 mt-1 text-xs">{{ accountType$ | async }}</p>
+        <p class="text-gray-900 text-lg font-bold" *ngIf="showBalance$ | async">
+          {{ balance$ | async }}
         </p>
-        <p class="text-gray-500 text-lg font-bold" *ngIf="!showBalance">****</p>
+        <p class="text-gray-500 text-lg font-bold" *ngIf="!(showBalance$ | async)">****</p>
       </div>
     </div>
   </div>
@@ -177,4 +177,12 @@
   class="p-4 bg-red-100 text-red-700 rounded-md mx-6 mb-6"
 >
   {{ errorMessage }}
+</div>
+
+<!-- Erro do saldo -->
+<div
+  *ngIf="balanceError$ | async"
+  class="p-4 bg-red-100 text-red-700 rounded-md mx-6 mb-6"
+>
+  {{ balanceError$ | async }}
 </div>
