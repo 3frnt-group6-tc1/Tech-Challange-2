@@ -4,6 +4,7 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 
 import { routes } from './app.routes';
 import { authInterceptor } from './shared/interceptors/auth.interceptor';
+import { environment } from '../../environment.prod';
 
 export const apiConfig = {
   // baseUrl: 'http://tech-challenge-2-alb-1096144064.us-east-1.elb.amazonaws.com',
@@ -17,7 +18,7 @@ export const apiConfig = {
 };
 
 export const mfConfig = {
-  siteUrl: 'http://localhost:4300',
+  siteUrl: environment.mfBaseUrl,
 };
 
 export const systemConfig: {
