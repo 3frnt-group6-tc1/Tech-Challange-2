@@ -1,4 +1,3 @@
-// ...existing code...
 import {
   Component,
   ElementRef,
@@ -7,14 +6,13 @@ import {
   ViewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, NavigationEnd } from '@angular/router';
-import { filter, takeUntil } from 'rxjs/operators';
+import { Router } from '@angular/router';
+import { takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 
 import { ThemeService } from '../../services/Theme/theme.service';
 import { UserService } from '../../services/User/user-service';
 import { AuthService, AuthUser } from '../../services/Auth/auth.service';
-import { systemConfig } from '../../../app.config';
 
 import { IconExitComponent } from '../../assets/icons/icon-exit.component';
 import { ButtonComponent } from '../button/button.component';
@@ -47,7 +45,6 @@ import { MenuComponent } from '../menu/menu.component';
   styleUrl: './header.component.scss',
 })
 export class HeaderComponent implements OnInit, OnDestroy {
-  isLoggedIn: boolean = true;
   mobile: boolean = false;
   tablet: boolean = false;
   menuOpen: boolean = false;
@@ -63,10 +60,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private readonly router: Router,
     private readonly userService: UserService,
     private readonly authService: AuthService
-  ) {
-    const path = window.location.pathname;
-    this.isLoggedIn = systemConfig.loggedPages.includes(path);
-  }
+  ) {}
 
   @ViewChild('menuRef') menuRef?: ElementRef;
   private resizeListener = () => this.checkScreen();
@@ -84,14 +78,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
       document.body.classList.add('overflow-hidden');
     }
 
-    this.routerEventsSubscription = this.router.events
-      .pipe(filter((event) => event instanceof NavigationEnd))
-      .subscribe((event: NavigationEnd) => {
-        this.updateLoginState(event.urlAfterRedirects);
-      });
-
     this.subscribeToAuthUser();
-    this.updateLoginState(this.router.url);
   }
 
   ngOnDestroy(): void {
@@ -105,13 +92,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
     this.destroy$.next();
     this.destroy$.complete();
-  }
-
-  private updateLoginState(url: string) {
-    // Use AuthService to check authentication status
-    this.isLoggedIn =
-      this.authService.isAuthenticated() &&
-      systemConfig.loggedPages.includes(url);
   }
 
   private subscribeToAuthUser(): void {
@@ -193,31 +173,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.closeMenu();
   }
 
-  get showLandingMobileMenu(): boolean {
-    const condition =
-      !this.isLoggedIn && (this.mobile || this.tablet) && this.menuOpen;
-
-    if (condition) {
-      document.body.classList.add('overflow-hidden');
-    } else {
-      this.enableScroll();
-    }
-
-    return condition;
-  }
-
-  get showLandingDesktopMenu(): boolean {
-    return !this.isLoggedIn && !this.mobile;
-  }
-
-  get showLoggedMobileMenu(): boolean {
-    return this.isLoggedIn && this.mobile && this.menuOpen;
-  }
-
-  get showLoggedTabletMenu(): boolean {
-    return this.isLoggedIn && this.tablet;
-  }
-
   setMenuRef(ref: ElementRef): void {
     this.menuRef = ref;
   }
@@ -244,5 +199,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.authService.logout();
     // Pass logout=true to the login URL so the MF can clean its storage
     window.location.href = '/login?logout=true';
+  }
+
+  gotToConfigutarions(): void {
+    this.router.navigate(['/configurations']);
   }
 }

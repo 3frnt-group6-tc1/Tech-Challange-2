@@ -8,6 +8,7 @@ import { DashboardComponent } from './dashboard.component';
 import { AccountService } from '../../services/Account/account.service';
 import { AuthService } from '../../services/Auth/auth.service';
 import { TransactionEventService } from '../../services/TransactionEvent/transaction-event.service';
+import { BalanceService } from '../../../store/balance/balance.service';
 import { of, throwError, Subject } from 'rxjs';
 import { Transaction, TransactionType } from '../../models/transaction';
 import { systemConfig } from '../../../app.config';
@@ -107,6 +108,22 @@ describe('DashboardComponent', () => {
           provide: TransactionEventService,
           useValue: transactionEventServiceMock,
         },
+        {
+          provide: BalanceService,
+          useValue: jasmine.createSpyObj('BalanceService', [
+            'loadBalance',
+            'updateBalance',
+            'toggleBalanceVisibility',
+            'setAccountType',
+            'calculateAndUpdateBalance'
+          ], {
+            visibleBalance$: of('R$ 1.000,00'),
+            accountType$: of('Conta Corrente'),
+            showBalance$: of(true),
+            isLoading$: of(false),
+            error$: of(null)
+          })
+        },
       ],
     }).compileComponents();
 
@@ -143,10 +160,8 @@ describe('DashboardComponent', () => {
     });
 
     it('should calculate balance correctly on init', () => {
-      // Component bug: totalExits is -300, so balance = 700 - (-300) = 1000
-      expect(component.balance.replace(/\s/g, '')).toBe(
-        'R$1.000,00'.replace(/\s/g, '')
-      );
+      const balanceServiceMock = TestBed.inject(BalanceService);
+      expect(balanceServiceMock.calculateAndUpdateBalance).toHaveBeenCalled();
     });
 
     it('should calculate total entries correctly', () => {
@@ -210,17 +225,12 @@ describe('DashboardComponent', () => {
       };
 
       expect(component.transactions.length).toBe(3);
-      expect(component.balance.replace(/\s/g, '')).toBe(
-        'R$1.000,00'.replace(/\s/g, '')
-      );
 
       transactionEventServiceMock.transactionCreated$.next(newTransaction);
 
       expect(component.transactions.length).toBe(4);
-      // New balance: totalEntries (700 + 150) - totalExits (-300) = 850 - (-300) = 1150
-      expect(component.balance.replace(/\s/g, '')).toBe(
-        'R$1.150,00'.replace(/\s/g, '')
-      );
+      const balanceServiceMock = TestBed.inject(BalanceService);
+      expect(balanceServiceMock.calculateAndUpdateBalance).toHaveBeenCalled();
 
       const week4 = component.transactionData.find((d) => d.day === 'Semana 4');
       expect(week4?.entries).toBe(150);
@@ -248,10 +258,8 @@ describe('DashboardComponent', () => {
       expect(component.totalEntries.replace(/\s/g, '')).toBe(
         'R$800,00'.replace(/\s/g, '')
       );
-      // New balance: 800 - (-300) = 1100
-      expect(component.balance.replace(/\s/g, '')).toBe(
-        'R$1.100,00'.replace(/\s/g, '')
-      );
+      const balanceServiceMock = TestBed.inject(BalanceService);
+      expect(balanceServiceMock.calculateAndUpdateBalance).toHaveBeenCalled();
     });
 
     it('should handle transaction delete events', () => {
@@ -267,10 +275,8 @@ describe('DashboardComponent', () => {
       expect(component.totalEntries.replace(/\s/g, '')).toBe(
         'R$500,00'.replace(/\s/g, '')
       );
-      // New balance: 500 - (-300) = 800
-      expect(component.balance.replace(/\s/g, '')).toBe(
-        'R$800,00'.replace(/\s/g, '')
-      );
+      const balanceServiceMock = TestBed.inject(BalanceService);
+      expect(balanceServiceMock.calculateAndUpdateBalance).toHaveBeenCalled();
     });
 
     it('should add transaction events regardless of user', () => {
@@ -305,13 +311,11 @@ describe('DashboardComponent', () => {
 
   describe('UI Interactions', () => {
     it('should toggle balance visibility', () => {
-      expect(component.showBalance).toBeTrue();
+      const balanceServiceMock = TestBed.inject(BalanceService);
+      spyOn(balanceServiceMock, 'toggleBalanceVisibility');
 
       component.toggleBalance();
-      expect(component.showBalance).toBeFalse();
-
-      component.toggleBalance();
-      expect(component.showBalance).toBeTrue();
+      expect(balanceServiceMock.toggleBalanceVisibility).toHaveBeenCalled();
     });
   });
 
@@ -330,7 +334,6 @@ describe('DashboardComponent', () => {
 
     it('should set current date with correct format', () => {
       component.setCurrentDate();
-      // Modify the regex to account for "Domingo" without the -feira suffix
       expect(component.currentDate).toMatch(
         /^[A-Za-z\u00C0-\u00FF]+(-feira)?, \d{2}\/\d{2}\/\d{4} \d{2}:\d{2}$/
       );

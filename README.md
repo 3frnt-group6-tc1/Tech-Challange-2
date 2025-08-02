@@ -1,6 +1,6 @@
 # Sistema de Gestão Financeira
 
-Projeto desenvolvido como parte do **Tech Challenge - Fase 01** do curso pós Front-end Engineering, com foco na aplicação prática de conceitos de desenvolvimento web, design system e boas práticas de programação.
+Projeto desenvolvido como parte do **Tech Challenge - Fase 02** do curso pós Front-end Engineering, com foco na aplicação prática de conceitos de desenvolvimento web, design system e boas práticas de programação.
 
 ---
 
@@ -97,6 +97,20 @@ http://localhost:6006
 - Atualmente, o sistema não possui tela de login nem autenticação de usuários. O acesso é direto à landing page e todas as funcionalidades estão disponíveis sem restrição de acesso.
 - Para alterar o usuário ativo no sistema, é necessário modificar manualmente o valor da propriedade `userId` no arquivo `src/app/app.config.ts`. Basta substituir o valor atual pelo identificador desejado (por exemplo, 'u1', 'u2', etc.).
 - Futuramente, funcionalidades de autenticação e gerenciamento de usuários poderão ser implementadas para maior segurança e personalização.
+
+## Testes Unitários
+
+1. **Executar todos os testesk:**
+
+```bash
+ng test
+```
+
+2. **Executar testes específicos:**
+
+```bash
+ng test --include="**/not-found.component.spec.ts"
+```
 
 ---
 

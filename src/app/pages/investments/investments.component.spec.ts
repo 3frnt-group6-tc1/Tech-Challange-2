@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { InvestmentsComponent } from './investments.component';
 import { InvestmentService } from '../../shared/services/Investment/investment.service';
 import {
@@ -14,12 +15,14 @@ import {
   InvestmentResponse,
   InvestmentFilters,
 } from '../../shared/models/investment';
+import { ThemeService } from '../../shared/services/Theme/theme.service';
 
 describe('InvestmentsComponent', () => {
   let component: InvestmentsComponent;
   let fixture: ComponentFixture<InvestmentsComponent>;
   let mockInvestmentService: jasmine.SpyObj<InvestmentService>;
   let mockTranslationService: jasmine.SpyObj<InvestmentTranslationService>;
+  let mockThemeService: jasmine.SpyObj<ThemeService>;
 
   const mockInvestments: Investment[] = [
     {
@@ -86,13 +89,17 @@ describe('InvestmentsComponent', () => {
       'InvestmentTranslationService',
       ['loadTranslations']
     );
+    const themeServiceSpy = jasmine.createSpyObj('ThemeService', [], {
+      theme$: of('light'),
+      isDarkMode$: of(false),
+    });
     const activatedRouteMock = {
       params: of({}),
       queryParams: of({}),
     };
 
     await TestBed.configureTestingModule({
-      imports: [InvestmentsComponent],
+      imports: [InvestmentsComponent, HttpClientModule],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
       providers: [
         { provide: InvestmentService, useValue: investmentServiceSpy },
@@ -101,6 +108,8 @@ describe('InvestmentsComponent', () => {
           useValue: translationServiceSpy,
         },
         { provide: ActivatedRoute, useValue: activatedRouteMock },
+        { provide: HttpClient },
+        { provide: ThemeService, useValue: themeServiceSpy },
       ],
     }).compileComponents();
 
@@ -112,6 +121,9 @@ describe('InvestmentsComponent', () => {
     mockTranslationService = TestBed.inject(
       InvestmentTranslationService
     ) as jasmine.SpyObj<InvestmentTranslationService>;
+    mockThemeService = TestBed.inject(
+      ThemeService
+    ) as jasmine.SpyObj<ThemeService>;
 
     // Setup default mocks
     const mockTranslationData: TranslatedInvestmentData = {

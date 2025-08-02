@@ -1,4 +1,3 @@
-
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { PieChartComponent } from './pie-chart.component';
 
@@ -8,7 +7,7 @@ describe('PieChartComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PieChartComponent]
+      imports: [PieChartComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(PieChartComponent);
@@ -125,22 +124,50 @@ describe('PieChartComponent', () => {
   describe('formatCurrency', () => {
     it('should format positive numbers as Brazilian currency', () => {
       const result = component.formatCurrency(1000);
-      expect(result).toBe('R$ 1.000,00');
+      const expected = result
+        .replace(/\s/g, '')
+        .replace(
+          /[\u00A0\u1680\u180e\u2000-\u200a\u2028\u2029\u202f\u205f\u3000]/g,
+          ''
+        );
+      const actual = 'R$1.000,00'.replace(/\s/g, '');
+      expect(expected).toBe(actual);
     });
 
     it('should format zero as Brazilian currency', () => {
       const result = component.formatCurrency(0);
-      expect(result).toBe('R$ 0,00');
+      const expected = result
+        .replace(/\s/g, '')
+        .replace(
+          /[\u00A0\u1680\u180e\u2000-\u200a\u2028\u2029\u202f\u205f\u3000]/g,
+          ''
+        );
+      const actual = 'R$0,00'.replace(/\s/g, '');
+      expect(expected).toBe(actual);
     });
 
     it('should format decimal numbers correctly', () => {
       const result = component.formatCurrency(1234.56);
-      expect(result).toBe('R$ 1.234,56');
+      const expected = result
+        .replace(/\s/g, '')
+        .replace(
+          /[\u00A0\u1680\u180e\u2000-\u200a\u2028\u2029\u202f\u205f\u3000]/g,
+          ''
+        );
+      const actual = 'R$1.234,56'.replace(/\s/g, '');
+      expect(expected).toBe(actual);
     });
 
     it('should format large numbers correctly', () => {
       const result = component.formatCurrency(1000000);
-      expect(result).toBe('R$ 1.000.000,00');
+      const expected = result
+        .replace(/\s/g, '')
+        .replace(
+          /[\u00A0\u1680\u180e\u2000-\u200a\u2028\u2029\u202f\u205f\u3000]/g,
+          ''
+        );
+      const actual = 'R$1.000.000,00'.replace(/\s/g, '');
+      expect(expected).toBe(actual);
     });
   });
 

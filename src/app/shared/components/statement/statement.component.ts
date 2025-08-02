@@ -27,7 +27,7 @@ import { FormsModule } from '@angular/forms';
 import { IconClipComponent } from '../../assets/icons/icon-clip.component';
 import { AccountService } from '../../services/Account/account.service';
 import { AccountStatement } from '../../models/account';
-import { InputComponent } from "../input/input.component";
+import { InputComponent } from '../input/input.component';
 
 @Component({
   selector: 'app-statement',
@@ -44,8 +44,8 @@ import { InputComponent } from "../input/input.component";
     EditModalComponent,
     BrlPipe,
     FormsModule,
-    IconClipComponent
-],
+    IconClipComponent,
+  ],
   templateUrl: './statement.component.html',
   styleUrls: ['./statement.component.scss'],
 })
@@ -93,9 +93,9 @@ export class StatementComponent implements OnInit, OnDestroy {
   showTransactionTypeFilter = false;
   selectedTransactionTypeFilter: TransactionType | '' = '';
 
-  transactionTypeOptions = this.transactionTypeKeys.map(label => ({
+  transactionTypeOptions = this.transactionTypeKeys.map((label) => ({
     display: label,
-    value: this.transactionLabels[label]
+    value: this.transactionLabels[label],
   }));
 
   get transactionTypeKeys(): string[] {
@@ -175,6 +175,7 @@ export class StatementComponent implements OnInit, OnDestroy {
     }
 
     this.isLoadingMore = true;
+    this.currentPage++;
     const accountId = this.authService.getPrimaryAccountId();
 
     const filterParams = this.prepareFilterParams();
@@ -200,7 +201,6 @@ export class StatementComponent implements OnInit, OnDestroy {
 
         this.totalTransactions = this.filteredTransactions.length;
 
-        this.currentPage++;
         this.isLoadingMore = false;
       },
       error: (error: any) => {
@@ -293,27 +293,30 @@ export class StatementComponent implements OnInit, OnDestroy {
     this.onFiltersChange();
   }
 
-private prepareFilterParams(): any {
-  let formattedStartDate: string | undefined;
-  if (this.filters.startDate) {
-    formattedStartDate = new Date(this.filters.startDate + 'T00:00:00').toISOString();
+  private prepareFilterParams(): any {
+    let formattedStartDate: string | undefined;
+    if (this.filters.startDate) {
+      formattedStartDate = new Date(
+        this.filters.startDate + 'T00:00:00'
+      ).toISOString();
+    }
+
+    let formattedEndDate: string | undefined;
+    if (this.filters.endDate) {
+      formattedEndDate = new Date(
+        this.filters.endDate + 'T23:59:59.999'
+      ).toISOString();
+    }
+
+    return {
+      startDate: formattedStartDate,
+      endDate: formattedEndDate,
+      type: this.filters.type || undefined,
+      description: this.filters.description || undefined,
+      page: this.currentPage,
+      limit: this.itemsPerPage,
+    };
   }
-
-  let formattedEndDate: string | undefined;
-  if (this.filters.endDate) {
-    formattedEndDate = new Date(this.filters.endDate + 'T23:59:59.999').toISOString();
-  }
-
-  return {
-    startDate: formattedStartDate,
-    endDate: formattedEndDate,
-    type: this.filters.type || undefined,
-    description: this.filters.description || undefined,
-    page: this.currentPage,
-    limit: this.itemsPerPage,
-  };
-}
-
 
   isDeposit(transaction: Transaction): boolean {
     return isCredit(transaction.type);
@@ -471,7 +474,10 @@ private prepareFilterParams(): any {
 
   onTransactionTypeChange(typeValue: TransactionType): void {
     this.filters.type = typeValue;
-    console.log('onTransactionTypeChange - Tipo de transação alterado para:', typeValue); // Log 18
+    console.log(
+      'onTransactionTypeChange - Tipo de transação alterado para:',
+      typeValue
+    ); // Log 18
     this.onFiltersChange();
   }
 

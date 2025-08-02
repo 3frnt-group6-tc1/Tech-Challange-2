@@ -16,12 +16,22 @@ import { TransactionData } from '../../models/transaction-data';
 import { TransactionEventService } from '../../services/TransactionEvent/transaction-event.service';
 import { TransactionChartComponent } from '../../components/transaction-chart/transaction-chart.component';
 import { PieChartComponent } from '../pie-chart/pie-chart.component';
-import { IconEyeComponent } from "../../assets/icons/icon-eye.component";
+import { IconEyeComponent } from '../../assets/icons/icon-eye.component';
+import { IconBarChartComponent } from '../../assets/icons/icon-bar-chart.component';
+import { IconPieChartComponent } from '../../assets/icons/icon-pie-chart.component';
+import { BalanceService } from '../../../store/balance/balance.service';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, TransactionChartComponent, PieChartComponent, IconEyeComponent],
+  imports: [
+    CommonModule,
+    TransactionChartComponent,
+    PieChartComponent,
+    IconEyeComponent,
+    IconBarChartComponent,
+    IconPieChartComponent,
+  ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
 })
@@ -38,7 +48,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
   totalExitsNumber: number = 0;
   transactionTypeLabels = TRANSACTION_TYPE_LABELS;
 
-  showBalance: boolean = true;
+  // NgRx observables
+  get balance$() { return this.balanceService.visibleBalance$; }
+  get accountType$() { return this.balanceService.accountType$; }
+  get showBalance$() { return this.balanceService.showBalance$; }
+  get balanceIsLoading$() { return this.balanceService.isLoading$; }
+  get balanceError$() { return this.balanceService.error$; }
+
   isLoading: boolean = true;
 
   // Dados da conta
@@ -57,7 +73,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   constructor(
     private authService: AuthService,
     private accountService: AccountService,
-    private transactionEventService: TransactionEventService
+    private transactionEventService: TransactionEventService,
+    private balanceService: BalanceService
   ) {}
 
   ngOnInit(): void {
@@ -159,6 +176,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.errorMessage = '';
     this.userName = user.name || user.username;
     this.fetchAccountData();
+    this.balanceService.loadBalance();
   }
 
   fetchAccountData(): void {
@@ -168,9 +186,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.transactions = response.result.transactions;
         this.cards = response.result.cards;
 
-        // Define a conta principal (primeira conta)
         this.currentAccount = this.accounts[0];
-        this.accountType = this.currentAccount.type;
+        
+        this.balanceService.setAccountType(this.currentAccount.type);
+        this.balanceService.calculateAndUpdateBalance(this.transactions);
 
         this.filterCurrentMonthTransactions();
         this.successTransaction();
@@ -221,7 +240,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.totalExitsNumber = totalExits;
     this.totalEntries = this.formatBalance(totalEntries);
     this.totalExits = this.formatBalance(totalExits);
-    this.balance = this.formatBalance(totalEntries - totalExits);
+    
+    const balance = totalEntries - totalExits;
+    this.balanceService.updateBalance(balance);
 
     const weeklyData: { [key: string]: { entries: number; exits: number } } = {
       '1': { entries: 0, exits: 0 },
@@ -268,7 +289,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   toggleBalance(): void {
-    this.showBalance = !this.showBalance;
+    this.balanceService.toggleBalanceVisibility();
   }
 
   setChartType(type: 'bar' | 'pie'): void {

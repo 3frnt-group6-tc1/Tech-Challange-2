@@ -3,7 +3,7 @@
 >
   <div
     class="flex items-center justify-between container"
-    [ngClass]="{ 'h-24': !isLoggedIn, 'h-[70px]': isLoggedIn }"
+    [ngClass]="'h-[70px]'"
   >
     @if(!mobile && !tablet) {
     <a href="/">
@@ -22,7 +22,7 @@
       <app-button size="P" label="" (click)="logout()">
         <app-icon-exit icon-left class="text-white"></app-icon-exit>
       </app-button>
-      <app-button size="P" label="">
+      <app-button size="P" label="" (click)="gotToConfigutarions()">
         <app-icon-account-circle
           icon-left
           class="text-white"

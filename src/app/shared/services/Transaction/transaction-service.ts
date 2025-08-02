@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
-import { Transaction } from '../../models/transaction';
+import { tap, map } from 'rxjs/operators';
+import { Transaction, TransactionResponse } from '../../models/transaction';
 import { apiConfig } from '../../../app.config';
 import { TransactionEventService } from '../TransactionEvent/transaction-event.service';
 
@@ -22,12 +22,13 @@ export class TransactionService {
       transaction.accountId = accountId;
     }
 
-    return this.http.post<Transaction>(this.apiUrl, transaction).pipe(
-      tap((createdTransaction) => {
+    return this.http.post<TransactionResponse>(this.apiUrl, transaction).pipe(
+      tap((createdTransaction: TransactionResponse) => {
         this.transactionEventService.notifyTransactionCreated(
-          createdTransaction
+          createdTransaction.result
         );
-      })
+      }),
+      map((createdTransaction: TransactionResponse) => createdTransaction.result)
     );
   }
 
@@ -35,17 +36,17 @@ export class TransactionService {
     transactionId: string,
     transaction: Transaction,
     accountId: string
-  ): Observable<Transaction> {
+  ): Observable<TransactionResponse> {
     if (!transaction.accountId) {
       transaction.accountId = accountId;
     }
 
     return this.http
-      .put<Transaction>(`${this.apiUrl}/${transactionId}`, transaction)
+      .put<TransactionResponse>(`${this.apiUrl}/${transactionId}`, transaction)
       .pipe(
-        tap((updatedTransaction) => {
+        tap((updatedTransaction: TransactionResponse) => {
           this.transactionEventService.notifyTransactionUpdated(
-            updatedTransaction
+            updatedTransaction.result
           );
         })
       );

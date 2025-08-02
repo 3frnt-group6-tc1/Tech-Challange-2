@@ -16,12 +16,9 @@ import { Subscription } from 'rxjs';
 
 import { ThemeService } from '../../services/Theme/theme.service';
 
-import { ButtonComponent } from '../button/button.component';
-import { IconExitComponent } from '../../assets/icons/icon-exit.component';
-
 @Component({
   selector: 'app-menu',
-  imports: [CommonModule, ButtonComponent, IconExitComponent],
+  imports: [CommonModule],
   templateUrl: './menu.component.html',
   styleUrl: './menu.component.scss',
 })

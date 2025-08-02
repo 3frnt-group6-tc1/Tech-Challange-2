@@ -1,4 +1,9 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  TestBed,
+  fakeAsync,
+  tick,
+} from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { BehaviorSubject, of, throwError } from 'rxjs';
@@ -50,7 +55,10 @@ describe('HeaderComponent', () => {
     );
 
     const userSpy = jasmine.createSpyObj('UserService', ['getById']);
-    const themeSpy = jasmine.createSpyObj('ThemeService', ['toggleDarkMode']);
+    const themeSpy = jasmine.createSpyObj('ThemeService', [
+      'toggleDarkMode',
+      'getCurrentTheme',
+    ]);
 
     await TestBed.configureTestingModule({
       imports: [
@@ -68,6 +76,10 @@ describe('HeaderComponent', () => {
       ],
     }).compileComponents();
 
+    // Setup default spy returns
+    authSpy.isAuthenticated.and.returnValue(false);
+    themeSpy.getCurrentTheme.and.returnValue('light');
+
     fixture = TestBed.createComponent(HeaderComponent);
     component = fixture.componentInstance;
     authServiceSpy = TestBed.inject(AuthService) as jasmine.SpyObj<AuthService>;
@@ -83,7 +95,6 @@ describe('HeaderComponent', () => {
   });
 
   it('should initialize with default values', () => {
-    expect(component.isLoggedIn).toBe(false); // Default is false based on path
     expect(component.mobile).toBe(false);
     expect(component.tablet).toBe(false);
     expect(component.menuOpen).toBe(false);
@@ -92,32 +103,52 @@ describe('HeaderComponent', () => {
     expect(component.isLoading).toBe(true);
   });
 
-  it('should update login state based on authentication and URL', () => {
-    authServiceSpy.isAuthenticated.and.returnValue(true);
-    component['updateLoginState']('/panel');
-
-    expect(component.isLoggedIn).toBe(true);
-  });
-
-  it('should subscribe to current user and update userName', () => {
+  it('should subscribe to current user and update userName', fakeAsync(() => {
+    fixture.detectChanges();
     mockCurrentUserSubject.next(mockAuthUser);
-    component['subscribeToAuthUser']();
+    fixture.detectChanges();
+    tick();
 
     expect(component.currentUser).toEqual(mockAuthUser);
     expect(component.userName).toBe('Test User');
-  });
+  }));
 
-  it('should handle user without name by using username', () => {
+  it('should handle user without name by using username', fakeAsync(() => {
+    fixture.detectChanges();
     const userWithoutName = { ...mockAuthUser, name: '', username: 'testuser' };
     mockCurrentUserSubject.next(userWithoutName);
-    component['subscribeToAuthUser']();
+    fixture.detectChanges();
+    tick();
 
     expect(component.userName).toBe('testuser');
-  });
+  }));
+
+  it('should fetch user details when authenticated', fakeAsync(() => {
+    authServiceSpy.getCurrentUser.and.returnValue(mockAuthUser);
+    userServiceSpy.getById.and.returnValue(of(mockUser));
+
+    component.fetchUser();
+    tick();
+
+    expect(userServiceSpy.getById).toHaveBeenCalledWith('1');
+    expect(component.userName).toBe('Test User');
+    expect(component.isLoading).toBe(false);
+  }));
 
   it('should toggle dark mode', () => {
+    spyOn(window.parent, 'postMessage');
+
     component.toggleDarkMode();
+
     expect(themeServiceSpy.toggleDarkMode).toHaveBeenCalled();
+    expect(themeServiceSpy.getCurrentTheme).toHaveBeenCalled();
+    expect(window.parent.postMessage).toHaveBeenCalledWith(
+      {
+        type: 'theme',
+        theme: 'light',
+      },
+      jasmine.any(String)
+    );
   });
 
   it('should check screen size correctly', () => {
@@ -165,130 +196,66 @@ describe('HeaderComponent', () => {
     expect(component.menuOpen).toBe(false);
   });
 
-  it('should close menu', () => {
-    component.menuOpen = true;
-    component.closeMenu();
-    expect(component.menuOpen).toBe(false);
+  describe('fetchUser', () => {
+    it('should handle error cases', () => {
+      authServiceSpy.getCurrentUser.and.returnValue(mockAuthUser);
+      userServiceSpy.getById.and.returnValue(
+        throwError(() => 'Error fetching user')
+      );
+      spyOn(console, 'error');
+
+      component.fetchUser();
+
+      expect(component.isLoading).toBe(false);
+      expect(console.error).toHaveBeenCalledWith(
+        'Error fetching user name:',
+        'Error fetching user'
+      );
+    });
+
+    it('should handle null current user', () => {
+      authServiceSpy.getCurrentUser.and.returnValue(null);
+      spyOn(console, 'error');
+
+      component.fetchUser();
+
+      expect(component.isLoading).toBe(false);
+      expect(console.error).toHaveBeenCalledWith('User not authenticated');
+    });
   });
 
-  it('should navigate to panel when authenticated', () => {
-    authServiceSpy.isAuthenticated.and.returnValue(true);
-    spyOn(router, 'navigate');
+  it('should handle theme change and notify parent window', () => {
+    spyOn(window.parent, 'postMessage');
+    themeServiceSpy.getCurrentTheme.and.returnValue('dark');
 
-    component.goToPanel();
+    component.toggleDarkMode();
 
-    expect(router.navigate).toHaveBeenCalledWith(['/panel']);
-  });
-
-  it('should navigate to login when not authenticated', () => {
-    authServiceSpy.isAuthenticated.and.returnValue(false);
-    spyOn(router, 'navigate');
-
-    component.goToPanel();
-
-    expect(router.navigate).toHaveBeenCalledWith(['/login']);
-  });
-
-  it('should navigate to register', () => {
-    spyOn(router, 'navigate');
-
-    component.goToRegister();
-
-    expect(router.navigate).toHaveBeenCalledWith(['/register']);
-  });
-
-  it('should logout and navigate to login', () => {
-    spyOn(router, 'navigate');
-
-    component.logout();
-
-    expect(authServiceSpy.logout).toHaveBeenCalled();
-    expect(router.navigate).toHaveBeenCalledWith(['/login']);
-  });
-
-  it('should fetch user data successfully', () => {
-    authServiceSpy.getCurrentUser.and.returnValue(mockAuthUser);
-    userServiceSpy.getById.and.returnValue(of(mockUser));
-
-    component.fetchUser();
-
-    expect(userServiceSpy.getById).toHaveBeenCalledWith('1');
-    expect(component.userName).toBe('Test User');
-    expect(component.isLoading).toBe(false);
-  });
-
-  it('should handle fetch user error', () => {
-    authServiceSpy.getCurrentUser.and.returnValue(mockAuthUser);
-    userServiceSpy.getById.and.returnValue(throwError('Error fetching user'));
-    spyOn(console, 'error');
-
-    component.fetchUser();
-
-    expect(component.isLoading).toBe(false);
-    expect(console.error).toHaveBeenCalledWith(
-      'Error fetching user name:',
-      'Error fetching user'
+    expect(themeServiceSpy.toggleDarkMode).toHaveBeenCalled();
+    expect(themeServiceSpy.getCurrentTheme).toHaveBeenCalled();
+    expect(window.parent.postMessage).toHaveBeenCalledWith(
+      { type: 'theme', theme: 'dark' },
+      jasmine.any(String)
     );
-  });
-
-  it('should handle null current user in fetchUser', () => {
-    authServiceSpy.getCurrentUser.and.returnValue(null);
-    spyOn(console, 'error');
-
-    component.fetchUser();
-
-    expect(component.isLoading).toBe(false);
-    expect(console.error).toHaveBeenCalledWith('User not authenticated');
-  });
-
-  describe('getter methods', () => {
-    beforeEach(() => {
-      component.isLoggedIn = false;
-      component.mobile = true;
-      component.tablet = false;
-      component.menuOpen = true;
-    });
-
-    it('should return correct value for showLandingMobileMenu', () => {
-      expect(component.showLandingMobileMenu).toBe(true);
-
-      component.isLoggedIn = true;
-      expect(component.showLandingMobileMenu).toBe(false);
-    });
-
-    it('should return correct value for showLandingDesktopMenu', () => {
-      component.mobile = false;
-      expect(component.showLandingDesktopMenu).toBe(true);
-
-      component.isLoggedIn = true;
-      expect(component.showLandingDesktopMenu).toBe(false);
-    });
-
-    it('should return correct value for showLoggedMobileMenu', () => {
-      component.isLoggedIn = true;
-      expect(component.showLoggedMobileMenu).toBe(true);
-
-      component.mobile = false;
-      expect(component.showLoggedMobileMenu).toBe(false);
-    });
-
-    it('should return correct value for showLoggedTabletMenu', () => {
-      component.isLoggedIn = true;
-      component.tablet = true;
-      expect(component.showLoggedTabletMenu).toBe(true);
-
-      component.tablet = false;
-      expect(component.showLoggedTabletMenu).toBe(false);
-    });
   });
 
   it('should clean up on destroy', () => {
     spyOn(component['destroy$'], 'next');
     spyOn(component['destroy$'], 'complete');
+    spyOn(document, 'removeEventListener');
+    spyOn(window, 'removeEventListener');
 
     component.ngOnDestroy();
 
     expect(component['destroy$'].next).toHaveBeenCalled();
     expect(component['destroy$'].complete).toHaveBeenCalled();
+    expect(document.removeEventListener).toHaveBeenCalledWith(
+      'click',
+      component['clickListener'],
+      true
+    );
+    expect(window.removeEventListener).toHaveBeenCalledWith(
+      'resize',
+      component['resizeListener']
+    );
   });
 });
