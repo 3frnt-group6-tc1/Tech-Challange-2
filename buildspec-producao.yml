@@ -15,11 +15,11 @@ phases:
       - ls
   post_build:
     commands:
-      - aws s3 cp dist/tech-challenge/browser/index.html s3://tech-challange-2 --acl public-read
+      # publica só o index na raiz
+      - aws s3 cp dist/tech-challenge/browser/index.html s3://tech-challange-2/ --acl public-read
 
-      - aws s3 cp dist/tech-challenge/browser/ s3://tech-challange-2 \
-          --recursive \
-          --exclude "index.html" \
-          --acl public-read
+      # publica todo o resto do diretório (exceto o index)
+      - aws s3 cp dist/tech-challenge/browser/ s3://tech-challange-2/ --recursive --exclude "index.html" --acl public-read
 
+      # invalida cache do CloudFront
       - aws cloudfront create-invalidation --distribution-id E3DNAUODAKCCD8 --paths "/*"
