@@ -15,11 +15,11 @@ phases:
       - ls
   post_build:
     commands:
-      # Copia o arquivo index.html para a raiz do bucket S3
       - aws s3 cp dist/tech-challenge/browser/index.html s3://tech-challange-2 --acl public-read
-      
-      # Copia todos os outros arquivos do diretório para o bucket S3
-      - aws s3 cp dist/tech-challenge/browser/index.html s3://tech-challange-2 --recursive --exclude "index.html" --acl public-read
-      
-      # Invalida o cache do CloudFront
+
+      - aws s3 cp dist/tech-challenge/browser/ s3://tech-challange-2 \
+          --recursive \
+          --exclude "index.html" \
+          --acl public-read
+
       - aws cloudfront create-invalidation --distribution-id E3DNAUODAKCCD8 --paths "/*"
