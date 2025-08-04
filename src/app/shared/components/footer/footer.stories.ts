@@ -1,4 +1,8 @@
 import { Meta, StoryObj, moduleMetadata } from '@storybook/angular';
+import { AccountService } from '../../services/Account/account.service';
+class AccountServiceMock {
+  getByUserId() { return of([]); }
+}
 import { FooterComponent } from './footer.component';
 import { CommonModule } from '@angular/common';
 import { TextComponent } from '../text/text.component';
@@ -58,18 +62,12 @@ const meta: Meta<FooterComponent> = {
         MockIconYoutubeComponent
       ],
       providers: [
+        { provide: AccountService, useClass: AccountServiceMock },
         { provide: Router, useValue: new Router() }
       ]
     })
   ],
   argTypes: {
-    isLoggedIn: {
-      control: 'boolean',
-      description: 'Define se o usuário está logado ou não',
-      table: {
-        defaultValue: { summary: 'false' },
-      },
-    },
     company: {
       control: 'text',
       description: 'Nome da empresa',
@@ -106,7 +104,6 @@ type Story = StoryObj<FooterComponent>;
 
 export const LoggedOut: Story = {
   args: {
-    isLoggedIn: false,
     company: 'ByteBank',
     version: '1.0.0',
     year: 2025,
@@ -115,7 +112,6 @@ export const LoggedOut: Story = {
 
 export const LoggedIn: Story = {
   args: {
-    isLoggedIn: true,
     company: 'ByteBank',
     version: '1.0.0',
     year: 2025,

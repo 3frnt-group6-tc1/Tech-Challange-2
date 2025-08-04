@@ -31,10 +31,6 @@ const meta: Meta<InputComponent> = {
         defaultValue: { summary: 'Selecione o tipo de transação' },
       },
     },
-    selectionChange: {
-      action: 'selectionChanged',
-      description: 'Evento emitido quando uma opção é selecionada',
-    },
   },
 };
 

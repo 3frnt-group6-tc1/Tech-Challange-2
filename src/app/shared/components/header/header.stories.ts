@@ -2,6 +2,7 @@ import { Meta, StoryObj, moduleMetadata } from '@storybook/angular';
 import { HeaderComponent } from './header.component';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
+import { ThemeService } from '../../services/Theme/theme.service';
 import { ButtonComponent } from '../button/button.component';
 import { TextComponent } from '../text/text.component';
 import { MenuComponent } from '../menu/menu.component';
@@ -9,11 +10,14 @@ import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { Component } from '@angular/core';
 import { of } from 'rxjs';
 import { UserService } from '../../services/User/user-service';
+import { AuthService } from '../../services/Auth/auth.service';
+import { AccountService } from '../../services/Account/account.service';
 
 // Mock dos serviços necessários
-class ThemeService {
+class ThemeServiceMock {
   toggleDarkMode() {}
-  isDarkMode = false;
+  isDarkMode() { return false; }
+  getCurrentTheme() { return 'light'; }
 }
 
 class RouterMock {
@@ -96,10 +100,12 @@ export default {
       providers: [
         {
           provide: ThemeService,
-          useValue: {
-            isDarkMode: () => false,
-            toggleDarkMode: () => {}
-          }
+          useClass: ThemeServiceMock
+        },
+        { provide: AccountService, useValue: { getByUserId: () => of([]) } },
+        {
+          provide: AuthService,
+          useValue: { currentUser$: of(null), getCurrentUser: () => null, isAuthenticated: () => false, logout: () => {} }
         },
         {
           provide: ActivatedRoute,
@@ -136,7 +142,6 @@ type Story = StoryObj<HeaderComponent>;
 
 export const LoggedInDesktop: Story = {
   args: {
-    isLoggedIn: true,
     mobile: false,
     tablet: false,
     userName: 'João Silva'
@@ -145,7 +150,6 @@ export const LoggedInDesktop: Story = {
 
 export const LoggedInTablet: Story = {
   args: {
-    isLoggedIn: true,
     mobile: false,
     tablet: true,
     userName: 'João Silva'
@@ -154,7 +158,6 @@ export const LoggedInTablet: Story = {
 
 export const LoggedInMobile: Story = {
   args: {
-    isLoggedIn: true,
     mobile: true,
     tablet: false,
     userName: 'João Silva'
@@ -163,7 +166,6 @@ export const LoggedInMobile: Story = {
 
 export const NotLoggedInDesktop: Story = {
   args: {
-    isLoggedIn: false,
     mobile: false,
     tablet: false
   }
@@ -171,7 +173,6 @@ export const NotLoggedInDesktop: Story = {
 
 export const NotLoggedInMobile: Story = {
   args: {
-    isLoggedIn: false,
     mobile: true,
     tablet: false
   }

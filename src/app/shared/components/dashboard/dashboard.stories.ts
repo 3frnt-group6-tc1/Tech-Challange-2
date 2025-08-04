@@ -8,6 +8,12 @@ import { of } from 'rxjs';
 import { TransactionService } from '../../services/Transaction/transaction-service';
 import { TransactionEventService } from '../../services/TransactionEvent/transaction-event.service';
 import { UserService } from '../../services/User/user-service';
+import { AccountService } from '../../services/Account/account.service';
+class AccountServiceMock {
+  getByUserId() { return of({ result: { account: [], transactions: [], cards: [] } }); }
+}
+import { BalanceService } from '../../../store/balance/balance.service';
+import { AuthService } from '../../services/Auth/auth.service';
 
 // Mock do TransactionChartComponent
 @Component({
@@ -112,6 +118,23 @@ const meta: Meta<DashboardComponent> = {
         { provide: TransactionService, useValue: mockTransactionService },
         { provide: UserService, useValue: mockUserService },
         { provide: TransactionEventService, useValue: mockTransactionEventService },
+        { provide: AccountService, useClass: AccountServiceMock },
+        {
+          provide: BalanceService,
+          useValue: {
+            visibleBalance$: of('R$ 0,00'),
+            accountType$: of('Conta Corrente'),
+            showBalance$: of(true),
+            isLoading$: of(false),
+            error$: of(null),
+            loadBalance: () => {},
+            setAccountType: () => {},
+            calculateAndUpdateBalance: () => {},
+            updateBalance: () => {},
+            toggleBalanceVisibility: () => {},
+          },
+        },
+        { provide: AuthService, useValue: { currentUser$: of(null), getCurrentUser: () => null, isAuthenticated: () => false, logout: () => {} } },
         {
           provide: ActivatedRoute,
           useValue: {
@@ -152,13 +175,6 @@ const meta: Meta<DashboardComponent> = {
         defaultValue: { summary: 'R$ 5.000,00' },
       },
     },
-    showBalance: {
-      control: 'boolean',
-      description: 'Mostrar ou ocultar o saldo',
-      table: {
-        defaultValue: { summary: 'true' },
-      },
-    },
     isLoading: {
       control: 'boolean',
       description: 'Estado de carregamento',
@@ -195,7 +211,6 @@ export const Default: Story = {
     accountType: 'Conta Corrente',
     totalEntries: 'R$ 7.000,00',
     totalExits: 'R$ 2.000,00',
-    showBalance: true,
     isLoading: false,
     transactionData: [
       { day: 'Semana 1', entries: 5000, exits: 1500 },
@@ -222,7 +237,6 @@ export const WithError: Story = {
     accountType: 'Conta Corrente',
     totalEntries: 'R$ 7.000,00',
     totalExits: 'R$ 2.000,00',
-    showBalance: true,
     isLoading: false,
     transactionData: [
       { day: 'Semana 1', entries: 5000, exits: 1500 },
@@ -243,7 +257,6 @@ export const HiddenBalance: Story = {
     accountType: 'Conta Corrente',
     totalEntries: 'R$ 7.000,00',
     totalExits: 'R$ 2.000,00',
-    showBalance: false,
     isLoading: false,
     transactionData: [
       { day: 'Semana 1', entries: 5000, exits: 1500 },
