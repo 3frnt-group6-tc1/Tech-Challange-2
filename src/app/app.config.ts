@@ -13,7 +13,7 @@ import { BalanceEffects } from './store/balance/balance.effects';
 import { AccountService } from './shared/services/Account/account.service';
 
 export const apiConfig = { 
-  baseUrl: ' http://tech-challenge-2-alb-461814711.us-east-1.elb.amazonaws.com/',
+  baseUrl: ' http://tech-challenge-2-alb-461814711.us-east-1.elb.amazonaws.com',
   usersEndpoint: '/users',
   accountsEndpoint: '/accounts',
   transactionsEndpoint: '/accounts/transaction',
