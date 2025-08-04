@@ -7,6 +7,7 @@ import { provideStoreDevtools } from '@ngrx/store-devtools';
 
 import { routes } from './app.routes';
 import { authInterceptor } from './shared/interceptors/auth.interceptor';
+import { environment } from '../../environment.prod';
 import { balanceReducer } from './store/balance/balance.reducer';
 import { BalanceEffects } from './store/balance/balance.effects';
 import { AccountService } from './shared/services/Account/account.service';
@@ -22,7 +23,7 @@ export const apiConfig = {
 };
 
 export const mfConfig = {
-  siteUrl: 'http://localhost:4300',
+  siteUrl: environment.mfBaseUrl,
 };
 
 export const systemConfig: {

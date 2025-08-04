@@ -1,0 +1,22 @@
+version: 0.1
+
+env:
+  shell: bash
+
+phases:
+  install:
+    commands:
+      - ls
+      - npm install --force
+      - npm install -g @angular/cli@18.2.0
+  build:
+    commands:
+      - ng build --configuration production
+      - ls
+  post_build:
+    commands:
+      - aws s3 cp dist/tech-challenge/browser/index.html s3://tech-challange-2/ --acl public-read
+
+      - aws s3 cp dist/tech-challenge/browser/ s3://tech-challange-2/ --recursive --exclude "index.html" --acl public-read
+
+      - aws cloudfront create-invalidation --distribution-id E3DNAUODAKCCD8 --paths "/*"
