@@ -1,35 +1,148 @@
-# Sistema de Gestão Financeira
+# 💰 Sistema de Gestão Financeira - ByteBank
 
-Projeto desenvolvido como parte do **Tech Challenge - Fase 02** do curso pós Front-end Engineering, com foco na aplicação prática de conceitos de desenvolvimento web, design system e boas práticas de programação.
+<div align="center">
+  <img src="https://img.shields.io/badge/Angular-DD0031?style=for-the-badge&logo=angular&logoColor=white" alt="Angular" />
+  <img src="https://img.shields.io/badge/NgRx-BA2BD2?style=for-the-badge&logo=ngrx&logoColor=white" alt="NgRx" />
+  <img src="https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js" />
+  <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" />
+  <img src="https://img.shields.io/badge/AWS-232F3E?style=for-the-badge&logo=amazon-aws&logoColor=white" alt="AWS" />
+</div>
+
+<br/>
+
+<div align="center">
+  <h3>🚀 Aplicação Moderna de Gestão Financeira com Arquitetura Microfrontend</h3>
+  <p>Desenvolvido como parte do <strong>Tech Challenge - Fase 02</strong> do curso pós Front-end Engineering</p>
+</div>
 
 ---
 
-## 📝 Descrição
+## 📋 Índice
 
-Este projeto consiste no desenvolvimento de uma aplicação web para **gerenciamento financeiro**, permitindo aos usuários visualizar, adicionar, editar e excluir transações financeiras.
+- [📝 Sobre o Projeto](#-sobre-o-projeto)
+- [🏗️ Arquitetura](#️-arquitetura)
+- [🎯 Funcionalidades](#-funcionalidades)
+- [🛠️ Tecnologias](#️-tecnologias)
+- [📦 Instalação](#-instalação)
+- [🚀 Deploy](#-deploy)
+- [♿ Acessibilidade](#-acessibilidade)
+- [🧪 Testes](#-testes)
+- [📚 Documentação](#-documentação)
+- [👥 Equipe](#-equipe)
+
+---
+
+## 📝 Sobre o Projeto
+
+O **ByteBank** é uma aplicação web moderna para **gerenciamento financeiro pessoal**, desenvolvida com foco em:
+
+- 🎨 **UX/UI Moderna**: Interface intuitiva e responsiva
+- 🔒 **Segurança**: Autenticação robusta com NgRx
+- ♿ **Acessibilidade**: Conformidade com WCAG 2.1
+- 🏗️ **Arquitetura Escalável**: Microfrontend com padrões modernos
+- 🚀 **Deploy Automatizado**: CI/CD com AWS
+
+---
+
+## 🏗️ Arquitetura
+
+### Microfrontend Architecture
+
+```mermaid
+graph TB
+    A[Angular Shell] --> B[Auth Module]
+    A --> C[Dashboard Module]
+    A --> D[Transactions Module]
+    A --> E[Shared Components]
+    
+    B --> F[NgRx Auth Store]
+    C --> G[NgRx Balance Store]
+    D --> H[NgRx Transactions Store]
+    
+    F --> I[Node.js API]
+    G --> I
+    H --> I
+    
+    I --> J[Database]
+```
+
+### Tecnologias Core
+
+- **Frontend**: Angular 17+ com Standalone Components
+- **Estado**: NgRx para gerenciamento de estado reativo
+- **Backend**: Node.js API REST (substituindo JSON Server)
+- **Containerização**: Docker & Docker Compose
+- **Deploy**: AWS (ECR, ECS, CloudFront, S3)
+
+---
 
 ## 🎯 Funcionalidades
 
-- ✅ Página inicial com resumo de saldo e extrato das últimas transações.
-- ✅ Gráfico do resumo das transações do mês atual
-- ✅ Listagem completa de transações, com opções de visualizar, editar e excluir.
-- ✅ Formulário para adicionar novas transações (depósito, transferência, etc.).
-- ✅ Modal ou página dedicada para edição e exclusão de transações existentes.
-- ✅ Layout responsivo em diferentes tamanhos de telas: desktop, tablet e mobile.
-- ✅ Interface consistente baseada em Design System.
-- ✅ Documentação de componentes com Storybook.
-- ✅ Dark Theme
+### 🔐 Autenticação e Segurança
+- ✅ Sistema de login com JWT
+- ✅ Auto-logout por inatividade
+- ✅ Refresh token automático
+- ✅ Guards de rota com NgRx
+- ✅ Interceptors para tratamento de erros
+
+### 💼 Gestão Financeira
+- ✅ Dashboard com resumo financeiro
+- ✅ Gráficos interativos das transações
+- ✅ CRUD completo de transações
+- ✅ Filtros avançados por data/categoria
+- ✅ Exportação de relatórios
+
+### 🎨 Interface e UX
+- ✅ Design System consistente
+- ✅ Dark/Light Theme
+- ✅ Layout responsivo (Mobile-first)
+- ✅ Animações e micro-interações
+- ✅ PWA (Progressive Web App)
+
+### ♿ Acessibilidade
+- ✅ Navegação completa por teclado
+- ✅ Suporte para leitores de tela
+- ✅ Contrastes adequados (WCAG 2.1 AA)
+- ✅ Semântica HTML5 e ARIA labels
+- ✅ Focus management
 
 ---
 
-## 🛠️ Tecnologias Utilizadas
+## 🛠️ Tecnologias
 
-- **Framework:** Angular
-- **Estilização:** Tailwind CSS
-- **Documentação de Componentes:** Storybook
-- **Design System:** Figma ([Visualizar Figma](https://www.figma.com/design/x4g46ODcpZOemqLp0FYOlO/Bytebank?node-id=0-1&p=f))
-- **Backend:** JSON Server
-- **Base de Dados:** JSON
+### Frontend
+- **Angular 17+** - Framework principal
+- **NgRx** - Gerenciamento de estado
+- **Tailwind CSS** - Estilização utilitária
+- **Angular Material** - Componentes UI
+- **Chart.js** - Gráficos interativos
+- **RxJS** - Programação reativa
+
+### Backend & DevOps
+- **Node.js** - Runtime do servidor
+- **Express.js** - Framework web
+- **JWT** - Autenticação
+- **Docker** - Containerização
+- **GitHub Actions** - CI/CD
+
+### Cloud & Deploy
+- **AWS ECR** - Registry de containers
+- **AWS ECS** - Orquestração de containers
+- **AWS CloudFront** - CDN global
+- **AWS S3** - Storage estático
+- **AWS CodeBuild/CodePipeline** - Build e deploy
+
+### Qualidade & Testes
+- **Jest** - Testes unitários
+- **Cypress** - Testes E2E
+- **ESLint** - Linting
+- **Prettier** - Formatação
+- **Husky** - Git hooks
+
+### Documentação
+- **Storybook** - Documentação de componentes
+- **Figma** - Design System
+- **JSDoc** - Documentação de código
 
 ---
 
