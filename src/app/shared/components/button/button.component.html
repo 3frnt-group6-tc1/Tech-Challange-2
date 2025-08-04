@@ -1,5 +1,6 @@
 <button
   [type]="type"
+  [attr.aria-label]="ariaLabel || label"
   [disabled]="disabled"
   [ngClass]="{
     'bg-cyan-blue-500 dark:bg-[#090979] hover:bg-cyan-blue-900 dark:hover:bg-blue-violet-900':

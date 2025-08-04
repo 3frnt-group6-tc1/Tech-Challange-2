@@ -6,23 +6,23 @@
     [ngClass]="'h-[70px]'"
   >
     @if(!mobile && !tablet) {
-    <a href="/">
+    <a href="/" aria-label="Página inicial">
       <app-icon-logo class="text-white m-auto"></app-icon-logo>
     </a>
     <div class="flex items-center gap-2">
       <app-text variant="text-small" color="text-white">
         {{ userName }}
       </app-text>
-      <app-button (click)="toggleDarkMode()" size="P" label="">
+      <app-button (click)="toggleDarkMode()" size="P" label="" ariaLabel="Alternar modo escuro">
         <app-icon-darkmode icon-left class="text-white"></app-icon-darkmode>
       </app-button>
-      <app-button size="P" label="">
+      <app-button size="P" label="" ariaLabel="Notificações">
         <app-icon-bell icon-left class="text-white"></app-icon-bell>
       </app-button>
-      <app-button size="P" label="" (click)="logout()">
+      <app-button size="P" label="" ariaLabel="Sair" (click)="logout()">
         <app-icon-exit icon-left class="text-white"></app-icon-exit>
       </app-button>
-      <app-button size="P" label="" (click)="gotToConfigutarions()">
+      <app-button size="P" label="" ariaLabel="Conta" (click)="gotToConfigutarions()">
         <app-icon-account-circle
           icon-left
           class="text-white"
@@ -31,7 +31,7 @@
       </app-button>
     </div>
     } @else if(tablet) {
-    <a href="/">
+    <a href="/" aria-label="Página inicial">
       <app-icon-logo class="text-white m-auto"></app-icon-logo>
     </a>
     <div class="flex items-center gap-6">
@@ -39,10 +39,10 @@
         userName
       }}</app-text>
       <div class="flex gap-2">
-        <app-button size="P" label="" (click)="logout()">
+        <app-button size="P" label="" ariaLabel="Sair" (click)="logout()">
           <app-icon-exit icon-left class="text-white"></app-icon-exit>
         </app-button>
-        <app-button size="P" label="">
+        <app-button size="P" label="" ariaLabel="Conta">
           <app-icon-account-circle
             icon-left
             class="text-white"
@@ -52,10 +52,10 @@
       </div>
     </div>
     } @else {
-    <a href="/">
+    <a href="/" aria-label="Página inicial">
       <app-icon-logo class="text-white m-auto"></app-icon-logo>
     </a>
-    <app-button size="P" label="" (click)="toggleMenu()">
+    <app-button size="P" label="" ariaLabel="Menu" (click)="toggleMenu()">
       <app-icon-hamburger icon-left class="text-white"></app-icon-hamburger>
     </app-button>
     }

@@ -1,6 +1,6 @@
 <div class="p-4 sm:p-6 w-full max-w-full">
   <div *ngIf="isLoading" class="flex flex-col items-center justify-center p-8">
-    <p class="text-gray-600">Carregando informações...</p>
+    <p class="text-gray-800">Carregando informações...</p>
   </div>
 
   <div *ngIf="!isLoading">
@@ -12,23 +12,23 @@
         <h1 class="text-xl sm:text-2xl text-gray-900 font-bold">
           Olá, {{ userName }}!
         </h1>
-        <p class="text-gray-500 mt-2 sm:mt-3 text-xs sm:text-sm">
+        <p class="text-gray-800 mt-2 sm:mt-3 text-xs sm:text-sm">
           {{ currentDate }}
         </p>
       </div>
       <div class="text-right w-full sm:w-auto mt-4 sm:mt-0">
         <div class="flex items-center justify-end">
-          <p class="font-medium text-gray-700 mr-3 text-xl sm:text-2xl">
+          <p class="font-medium text-gray-800 mr-3 text-xl sm:text-2xl">
             Saldo
           </p>
-          <button (click)="toggleBalance()" class="focus:outline-none">
+          <button aria-label="Alternar visibilidade do saldo" (click)="toggleBalance()" class="focus:outline-none">
             <app-icon-eye
-              class="h-5 w-5 text-black hover:text-gray-700"
+              class="h-5 w-5 text-black hover:text-gray-800"
               [class.opacity-50]="(showBalance$ | async)"
             ></app-icon-eye>
           </button>
         </div>
-        <p class="text-gray-500 mt-1 text-xs sm:text-sm">{{ accountType$ | async }}</p>
+        <p class="text-gray-800 mt-1 text-xs sm:text-sm">{{ accountType$ | async }}</p>
         <p
           class="text-gray-900 mt-2 sm:mt-3 text-xl sm:text-2xl font-bold"
           *ngIf="showBalance$ | async"
@@ -36,7 +36,7 @@
           {{ balance$ | async }}
         </p>
         <p
-          class="text-gray-500 mt-2 sm:mt-3 text-xl sm:text-2xl font-bold"
+          class="text-gray-800 mt-2 sm:mt-3 text-xl sm:text-2xl font-bold"
           *ngIf="!(showBalance$ | async)"
         >
           ****
@@ -48,7 +48,7 @@
     <div class="flex flex-col sm:hidden items-center text-center w-full">
       <div class="flex flex-col mb-4">
         <h1 class="text-xl text-gray-900 font-bold">Olá, {{ userName }}!</h1>
-        <p class="text-gray-500 text-xs">{{ currentDate }}</p>
+        <p class="text-gray-800 text-xs">{{ currentDate }}</p>
       </div>
 
       <!-- Separador entre saudação e saldo (apenas mobile) -->
@@ -56,11 +56,11 @@
 
       <div class="flex flex-col">
         <div class="flex items-center justify-center">
-          <p class="font-medium text-gray-700 text-lg">Saldo</p>
-          <button (click)="toggleBalance()" class="focus:outline-none ml-2">
+          <p class="font-medium text-gray-800 text-lg">Saldo</p>
+          <button aria-label="Alternar visibilidade do saldo" (click)="toggleBalance()" class="focus:outline-none ml-2">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              class="h-5 w-5 text-gray-700"
+              class="h-5 w-5 text-gray-800"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -80,11 +80,11 @@
             </svg>
           </button>
         </div>
-        <p class="text-gray-500 mt-1 text-xs">{{ accountType$ | async }}</p>
+        <p class="text-gray-800 mt-1 text-xs">{{ accountType$ | async }}</p>
         <p class="text-gray-900 text-lg font-bold" *ngIf="showBalance$ | async">
           {{ balance$ | async }}
         </p>
-        <p class="text-gray-500 text-lg font-bold" *ngIf="!(showBalance$ | async)">****</p>
+        <p class="text-gray-800 text-lg font-bold" *ngIf="!(showBalance$ | async)">****</p>
       </div>
     </div>
   </div>
@@ -112,7 +112,7 @@
           [ngClass]="{
             'bg-cyan-blue-500 dark:bg-blue-violet-500 text-white border-cyan-blue-500 dark:border-blue-violet-500':
               chartType === 'bar',
-            'bg-white text-gray-700 dark:text-gray-900 border-gray-300 dark:border-gray-600 hover:bg-gray-50':
+            'bg-white text-gray-800 dark:text-gray-900 border-gray-300 dark:border-gray-600 hover:bg-gray-50':
               chartType !== 'bar'
           }"
         >
@@ -133,7 +133,7 @@
           [ngClass]="{
             'bg-cyan-blue-500 dark:bg-blue-violet-500 text-white border-cyan-blue-500 dark:border-blue-violet-500':
               chartType === 'pie',
-            'bg-white text-gray-700 dark:text-gray-900 border-gray-300 dark:border-gray-600 hover:bg-gray-50':
+            'bg-white text-gray-800 dark:text-gray-900 border-gray-300 dark:border-gray-600 hover:bg-gray-50':
               chartType !== 'pie'
           }"
         >

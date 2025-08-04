@@ -18,7 +18,7 @@
 
     <app-text
       variant="text-small"
-      color="text-gray-400"
+      color="text-gray-800"
       *ngIf="showLastTransactionsSubtitle"
       class="pl-2 sm:pl-3 text-xs"
     >
@@ -37,7 +37,8 @@
         >
           <input
             type="date"
-            class="bg-transparent w-full outline-none text-cyan-blue-500 placeholder-cyan-blue-500 placeholder-opacity-70"
+            aria-label="Data inicial"
+            class="bg-transparent w-full outline-none text-cyan-blue-700 placeholder-cyan-blue-700 placeholder-opacity-70"
             placeholder="Data inicial (YYYY-MM-DD)"
             [(ngModel)]="filters.startDate"
             name="startDate"
@@ -54,7 +55,8 @@
         >
           <input
             type="date"
-            class="bg-transparent w-full outline-none text-cyan-blue-500 placeholder-cyan-blue-500 placeholder-opacity-70"
+            aria-label="Data final"
+            class="bg-transparent w-full outline-none text-cyan-blue-700 placeholder-cyan-blue-700 placeholder-opacity-70"
             placeholder="Data final (YYYY-MM-DD)"
             [(ngModel)]="filters.endDate"
             name="endDate"
@@ -71,6 +73,7 @@
         >
           <input
             type="text"
+            aria-label="Descrição"
             placeholder="Descrição"
             class="bg-transparent w-full outline-none text-cyan-blue-500 placeholder-cyan-blue-500 placeholder-opacity-70"
             [(ngModel)]="filters.description"
@@ -333,7 +336,7 @@
             </td>
 
             <td class="py-2 sm:py-4 text-center pl-1">
-              <button (click)="editTransaction(transaction.id!)">
+              <button aria-label="Editar transação" (click)="editTransaction(transaction.id!)">
                 <app-icon-arrow-pencil
                   [ngClass]="
                     isDeposit(transaction) ? 'text-green-600' : 'text-red-600'
@@ -343,7 +346,7 @@
               </button>
             </td>
             <td class="py-2 sm:py-4 text-center pl-1">
-              <button (click)="openDeleteModal(transaction.id!)">
+              <button aria-label="Excluir transação" (click)="openDeleteModal(transaction.id!)">
                 <app-icon-bin
                   [ngClass]="
                     isDeposit(transaction) ? 'text-green-600' : 'text-red-600'
@@ -354,7 +357,7 @@
             </td>
             <td class="py-2 sm:py-4 text-center pl-1">
               <ng-container *ngIf="hasAttachments(transaction.anexo)">
-                <button
+                <button aria-label="Visualizar anexo"
                   (click)="openAttachment(transaction.anexo!)"
                   [disabled]="loadingAttachment"
                   class="{{
