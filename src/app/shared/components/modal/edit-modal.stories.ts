@@ -54,7 +54,9 @@ const sampleTransaction: Transaction = {
   amount: 1500.75,
   date: new Date(),
   description: 'Câmbio de dólares',
-  id_user: 'user123'
+  accountId: 'acc-1',
+  from: 'Carteira',
+  to: 'Banco'
 };
 
 export const Default: Story = {

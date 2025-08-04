@@ -7,8 +7,10 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
+import { TransactionType } from '../../models/transaction';
 import { of } from 'rxjs';
 import { TransactionService } from '../../services/Transaction/transaction-service';
+import { AccountService } from '../../services/Account/account.service';
 
 // Mock do TransactionService
 const mockTransactionService = {
@@ -40,6 +42,7 @@ const meta: Meta<TransactionFormComponent> = {
       ],
       providers: [
         { provide: TransactionService, useValue: mockTransactionService },
+        { provide: AccountService, useValue: { getByUserId: () => of([]) } },
         {
           provide: ActivatedRoute,
           useValue: {
@@ -80,11 +83,12 @@ type Story = StoryObj<TransactionFormComponent>;
 export const Default: Story = {
   args: {
     form: {
-      type: 'Câmbio de Moeda',
-      value: '00,00',
+      type: TransactionType.Exchange,
+      amount: 0,
       from: '',
       to: '',
       description: '',
+      accountId: 'acc-1',
     },
   },
   render: (args) => ({
@@ -132,11 +136,11 @@ export const Default: Story = {
                       type="text"
                       placeholder="00,00"
                       class="bg-transparent w-full outline-none text-cyan-blue-500 placeholder-cyan-blue-500 placeholder-opacity-70"
-                      [(ngModel)]="form.value"
+                      [(ngModel)]="form.amount"
                       name="amount"
                       autocomplete="off"
                       inputmode="numeric"
-                      (click)="form.value = ''"
+                      (click)="form.amount = ''"
                       required
                     />
                   </div>
@@ -161,11 +165,12 @@ export const Default: Story = {
 export const WithAmount: Story = {
   args: {
     form: {
-      type: 'Câmbio de Moeda',
-      value: '1.000,00',
+      type: TransactionType.Exchange,
+      amount: 1000,
       from: '',
       to: '',
       description: '',
+      accountId: 'acc-1',
     },
   },
 };
@@ -173,11 +178,12 @@ export const WithAmount: Story = {
 export const TransferType: Story = {
   args: {
     form: {
-      type: 'DOC/TED',
-      value: '500,00',
+      type: TransactionType.Transfer,
+      amount: 500,
       from: '',
       to: '',
       description: '',
+      accountId: 'acc-1',
     },
   },
 };
@@ -185,11 +191,12 @@ export const TransferType: Story = {
 export const LoanType: Story = {
   args: {
     form: {
-      type: 'Empréstimo e Financiamento',
-      value: '5.000,00',
+      type: TransactionType.Loan,
+      amount: 5000,
       from: '',
       to: '',
       description: '',
+      accountId: 'acc-1',
     },
   },
 };

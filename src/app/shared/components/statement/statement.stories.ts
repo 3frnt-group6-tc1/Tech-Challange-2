@@ -9,6 +9,15 @@ import { HttpClientModule } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { TransactionService } from '../../services/Transaction/transaction-service';
 import { TransactionEventService } from '../../services/TransactionEvent/transaction-event.service';
+import { AccountService } from '../../services/Account/account.service';
+import { S3UploadService } from '../../services/S3/s3-upload.service';
+import { AuthService } from '../../services/Auth/auth.service';
+class AuthServiceMock {
+  currentUser$ = of(null);
+  getCurrentUser() { return null; }
+  isAuthenticated() { return false; }
+  logout() {}
+}
 
 // Mock dos componentes de ícones
 @Component({
@@ -146,6 +155,15 @@ const meta: Meta<StatementComponent> = {
           provide: TransactionEventService,
           useValue: mockTransactionEventService,
         },
+        {
+          provide: AccountService,
+          useValue: { getByUserId: () => of([]) },
+        },
+        {
+          provide: S3UploadService,
+          useValue: { uploadFile: () => of({ url: 'https://mock-s3.com/file.png' }) },
+        },
+        { provide: AuthService, useClass: AuthServiceMock },
         {
           provide: ActivatedRoute,
           useValue: {

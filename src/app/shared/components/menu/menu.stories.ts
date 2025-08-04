@@ -4,6 +4,11 @@ import { CommonModule } from '@angular/common';
 import { ButtonComponent } from '../button/button.component';
 import { Component } from '@angular/core';
 import { of } from 'rxjs';
+import { ThemeService } from '../../services/Theme/theme.service';
+class AccountServiceMock {
+  getByUserId() { return of([]); }
+}
+import { AccountService } from '../../services/Account/account.service';
 
 // Mock do Router
 class Router {
@@ -13,7 +18,7 @@ class Router {
 }
 
 // Mock do ThemeService
-class ThemeService {
+class ThemeServiceMock {
   isDarkMode() { return false; }
   toggleDarkMode() {}
 }
@@ -39,18 +44,13 @@ const meta: Meta<MenuComponent> = {
       ],
       providers: [
         { provide: Router, useValue: new Router() },
-        { provide: ThemeService, useValue: new ThemeService() }
+        { provide: ThemeService, useClass: ThemeServiceMock },
+        { provide: AccountService, useClass: AccountServiceMock }
       ]
     })
   ],
   argTypes: {
-    isLoggedIn: {
-      control: 'boolean',
-      description: 'Define se o usuário está logado ou não',
-      table: {
-        defaultValue: { summary: 'false' },
-      },
-    },
+
     mobile: {
       control: 'boolean',
       description: 'Define se está em modo mobile',
@@ -95,7 +95,7 @@ type Story = StoryObj<MenuComponent>;
 
 export const LoggedOutMobile: Story = {
   args: {
-    isLoggedIn: false,
+
     mobile: true,
     tablet: false,
     menuOpen: true,
@@ -104,7 +104,7 @@ export const LoggedOutMobile: Story = {
 
 export const LoggedInTablet: Story = {
   args: {
-    isLoggedIn: true,
+
     mobile: false,
     tablet: true,
     menuOpen: false,
@@ -113,7 +113,7 @@ export const LoggedInTablet: Story = {
 
 export const LoggedInMobile: Story = {
   args: {
-    isLoggedIn: true,
+
     mobile: true,
     tablet: false,
     menuOpen: true,
