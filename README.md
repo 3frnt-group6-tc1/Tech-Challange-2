@@ -169,13 +169,28 @@ cd <folder-name>
 npm install
 ```
 
-3. **Execute a API backend:**
+3. **(Opcional) Configure e execute a API Node.js localmente:**
 
 ```bash
-npm run server
+# Clonar backend em outro diretório
+git clone https://github.com/dvsilva/tech-challenge-2 backend
+cd backend
+
+# Instalar dependências
+pm install
+
+# Copiar variáveis de ambiente
+cp .env.example .env
+# Ajustar variáveis se desejar (MongoDB opcional: usa memória se não informado)
+
+# Rodar em desenvolvimento
+npm run dev
+
+# Ou produção
+npm start
 ```
 
-4. **Execute o projeto em ambiente de desenvolvimento:**
+4. **Execute o projeto Angular em ambiente de desenvolvimento:**
 
 ```bash
 ng serve
@@ -204,12 +219,6 @@ http://localhost:6006
 ```
 
 ### ✅ Observações
-
-## Login e Usuário
-
-- Atualmente, o sistema não possui tela de login nem autenticação de usuários. O acesso é direto à landing page e todas as funcionalidades estão disponíveis sem restrição de acesso.
-- Para alterar o usuário ativo no sistema, é necessário modificar manualmente o valor da propriedade `userId` no arquivo `src/app/app.config.ts`. Basta substituir o valor atual pelo identificador desejado (por exemplo, 'u1', 'u2', etc.).
-- Futuramente, funcionalidades de autenticação e gerenciamento de usuários poderão ser implementadas para maior segurança e personalização.
 
 ## Testes Unitários
 
