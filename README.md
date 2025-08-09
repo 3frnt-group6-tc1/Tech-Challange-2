@@ -216,7 +216,7 @@ git clone https://github.com/3frnt-group6-tc1/Tech-Challange-2-MicroFront auth-m
 cd auth-mfe
 
 # Instalar dependências
-yarn install # ou npm install
+npm install
 
 # Iniciar em modo desenvolvimento
 ng serve
