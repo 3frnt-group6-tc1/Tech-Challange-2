@@ -202,6 +202,17 @@ ng serve
 http://localhost:4200
 ```
 
+### 🔐 Usuários de Teste
+
+| Email | Senha |
+|-------|-------|
+| joao.silva@email.com | senha123 |
+| maria.souza@email.com | senha456 |
+| carlos.lima@email.com | senha789 |
+| ana.pereira@email.com | senha321 |
+| lucas.oliveira@email.com | senha654 |
+| mariano.oliveira@email.com | senha435 |
+
 ---
 
 ### ✅ Documentação
