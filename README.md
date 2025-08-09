@@ -202,6 +202,32 @@ ng serve
 http://localhost:4200
 ```
 
+### 🧩 Microfrontend de Autenticação (Login, Home, Registro)
+
+O módulo de autenticação (login, tela de registro e página inicial) foi extraído para um microfrontend próprio. Repositório:
+
+https://github.com/3frnt-group6-tc1/Tech-Challange-2-MicroFront
+
+Passos rápidos para rodar localmente:
+
+```bash
+# Clonar o microfrontend em outro diretório
+git clone https://github.com/3frnt-group6-tc1/Tech-Challange-2-MicroFront auth-mfe
+cd auth-mfe
+
+# Instalar dependências
+yarn install # ou npm install
+
+# Iniciar em modo desenvolvimento
+ng serve
+```
+
+Aplicação disponível em:
+
+```
+http://localhost:4300/
+```
+
 ### 🔐 Usuários de Teste
 
 | Email | Senha |
@@ -212,6 +238,8 @@ http://localhost:4200
 | ana.pereira@email.com | senha321 |
 | lucas.oliveira@email.com | senha654 |
 | mariano.oliveira@email.com | senha435 |
+
+> ℹ️ **Observação**: o sistema de login agora consome nossa API Node.js (`/users/auth`) e os dados de autenticação estão armazenados em um banco **MongoDB**. O mock anterior com **JSON Server** foi descontinuado.
 
 ---
 
